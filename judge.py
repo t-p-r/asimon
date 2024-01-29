@@ -1,6 +1,6 @@
 # Compares the output of two C++ programs: checker.cpp and contestant.cpp.
 # Also, there is a program used to generate inputs: test.cpp.
-# It is HIGHLY RECOMMENDED that test.cpp outputs to the file "t.inp", while the other two programs both take input and output to the files "t.inp" and "t.out", respectively.
+# It is HIGHLY RECOMMENDED that test.cpp outputs to the file input_dump, while the other two programs both take input and output to the files input_dump and output_dump, respectively.
 
 # This program will stop either when the desired number of tests have been run, or if there is a difference between the outputs of checker.cpp and contestant.cpp, in which case the input and both outputs shall be wrote down the file "log.txt".
 
@@ -15,7 +15,7 @@ test_generation_command_line = "./test 5000 5000 rand 1 5000"
 number_of_tests = 64
 # what you think it is
 
-compiler_args = "-pipe -H -O2 -D_TPR_ -std=c++20"
+compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
 # note that some arguments are specific to either Unix or Windows (e.g. "-Wl,--stack=desired_stack_size")
 
 
@@ -28,10 +28,15 @@ import lib.asimon_utils as asutils
 
 
 log_output_stream = open("log.txt", "w")
+input_dump = "./dump/input_dump.txt"
+output_dump = "./dump/output_dump.txt"
+temp_output_dump = "./dump/output_dump.txt.temp"
 
 
 def clear_previous_run():
-    asutils.send_message("Deleting executable files from previous run...", asutils.text_colors.YELLOW)
+    asutils.send_message(
+        "Deleting executable files from previous run...", asutils.text_colors.YELLOW
+    )
     asutils.delete_file("./test")
     asutils.delete_file("./contestant")
     asutils.delete_file("./checker")
@@ -55,7 +60,7 @@ def compile_source_codes():
 def perform_test():
     os.system(test_generation_command_line)
     os.system("./contestant")
-    shutil.copyfile("t.out", "t.out.temp")
+    shutil.copyfile(output_dump, temp_output_dump)
     os.system("./checker")
 
 
@@ -65,14 +70,14 @@ def perform_tests(iterations):
         asutils.send_message("Executing test: " + str(i), asutils.text_colors.BOLD)
         perform_test()
 
-        if filecmp.cmp("t.out", "t.out.temp") == False:
+        if filecmp.cmp(output_dump, temp_output_dump) == False:
             log_output_stream.write("Test " + str(i) + ":\n")
-            log_output_stream.write("Input:\n" + open("t.inp", "r").read() + "\n")
+            log_output_stream.write("Input:\n" + open(input_dump, "r").read() + "\n")
             log_output_stream.write(
-                "Contestant's output:\n" + open("t.out.temp", "r").read() + "\n"
+                "Contestant's output:\n" + open(output_dump.temp, "r").read() + "\n"
             )
             log_output_stream.write(
-                "Judge's output:\n" + open("t.out", "r").read() + "\n"
+                "Judge's output:\n" + open(output_dump, "r").read() + "\n"
             )
             log_output_stream.write("\n")
             asutils.send_message(
