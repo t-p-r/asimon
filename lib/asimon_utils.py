@@ -1,5 +1,6 @@
 import os
 
+
 class text_colors:
     OK_BLUE = "\033[94m"
     OK_CYAN = "\033[96m"
@@ -23,8 +24,10 @@ def seek_file(executor, source):
 
 
 def send_message(message_text, color):
+    """Wraps ```color``` around ```message_text```. Only works for supported terminals. See ```text_colors``` for some examples."""
     print(color + message_text + text_colors.END_COLOR)
 
 
 def compile(source, output, compiler, args):
+    """Tested for ```g++``` and ```gcc```."""
     os.system(compiler + " " + args + " " + source + " -o " + output)

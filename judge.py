@@ -74,7 +74,7 @@ def perform_tests(iterations):
             log_output_stream.write("Test " + str(i) + ":\n")
             log_output_stream.write("Input:\n" + open(input_dump, "r").read() + "\n")
             log_output_stream.write(
-                "Contestant's output:\n" + open(output_dump.temp, "r").read() + "\n"
+                "Contestant's output:\n" + open(temp_output_dump, "r").read() + "\n"
             )
             log_output_stream.write(
                 "Judge's output:\n" + open(output_dump, "r").read() + "\n"

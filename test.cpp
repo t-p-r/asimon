@@ -24,7 +24,7 @@ int seed(int r) {
 int32_t main(int argc, char* argv[]) {
     cin.tie(0)->sync_with_stdio(0);
 #ifdef _TPR_
-    freopen("/dump/input_dump.txt", "w", stdout);
+    freopen("./dump/input_dump.txt", "w", stdout);
 #endif
 
     int a = rand(0, (int)1e9), b = rand(0, (int)1e9);
