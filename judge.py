@@ -26,6 +26,9 @@ import filecmp
 import shutil
 import lib.asimon_utils as asutils
 
+# not in lib file (for easier understanding)
+PASS_ALL = 1
+PASS_NONE = 0
 
 log_output_stream = open("log.txt", "w")
 input_dump = "./dump/input_dump.txt"
@@ -104,9 +107,9 @@ def print_final_verdict(passed_tests):
         + "%)"
     )
 
-    if percentage == 1:
+    if percentage == PASS_ALL:
         asutils.send_message(message, asutils.text_colors.OK_GREEN)
-    elif percentage == 0:
+    elif percentage == PASS_NONE:
         asutils.send_message(message, asutils.text_colors.RED)
     else:
         asutils.send_message(message, asutils.text_colors.YELLOW)

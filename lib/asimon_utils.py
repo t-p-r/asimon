@@ -1,3 +1,4 @@
+# things that *should* work everywhere
 import os
 
 
