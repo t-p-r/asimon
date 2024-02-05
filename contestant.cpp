@@ -8,5 +8,5 @@ int32_t main() {
     freopen("./dump/output_dump.txt", "w", stdout);
     int a, b;
     cin >> a >> b;
-    cout << a  b;
+    cout << a - b;
 }

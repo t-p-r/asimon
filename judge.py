@@ -9,14 +9,14 @@
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
-test_generation_command_line = "./test 5000 5000 rand 1 5000"
+test_generation_command_line = "./test"
 # often, just "./test" should be enough; additional arguments (i.e. those passed to argv[]) are the choice of the user
 
 number_of_tests = 64
 # what you think it is
 
 compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
-# note that some arguments are specific to either Unix or Windows (e.g. "-Wl,--stack=desired_stack_size")
+# note that some arguments are specific to either Unix or Windows (e.g. "-Wl,--stack=<desired_stack_size>")
 
 
 # HIC SUNT DRACONES ---------------------------------------------------------------------------------------
