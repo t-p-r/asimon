@@ -347,7 +347,7 @@ class ordered_set {
      *
      * @param val Value of the element to be removed.
      */
-    constexpr void erase(const _Tp& val) {
+    constexpr void erase_once(const _Tp& val) {
         update(root, LB, RB, val, NODE_UPDATE_ACTIONS::REMOVE_ONCE);
     }
 
@@ -418,7 +418,7 @@ class ordered_set {
 
 #endif /* CPDSA_ORDERED_SET */
 
-cpdsa::ordered_set<int, (int)-1e9, (int)1e9 + 1> st;
+cpdsa::ordered_set<int> st;
 
 int32_t main() {
     cin.tie(0)->sync_with_stdio(0);
@@ -436,7 +436,7 @@ int32_t main() {
         } else if (t == 2) {
             int x;
             cin >> x;
-            st.erase(x);
+            st.erase_once(x);
         } else if (t == 3) {
             if (st.empty())
                 cout << "empty\n";

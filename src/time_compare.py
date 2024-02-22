@@ -53,68 +53,47 @@ def compile_source_codes():
 
 
 def running_time(command):
-    start_time=time.time()
+    start_time = time.time()
     os.system(command)
-    return time.time()-start_time
+    return time.time() - start_time
 
-def perform_test():
-    os.system(test_generation_command_line)
-    print((str)(running_time("./contestant")))
-    shutil.copyfile(output_dump, temp_output_dump)
-    print((str)(running_time("./checker")))
+
+total_contestant = 0
+total_checker = 0
 
 
 def perform_tests(iterations):
+    global total_contestant
+    global total_checker
+
     passed_tests = 0.0
     for i in range(1, iterations + 1):
         asutils.send_message("Executing test: " + str(i), asutils.text_colors.BOLD)
-        perform_test()
 
-        if filecmp.cmp(output_dump, temp_output_dump) == False:
-            log_output_stream.write("Test " + str(i) + ":\n")
-            log_output_stream.write("Input:\n" + open(input_dump, "r").read() + "\n")
-            log_output_stream.write(
-                "Contestant's output:\n" + open(temp_output_dump, "r").read() + "\n"
-            )
-            log_output_stream.write(
-                "Judge's output:\n" + open(output_dump, "r").read() + "\n"
-            )
-            log_output_stream.write("\n")
-            asutils.send_message(
-                "Disparity found, aborting execution...",
-                asutils.text_colors.RED + asutils.text_colors.BOLD,
-            )
-            break
+        os.system(test_generation_command_line)
+        t1 = running_time("./contestant")
+        t2 = running_time("./checker")
 
+        log_output_stream.write("Test " + str(i) + ":\n")
+        log_output_stream.write("Judge took:      " + str(t2) + "(s)\n")
+        log_output_stream.write("Contestant took: " + str(t1) + "(s)\n\n")
+
+        total_contestant += t1
+        total_checker += t2
         passed_tests += 1
 
-    print_final_verdict(passed_tests)
 
-
-def print_final_verdict(passed_tests):
-    percentage = passed_tests / number_of_tests
-
-    message = (
-        "Progress: "
-        + str(passed_tests)
-        + "/"
-        + str(number_of_tests)
-        + " ("
-        + str(100.0 * passed_tests / number_of_tests)
-        + "%)"
+def print_final_verdict():
+    asutils.send_message(
+        "Judge took:      " + str(total_checker) + "(s)", asutils.text_colors.OK_GREEN
     )
-
-    if percentage == PASS_ALL:
-        asutils.send_message(message, asutils.text_colors.OK_GREEN)
-    elif percentage == PASS_NONE:
-        asutils.send_message(message, asutils.text_colors.RED)
-    else:
-        asutils.send_message(message, asutils.text_colors.YELLOW)
-
-    log_output_stream.write(message)
-
+    asutils.send_message(
+        "Contestant took: " + str(total_contestant) + "(s)", asutils.text_colors.OK_CYAN
+    )
+    print("See log.txt for details.")
 
 if __name__ == "__main__":
     clear_previous_run()
     compile_source_codes()
     perform_tests(number_of_tests)
+    print_final_verdict()
