@@ -27,8 +27,18 @@ int32_t main(int argc, char* argv[]) {
 #ifdef _TPR_
     freopen("./dump/input_dump.txt", "w", stdout);
 #endif
-
-    int a = rand(0, (int)1e9), b = rand(0, (int)1e9);
-    cout << a << ' ' << b << endl;
-    cpdsa::median_heap<int> mh;
+    // int lo=INT_MIN,hi=INT_MAX;
+    int lo = (int)-1e9, hi = (int)1e9;
+    int sz = 0;
+    int n = 1e5;
+    while (n--) {
+        int t = rand(1, 8);
+        cout << t << ' ';
+        if (t == 3 || t == 4) {
+            cout << '\n';
+        } else {
+            int x = rand(lo, hi);
+            cout << x << '\n';
+        }
+    }
 }

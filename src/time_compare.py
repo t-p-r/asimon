@@ -1,12 +1,3 @@
-# Compares the output of two C++ programs: checker.cpp and contestant.cpp.
-# Also, there is a program used to generate inputs: test.cpp.
-# It is HIGHLY RECOMMENDED that test.cpp outputs to the file input_dump, while the other two programs both take input and output to the files input_dump and output_dump, respectively.
-
-# This program will stop either when the desired number of tests have been run, or if there is a difference between the outputs of checker.cpp and contestant.cpp, in which case the input and both outputs shall be wrote down the file "log.txt".
-
-# All the files above must stay in the same folder as this Python file.
-
-
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
 test_generation_command_line = "./test"
@@ -24,6 +15,7 @@ compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
 import os
 import filecmp
 import shutil
+import time
 import lib.asimon_utils as asutils
 
 # not in lib file (for easier understanding)
@@ -60,11 +52,16 @@ def compile_source_codes():
     asutils.seek_file("./checker", "checker.cpp")
 
 
+def running_time(command):
+    start_time=time.time()
+    os.system(command)
+    return time.time()-start_time
+
 def perform_test():
     os.system(test_generation_command_line)
-    os.system("./contestant")
+    print((str)(running_time("./contestant")))
     shutil.copyfile(output_dump, temp_output_dump)
-    os.system("./checker")
+    print((str)(running_time("./checker")))
 
 
 def perform_tests(iterations):
