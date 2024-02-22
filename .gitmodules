@@ -1,0 +1,3 @@
+[submodule "src/lib/cpp/cpdsa"]
+	path = src/lib/cpp/cpdsa
+	url = https://github.com/t-p-r/cpdsa
