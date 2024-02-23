@@ -9,13 +9,13 @@
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
-test_generation_command_line = "./test"
+test_generation_command_line = "./dump/test"
 # often, just "./test" should be enough; additional arguments (i.e. those passed to argv[]) are the choice of the user
 
-number_of_tests = 16
+number_of_tests = 64
 # what you think it is
 
-compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
+compiler_args = "-pipe -H -O2 -D_TPR_ -std=c++20"
 # note that some arguments are specific to either Unix or Windows (e.g. "-Wl,--stack=<desired_stack_size>")
 
 
@@ -50,21 +50,21 @@ def compile_source_codes():
         "Compiling source codes, warnings and/or errors may be shown below...",
         asutils.text_colors.OK_GREEN,
     )
-    asutils.compile("test.cpp", "./test", "g++", compiler_args)
-    asutils.compile("contestant.cpp", "./contestant", "g++", compiler_args)
-    asutils.compile("checker.cpp", "./checker", "g++", compiler_args)
+    asutils.compile("test.cpp", "./dump/test", "g++", compiler_args)
+    asutils.compile("contestant.cpp", "./dump/contestant", "g++", compiler_args)
+    asutils.compile("checker.cpp", "./dump/checker", "g++", compiler_args)
 
     # throw error if source codes wasn't compiled
-    asutils.seek_file("./test", "test.cpp")
-    asutils.seek_file("./contestant", "contestant.cpp")
-    asutils.seek_file("./checker", "checker.cpp")
+    asutils.seek_file("./dump/test", "test.cpp")
+    asutils.seek_file("./dump/contestant", "contestant.cpp")
+    asutils.seek_file("./dump/checker", "checker.cpp")
 
 
 def perform_test():
-    os.system(test_generation_command_line)
-    os.system("./contestant")
+    os.system(test_generation_command_line + " > " + input_dump)
+    os.system("./dump/contestant < " + input_dump + " > " + output_dump)
     shutil.copyfile(output_dump, temp_output_dump)
-    os.system("./checker")
+    os.system("./dump/checker < " + input_dump + " > " + output_dump)
 
 
 def perform_tests(iterations):

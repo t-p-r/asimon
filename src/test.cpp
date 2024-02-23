@@ -24,24 +24,23 @@ int seed(int r) {
 
 int32_t main(int argc, char* argv[]) {
     cin.tie(0)->sync_with_stdio(0);
-#ifdef _TPR_
-    freopen("./dump/input_dump.txt", "w", stdout);
-#endif
-    int lo = INT_MIN, hi = INT_MAX;
-    // constexpr int lo = (int)-1e9, hi = (int)1e9;
-    int sz = 0;
-    int n = 1e5;
-    while (n--) {
-        int t = rand(1, 8);
-        cout << t << ' ';
-        if (t == 3 || t == 4) {
-            cout << '\n';
-        } else {
-            int x = rand(lo, hi - 1);
-            cout << x << '\n';
-        }
-    }
-
+    // constexpr int lo = INT_MIN, hi = INT_MAX;
+    constexpr int lo = (int)-1e9, hi = (int)1e9;
+    // int sz = 0;
+    // int n = 1e5;
+    // while (n--) {
+    //     int t = rand(1, 8);
+    //     cout << t << ' ';
+    //     if (t == 3 || t == 4) {
+    //         cout << '\n';
+    //     } else {
+    //         int x = rand(lo, hi - 1);
+    //         cout << x << '\n';
+    //     }
+    // }
+    int a = rand(lo, hi), b = rand(lo, hi);
+    cout << a << ' ' << b;
+    // cerr<<(int)'r';return 0;
     // cpdsa::ordered_set<int, lo, hi> st;
     // st = cpdsa::ordered_set<int, lo, hi>();
     // return 0;
@@ -49,7 +48,7 @@ int32_t main(int argc, char* argv[]) {
     // int cnt = 0;
     // while (clock() < (int)5e6) {
     //     st = cpdsa::ordered_set<int, lo, hi>();
-    //     cpdsa::ordered_set<int, lo, hi> st;
+    //     // cpdsa::ordered_set<int, lo, hi> st;
     //     for (int iter = 1; iter <= num; iter++)
     //         st.insert(rand(lo, hi - 1));
     //     cerr << (cnt += st.size()) << ' ' << st.find_by_order(5000) << '\n';
