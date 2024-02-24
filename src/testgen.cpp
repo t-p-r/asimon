@@ -5,6 +5,7 @@ using ii = pair<int, int>;
 
 mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
 
+// TODO: move this rands to CPDSA
 template <typename _t>
 _t rand(_t l, _t r) {
     return uniform_int_distribution<_t>(l, r)(rng);
