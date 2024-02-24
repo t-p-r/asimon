@@ -9,13 +9,13 @@
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
-test_generation_command_line = "./dump/test"
+test_generation_command_line = "./dump/testgen"
 # often, just "./test" should be enough; additional arguments (i.e. those passed to argv[]) are the choice of the user
 
-number_of_tests = 64
+number_of_tests = 16
 # what you think it is
 
-compiler_args = "-pipe -H -O2 -D_TPR_ -std=c++20"
+compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
 # note that some arguments are specific to either Unix or Windows (e.g. "-Wl,--stack=<desired_stack_size>")
 
 
@@ -23,66 +23,42 @@ compiler_args = "-pipe -H -O2 -D_TPR_ -std=c++20"
 
 import os
 import filecmp
-import shutil
 import lib.asimon_utils as asutils
+from asimon_base import *
 
 # not in lib file (for easier understanding)
 PASS_ALL = 1
 PASS_NONE = 0
 
 log_output_stream = open("log.txt", "w")
-input_dump = "./dump/input_dump.txt"
-output_dump = "./dump/output_dump.txt"
-temp_output_dump = "./dump/output_dump.txt.temp"
+input_dump = "./dump/input.txt"
+contestant_output = "./dump/output_contestant.txt"
+judge_output = "./dump/output_judge.txt"
 
-
-def clear_previous_run():
-    asutils.send_message(
-        "Deleting executable files from previous run...", asutils.text_colors.YELLOW
-    )
-    asutils.delete_file("./test")
-    asutils.delete_file("./contestant")
-    asutils.delete_file("./checker")
-
-
-def compile_source_codes():
-    asutils.send_message(
-        "Compiling source codes, warnings and/or errors may be shown below...",
-        asutils.text_colors.OK_GREEN,
-    )
-    asutils.compile("test.cpp", "./dump/test", "g++", compiler_args)
-    asutils.compile("contestant.cpp", "./dump/contestant", "g++", compiler_args)
-    asutils.compile("checker.cpp", "./dump/checker", "g++", compiler_args)
-
-    # throw error if source codes wasn't compiled
-    asutils.seek_file("./dump/test", "test.cpp")
-    asutils.seek_file("./dump/contestant", "contestant.cpp")
-    asutils.seek_file("./dump/checker", "checker.cpp")
+exec_list = ["testgen", "judge", "contestant"]
 
 
 def perform_test():
-    os.system(test_generation_command_line + " > " + input_dump)
-    os.system("./dump/contestant < " + input_dump + " > " + output_dump)
-    shutil.copyfile(output_dump, temp_output_dump)
-    os.system("./dump/checker < " + input_dump + " > " + output_dump)
+    os.system("%s > %s" % (test_generation_command_line, input_dump))
+    os.system("%s < %s > %s" % ("./dump/contestant", input_dump, contestant_output))
+    os.system("%s < %s > %s" % ("./dump/judge", input_dump, judge_output))
 
 
 def perform_tests(iterations):
-    passed_tests = 0.0
+    passed_tests = 0
     for i in range(1, iterations + 1):
-        asutils.send_message("Executing test: " + str(i), asutils.text_colors.BOLD)
+        asutils.send_message("Executing test: %d" % i, asutils.text_colors.BOLD)
         perform_test()
 
-        if filecmp.cmp(output_dump, temp_output_dump) == False:
-            log_output_stream.write("Test " + str(i) + ":\n")
-            log_output_stream.write("Input:\n" + open(input_dump, "r").read() + "\n")
+        if filecmp.cmp(contestant_output, judge_output) == False:
+            log_output_stream.write("Test %d of %d: \n" % (i, iterations))
+            log_output_stream.write("Input:\n%s \n" % open(input_dump, "r").read())
             log_output_stream.write(
-                "Contestant's output:\n" + open(temp_output_dump, "r").read() + "\n"
+                "Contestant's output:\n%s \n" % open(contestant_output, "r").read()
             )
             log_output_stream.write(
-                "Judge's output:\n" + open(output_dump, "r").read() + "\n"
+                "Judge's output:\n%s \n\n" % open(judge_output, "r").read()
             )
-            log_output_stream.write("\n")
             asutils.send_message(
                 "Disparity found, aborting execution...",
                 asutils.text_colors.RED + asutils.text_colors.BOLD,
@@ -96,15 +72,14 @@ def perform_tests(iterations):
 
 def print_final_verdict(passed_tests):
     percentage = passed_tests / number_of_tests
-
     message = (
-        "Progress: "
-        + str(passed_tests)
-        + "/"
-        + str(number_of_tests)
-        + " ("
-        + str(100.0 * passed_tests / number_of_tests)
-        + "%)"
+        "Progress: %d/%d (%s"
+        % (
+            passed_tests,
+            number_of_tests,
+            100.0 * passed_tests / number_of_tests,
+        )
+        + " %)"
     )
 
     if percentage == PASS_ALL:
@@ -118,6 +93,6 @@ def print_final_verdict(passed_tests):
 
 
 if __name__ == "__main__":
-    clear_previous_run()
-    compile_source_codes()
+    clear_previous_run(exec_list)
+    compile_source_codes(exec_list, compiler_args)
     perform_tests(number_of_tests)

@@ -25,22 +25,23 @@ int seed(int r) {
 int32_t main(int argc, char* argv[]) {
     cin.tie(0)->sync_with_stdio(0);
     // constexpr int lo = INT_MIN, hi = INT_MAX;
-    constexpr int lo = (int)-1e9, hi = (int)1e9;
-    // int sz = 0;
-    // int n = 1e5;
-    // while (n--) {
-    //     int t = rand(1, 8);
-    //     cout << t << ' ';
-    //     if (t == 3 || t == 4) {
-    //         cout << '\n';
-    //     } else {
-    //         int x = rand(lo, hi - 1);
-    //         cout << x << '\n';
-    //     }
-    // }
-    int a = rand(lo, hi), b = rand(lo, hi);
-    cout << a << ' ' << b;
-    // cerr<<(int)'r';return 0;
+    constexpr int lo = (int)-1e9, hi = (int)1e9 + 1;
+    int sz = 0;
+    int n = 1e5;
+    while (n--) {
+        int t = rand(1, 8);
+        cout << t << ' ';
+        if (t == 3 || t == 4) {
+            cout << '\n';
+        } else {
+            int x = rand(lo, hi - 1);
+            cout << x << '\n';
+        }
+    }
+
+    // int a = rand(lo, hi), b = rand(lo, hi);
+    // cout << a << ' ' << b;
+
     // cpdsa::ordered_set<int, lo, hi> st;
     // st = cpdsa::ordered_set<int, lo, hi>();
     // return 0;
