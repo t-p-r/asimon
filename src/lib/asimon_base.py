@@ -6,7 +6,7 @@ def clear_previous_run(exec_list):
         "Deleting executable files from previous run...", asutils.text_colors.YELLOW
     )
     for exec in exec_list:
-        asutils.delete_file("./" + exec)
+        asutils.delete_file("./dump/" + exec)
 
 
 def compile_source_codes(exec_list, compiler_args):

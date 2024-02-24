@@ -53,6 +53,11 @@
         "system_error": "cpp",
         "thread": "cpp",
         "tuple": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "charconv": "cpp",
+        "compare": "cpp",
+        "iomanip": "cpp",
+        "limits": "cpp",
+        "utility": "cpp"
     }
 }
