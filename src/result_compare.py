@@ -1,16 +1,18 @@
-# Compares the output of two C++ programs: checker.cpp and contestant.cpp.
-# Also, there is a program used to generate inputs: test.cpp.
-# It is HIGHLY RECOMMENDED that test.cpp outputs to the file input_dump, while the other two programs both take input and output to the files input_dump and output_dump, respectively.
+# Fuzz testing by:
+#   1. Using "testgen.cpp" to generate tests.
+#   2. Using "judge.cpp" and "contestant.cpp" to run these tests and compare their outputs, where "judge.cpp" is the reference program.
 
-# This program will stop either when the desired number of tests have been run, or if there is a difference between the outputs of checker.cpp and contestant.cpp, in which case the input and both outputs shall be wrote down the file "log.txt".
+# Stop either when the desired number of tests have been run, or if there is a difference between the outputs of "judge.cpp" and "contestant.cpp", in which case the test and both outputs shall be wrote down the file "log.txt".
 
-# All the files above must stay in the same folder as this Python file.
+# The three files above must stay in the same folder as this Python file, must reads from stdin and writes to stdout (so e.g. no freopen()).
+
+# TODO: add multiple output comparing modes including a custom checker.
 
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
 test_generation_command_line = "./dump/testgen"
-# often, just "./test" should be enough; additional arguments (i.e. those passed to argv[]) are the choice of the user
+# often, just "./testgen" should be enough; additional arguments (those passed to argv[]) can be customized.
 
 number_of_tests = 16
 # what you think it is
@@ -24,7 +26,7 @@ compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
 import os
 import filecmp
 import lib.asimon_utils as asutils
-from asimon_base import *
+from lib.asimon_base import *
 
 # not in lib file (for easier understanding)
 PASS_ALL = 1

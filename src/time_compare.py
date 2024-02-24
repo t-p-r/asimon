@@ -1,7 +1,14 @@
+# Compare executing times of "judge.cpp" and "contestant.cpp" by:
+#   1. Using "testgen.cpp" to generate tests.
+#   2. Using "judge.cpp" and "contestant.cpp" to run these tests and compare their executing times, where "judge.cpp" is the reference program.
+
+# Stop either when the desired number of tests have been run.
+# The three files above must stay in the same folder as this Python file, must reads from stdin and writes to stdout (so e.g. no freopen()).
+
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
 test_generation_command_line = "./dump/testgen"
-# often, just "./test" should be enough; additional arguments (i.e. those passed to argv[]) are the choice of the user
+# often, just "./testgen" should be enough; additional arguments (those passed to argv[]) can be customized.
 
 number_of_tests = 16
 # what you think it is
@@ -15,7 +22,7 @@ compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
 import os
 import time
 import lib.asimon_utils as asutils
-from asimon_base import *
+from lib.asimon_base import *
 
 log_output_stream = open("log.txt", "w")
 input_dump = "./dump/input.txt"
