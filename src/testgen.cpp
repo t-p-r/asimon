@@ -25,8 +25,8 @@ int seed(int r) {
 
 int32_t main(int argc, char* argv[]) {
     cin.tie(0)->sync_with_stdio(0);
-    // constexpr int lo = INT_MIN, hi = INT_MAX;
-    constexpr int lo = (int)-1e9, hi = (int)1e9 + 1;
+    constexpr int lo = INT_MIN, hi = INT_MAX;
+    // constexpr int lo = (int)-1e9, hi = (int)1e9 + 1;
     int sz = 0;
     int n = 1e5;
     while (n--) {
@@ -44,8 +44,8 @@ int32_t main(int argc, char* argv[]) {
     // cout << a << ' ' << b;
 
     // cpdsa::ordered_set<int, lo, hi> st;
-    // st = cpdsa::ordered_set<int, lo, hi>();
-    // return 0;
+    // // st = cpdsa::ordered_set<int, lo, hi>();
+    // // return 0;
     // int num = 10000;
     // int cnt = 0;
     // while (clock() < (int)5e6) {
@@ -54,6 +54,6 @@ int32_t main(int argc, char* argv[]) {
     //     for (int iter = 1; iter <= num; iter++)
     //         st.insert(rand(lo, hi - 1));
     //     cerr << (cnt += st.size()) << ' ' << st.find_by_order(5000) << '\n';
-    //     // st.clear();
+    // //     // st.clear();
     // }
 }

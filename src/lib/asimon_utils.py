@@ -1,4 +1,4 @@
-# things that *should* work everywhere
+# boilerplates
 import os
 
 
@@ -19,8 +19,8 @@ def delete_file(s):
         os.remove(s)
 
 
-def seek_file(executor, source):
-    if os.path.exists(executor) == False:
+def seek_file(output, source):
+    if os.path.exists(output) == False:
         raise Exception(source + " cannot be compiled")
 
 

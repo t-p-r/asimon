@@ -11,8 +11,8 @@
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
-test_generation_command_line = "./dump/testgen"
-# often, just "./testgen" should be enough; additional arguments (those passed to argv[]) can be customized.
+test_generation_command_line = "testgen"
+# often, just "testgen" should be enough; additional arguments (those passed to argv[]) can be customized.
 
 number_of_tests = 16
 # what you think it is
@@ -32,18 +32,25 @@ from lib.asimon_base import *
 PASS_ALL = 1
 PASS_NONE = 0
 
-log_output_stream = open("log.txt", "w")
-input_dump = "./dump/input.txt"
-contestant_output = "./dump/output_contestant.txt"
-judge_output = "./dump/output_judge.txt"
+master_dir = os.path.dirname(__file__)
+log_output_stream = open(master_dir + "/log.txt", "w")
+
+input_dump = master_dir + "/dump/input.txt"
+contestant_output = master_dir + "/dump/output_contestant.txt"
+judge_output = master_dir + "/dump/output_judge.txt"
 
 exec_list = ["testgen", "judge", "contestant"]
 
 
 def perform_test():
-    os.system("%s > %s" % (test_generation_command_line, input_dump))
-    os.system("%s < %s > %s" % ("./dump/contestant", input_dump, contestant_output))
-    os.system("%s < %s > %s" % ("./dump/judge", input_dump, judge_output))
+    os.system(
+        "%s > %s" % (master_dir + "/dump/" + test_generation_command_line, input_dump)
+    )
+    os.system(
+        "%s < %s > %s"
+        % (master_dir + "/dump/contestant", input_dump, contestant_output)
+    )
+    os.system("%s < %s > %s" % (master_dir + "/dump/judge", input_dump, judge_output))
 
 
 def perform_tests(iterations):
@@ -96,5 +103,5 @@ def print_final_verdict(passed_tests):
 
 if __name__ == "__main__":
     clear_previous_run(exec_list)
-    compile_source_codes(exec_list, compiler_args)
+    compile_source_codes(exec_list, compiler_args, master_dir)
     perform_tests(number_of_tests)

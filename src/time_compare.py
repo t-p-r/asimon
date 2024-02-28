@@ -7,8 +7,8 @@
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
-test_generation_command_line = "./dump/testgen"
-# often, just "./testgen" should be enough; additional arguments (those passed to argv[]) can be customized.
+test_generation_command_line = "testgen"
+# often, just "testgen" should be enough; additional arguments (those passed to argv[]) can be customized.
 
 number_of_tests = 16
 # what you think it is
@@ -24,10 +24,12 @@ import time
 import lib.asimon_utils as asutils
 from lib.asimon_base import *
 
-log_output_stream = open("log.txt", "w")
-input_dump = "./dump/input.txt"
-contestant_output = "./dump/output_contestant.txt"
-judge_output = "./dump/output_judge.txt"
+master_dir = os.path.dirname(__file__)
+log_output_stream = open(master_dir + "/log.txt", "w")
+
+input_dump = master_dir + "/dump/input.txt"
+contestant_output = master_dir + "/dump/output_contestant.txt"
+judge_output = master_dir + "/dump/output_judge.txt"
 
 exec_list = ["testgen", "judge", "contestant"]
 
@@ -45,12 +47,16 @@ def perform_tests(iterations):
     for i in range(1, iterations + 1):
         asutils.send_message("Executing test:  %s" % i, asutils.text_colors.BOLD)
 
-        os.system("%s > %s" % (test_generation_command_line, input_dump))
+        os.system(
+            "%s > %s"
+            % (master_dir + "/dump/" + test_generation_command_line, input_dump)
+        )
         contestant_test_runtime = running_time(
-            "%s < %s > %s" % ("./dump/contestant", input_dump, contestant_output)
+            "%s < %s > %s"
+            % (master_dir + "/dump/contestant", input_dump, contestant_output)
         )
         judge_test_runtime = running_time(
-            "%s < %s > %s" % ("./dump/judge", input_dump, judge_output)
+            "%s < %s > %s" % (master_dir + "/dump/judge", input_dump, judge_output)
         )
 
         log_output_stream.write("Test %d:\n" % i)
@@ -77,5 +83,5 @@ def print_final_verdict(total_contestant_time, total_checker_time):
 
 if __name__ == "__main__":
     clear_previous_run(exec_list)
-    compile_source_codes(exec_list, compiler_args)
+    compile_source_codes(exec_list, compiler_args, master_dir)
     perform_tests(number_of_tests)
