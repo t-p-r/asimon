@@ -15,7 +15,7 @@ number_of_tests = 16
 
 compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
 # note that some arguments are specific to either Unix or Windows (e.g. "-Wl,--stack=<desired_stack_size>")
-
+# in case stdc++.h has been precompiled, should use every argument you compiled it with to save time
 
 # HIC SUNT DRACONES ---------------------------------------------------------------------------------------
 
