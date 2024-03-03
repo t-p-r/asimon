@@ -91,11 +91,16 @@ def generate_tests():
     total_test_count = sum(subtask_test_count)
     subtask_count = len(subtask_test_count)
 
-    tests_folder = master_dir + "/vnoj_tests/" + task_name
+    tests_folder = master_dir + "/vnoj_tests/"
+    if os.path.exists(tests_folder) == False:
+        os.mkdir(tests_folder)
+
+    tests_folder += task_name
     if mode == "replace" and os.path.exists(tests_folder):
         shutil.rmtree(tests_folder)
         if os.path.exists(tests_folder + ".zip"):
             os.remove(tests_folder + ".zip")
+
     if os.path.exists(tests_folder) == False:
         os.mkdir(tests_folder)
 
@@ -111,8 +116,10 @@ def generate_tests():
         for test_index in range(1, subtask_test_count[subtask_index] + 1):
             generate_test(subtask_index, test_index, tests_folder)
 
+
+def compress():
     asutils.send_message("\nNow compressing:\n", asutils.text_colors.YELLOW)
-    os.system("cd " + master_dir + "/vnoj_tests/")
+    os.chdir(master_dir + "/vnoj_tests/")
     os.system("zip -r %s.zip ." % (task_name))
 
 
@@ -122,6 +129,7 @@ if __name__ == "__main__":
     list_generators()
     compile_source_codes(exec_list, compiler_args, master_dir)
     generate_tests()
+    compress()
     asutils.send_message(
         "\nGeneration completed succesfully.", asutils.text_colors.OK_CYAN
     )

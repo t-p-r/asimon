@@ -2,3 +2,5 @@
 *.zip
 dump/
 vnoj_tests/
+.vscode/
+__pycache__

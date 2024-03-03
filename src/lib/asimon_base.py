@@ -1,5 +1,6 @@
 # Functions that most/all .py files in the master directory uses.
 import lib.asimon_utils as asutils
+import os
 
 
 def clear_previous_run(exec_list, current_dir):
@@ -11,6 +12,8 @@ def clear_previous_run(exec_list, current_dir):
 
 
 def compile_source_codes(exec_list, compiler_args, current_dir):
+    if os.path.exists(current_dir + "/dump") == False:
+        os.mkdir(current_dir + "/dump")
     # need current directory because this context will otherwise not be provided to g++
     asutils.send_message(
         "Compiling source codes, warnings and/or errors may be shown below...",
