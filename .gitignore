@@ -3,4 +3,4 @@
 dump/
 vnoj_tests/
 .vscode/
-__pycache__
+__pycache__/
