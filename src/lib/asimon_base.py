@@ -2,12 +2,12 @@
 import lib.asimon_utils as asutils
 
 
-def clear_previous_run(exec_list):
+def clear_previous_run(exec_list, current_dir):
     asutils.send_message(
         "Deleting executable files from previous run...", asutils.text_colors.YELLOW
     )
     for exec in exec_list:
-        asutils.delete_file("./dump/" + exec)
+        asutils.delete_file("%s/dump/%s" % (current_dir, exec))
 
 
 def compile_source_codes(exec_list, compiler_args, current_dir):
@@ -25,4 +25,4 @@ def compile_source_codes(exec_list, compiler_args, current_dir):
             "g++",
             compiler_args,
         )
-        asutils.seek_file(output,source)
+        asutils.seek_file(output, source)

@@ -103,6 +103,6 @@ def print_final_verdict(passed_tests):
 
 
 if __name__ == "__main__":
-    clear_previous_run(exec_list)
+    clear_previous_run(exec_list, master_dir)
     compile_source_codes(exec_list, compiler_args, master_dir)
     perform_tests(number_of_tests)
