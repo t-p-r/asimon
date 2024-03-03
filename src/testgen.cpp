@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include "lib/cpp/cpdsa/cpdsa.hpp"
+#include "lib/cpp/cpdsa/cpdsa_experimental.hpp"
 using namespace std;
 using ii = pair<int, int>;
 
@@ -25,5 +26,6 @@ int seed(int r) {
 
 int32_t main(int argc, char* argv[]) {
     cin.tie(0)->sync_with_stdio(0);
-    cout << rand(0, 9) << ' ' << rand(0, 9);
+    int lo = INT_MIN, hi = INT_MAX;
+    cout << rand(lo, hi) << ' ' << rand(lo, hi) << '\n';
 }

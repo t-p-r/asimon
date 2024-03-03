@@ -12,10 +12,10 @@ task_name = "add"
 mode = "replace"
 # one of: "add" to add new tests while leaving old tests untouched; "replace" to delete old tests before generating tests.
 
-subtask_test_count = [10, 10]
+subtask_test_count = [10]
 # Number of tests for each of the subtasks
 
-subtask_script = ["testgen 1 2 3 4", "testgen 2 3 4 5"]
+subtask_script = ["testgen 1 2 3 4"]
 # Script used to generate tests for each of the subtasks.
 
 compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
@@ -41,15 +41,18 @@ exec_list = ["judge"]
 def list_generators():
     listgen = set()
     for script in subtask_script:
-        gen_name = script[0 : script.find(" ")]
+        gen_name = script[
+            0 : script.find(" ")
+        ]  # first word of string, the rest should be args
         listgen.add(gen_name)
 
     asutils.send_message(
-        "\nTest generators found included in subtask scripts:",
-        asutils.text_colors.OK_BLUE,
+        "Test generators found included in subtask scripts:",
+        asutils.text_colors.OK_CYAN,
+        " ",
     )
     for gen in listgen:
-        asutils.send_message(gen, asutils.text_colors.RED)
+        asutils.send_message(gen, asutils.text_colors.PURPLE, " ")
         exec_list.append(gen)
     print()
 
@@ -105,7 +108,7 @@ def generate_tests():
         os.mkdir(tests_folder)
 
     print(
-        "\nGenerator will generate %s subtasks for a total of %s tests.\n"
+        "\nGenerator will generate %s subtasks for a total of %s tests:"
         % (
             asutils.wrap_message(str(subtask_count), asutils.text_colors.OK_GREEN),
             asutils.wrap_message(str(total_test_count), asutils.text_colors.OK_CYAN),
@@ -118,7 +121,7 @@ def generate_tests():
 
 
 def compress():
-    asutils.send_message("\nNow compressing:\n", asutils.text_colors.YELLOW)
+    asutils.send_message("\nNow compressing:", asutils.text_colors.YELLOW)
     os.chdir(master_dir + "/vnoj_tests/")
     os.system("zip -r %s.zip ." % (task_name))
 

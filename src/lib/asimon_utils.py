@@ -6,6 +6,7 @@ class text_colors:
     OK_BLUE = "\033[94m"
     OK_CYAN = "\033[96m"
     OK_GREEN = "\033[92m"
+    PURPLE = "\033[95m"
     YELLOW = "\033[93m"
     RED = "\033[91m"
     HEADER = "\033[95m"
@@ -29,8 +30,8 @@ def wrap_message(message_text, color):
     return color + message_text + text_colors.END_COLOR
 
 
-def send_message(message_text, color):
-    print(wrap_message(message_text, color))
+def send_message(message_text, color, message_end="\n"):
+    print(wrap_message(message_text, color), end=message_end)
 
 
 def compile(source, output, compiler, args):
