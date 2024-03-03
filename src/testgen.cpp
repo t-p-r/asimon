@@ -25,10 +25,5 @@ int seed(int r) {
 
 int32_t main(int argc, char* argv[]) {
     cin.tie(0)->sync_with_stdio(0);
-    constexpr int lo = INT_MIN, hi = INT_MAX;
-    int num = 1e6, a, b, c;
-    while (num--) {
-        a = rand(lo, hi), b = rand(lo, hi), c = rand(lo, hi);
-        cout << a << ' ' << b << ' ' << c << '\n';
-    }
+    cout << rand(0, 9) << ' ' << rand(0, 9);
 }

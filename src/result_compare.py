@@ -34,7 +34,7 @@ PASS_ALL = 1
 PASS_NONE = 0
 
 master_dir = os.path.dirname(__file__)
-log_output_stream = open(master_dir + "/log.txt", "w")
+log_output_stream = open(master_dir + "/log.txt", "w")  # .../asimon/src
 
 input_dump = master_dir + "/dump/input.txt"
 contestant_output = master_dir + "/dump/output_contestant.txt"

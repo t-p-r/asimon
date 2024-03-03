@@ -24,9 +24,13 @@ def seek_file(output, source):
         raise Exception(source + " cannot be compiled")
 
 
-def send_message(message_text, color):
+def wrap_message(message_text, color):
     """Wraps `color` around `message_text`. Only works for supported terminals. See `text_colors` for some examples."""
-    print(color + message_text + text_colors.END_COLOR)
+    return color + message_text + text_colors.END_COLOR
+
+
+def send_message(message_text, color):
+    print(wrap_message(message_text, color))
 
 
 def compile(source, output, compiler, args):

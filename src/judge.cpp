@@ -23,10 +23,7 @@ int seed(int r) {
 
 int32_t main() {
     cin.tie(0)->sync_with_stdio(0);
-    int a, b, c;
-    int num = 1e6;
-    while (num--) {
-        cin >> a >> b >> c;
-        cout << a << ' ' << b << ' ' << c;
-    }
+    int a, b;
+    cpdsa::buffer_scan(a, b);
+    cout << a + b;
 }

@@ -1,2 +1,4 @@
 *.txt
+*.zip
 dump/
+vnoj_tests/
