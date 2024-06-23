@@ -14,6 +14,8 @@ Script used to generate tests. Additional arguments, if any, must be configured 
 test_count = 16
 """What you think it is."""
 
+compiler = "g++"
+
 compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
 """
 Compiler arguments. See your C++ compiler for documentation. Do note that:
@@ -87,5 +89,5 @@ def print_final_verdict(total_contestant_time, total_checker_time):
 
 if __name__ == "__main__":
     clear_previous_run(exec_list, master_dir)
-    compile_source_codes(exec_list, compiler_args, master_dir)
+    compile_source_codes(exec_list, master_dir, compiler_args, compiler)
     perform_tests(test_count)

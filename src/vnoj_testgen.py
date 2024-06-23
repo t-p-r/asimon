@@ -27,6 +27,8 @@ Script used to generate tests for each subtasks.
 Additional arguments, if any, must be configured by the user.
 """
 
+compiler = "g++"
+
 compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
 """
 Compiler arguments. See your C++ compiler for documentation. Do note that:
@@ -145,7 +147,7 @@ if __name__ == "__main__":
     user_argument_check()
     clear_previous_run(exec_list, master_dir)
     list_generators()
-    compile_source_codes(exec_list, compiler_args, master_dir)
+    compile_source_codes(exec_list, master_dir, compiler_args, compiler)
     generate_tests()
     compress()
     asutils.send_message(

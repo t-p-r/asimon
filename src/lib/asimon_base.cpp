@@ -1,5 +1,5 @@
 /**
- * src/asimon_base.cpp - Provides common functions for `contestant.cpp`,
+ * src/lib/asimon_base.cpp - Provides common functions for `contestant.cpp`,
  * `judge.cpp` and `testgen.cpp`. These includes:
  *  - a RNG with helper functions (to be moved into CPDSA when matured enough)
  *  - data parsing from argc and argv. The format is described in README.md

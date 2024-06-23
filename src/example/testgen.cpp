@@ -1,5 +1,5 @@
 /**
- * src/example/base.cpp - Test generator (example).
+ * src/example/testgen.cpp - Test generator (example).
  *
  * The output of this file is then taken as input for `judge.cpp` and
  * `contestant.cpp`. Arguments MUST be either `$number` or `rand $number1

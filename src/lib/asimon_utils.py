@@ -42,6 +42,6 @@ def send_message(message_text, color, message_end="\n"):
     print(wrap_message(message_text, color), end=message_end)
 
 
-def compile(source, output, compiler, args):
+def compile(compiler, args, source, output):
     """Compile a C++ file with the above attributes. Tested for `g++` and `gcc`."""
-    os.system(compiler + " " + args + " " + source + " -o " + output)
+    os.system("%s %s %s -o %s" % (compiler, args, source, output))
