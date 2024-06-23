@@ -1,8 +1,8 @@
 *.txt
 *.zip
-contestant.cpp
-judge.cpp
-testgen.cpp
+/src/contestant.cpp
+/src/judge.cpp
+/src/testgen.cpp
 dump/
 vnoj_tests/
 .vscode/
