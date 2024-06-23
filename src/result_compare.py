@@ -41,25 +41,25 @@ from lib.asimon_base import *
 PASS_ALL = 1
 PASS_NONE = 0
 
-master_dir = os.path.dirname(__file__)
-log_output_stream = open(master_dir + "/log.txt", "w")  # .../asimon/src
+root_dir = os.path.dirname(__file__)
+log_output_stream = open(root_dir + "/log.txt", "w")  # .../asimon/src
 
-input_dump = master_dir + "/dump/input.txt"
-contestant_output = master_dir + "/dump/output_contestant.txt"
-judge_output = master_dir + "/dump/output_judge.txt"
+input_dump = root_dir + "/dump/input.txt"
+contestant_output = root_dir + "/dump/output_contestant.txt"
+judge_output = root_dir + "/dump/output_judge.txt"
 
 exec_list = ["testgen", "judge", "contestant"]
 
 
 def perform_test():
     os.system(
-        "%s > %s" % (master_dir + "/dump/" + test_generation_command_line, input_dump)
+        "%s > %s" % (root_dir + "/dump/" + test_generation_command_line, input_dump)
     )
     os.system(
         "%s < %s > %s"
-        % (master_dir + "/dump/contestant", input_dump, contestant_output)
+        % (root_dir + "/dump/contestant", input_dump, contestant_output)
     )
-    os.system("%s < %s > %s" % (master_dir + "/dump/judge", input_dump, judge_output))
+    os.system("%s < %s > %s" % (root_dir + "/dump/judge", input_dump, judge_output))
 
 
 def perform_tests(iterations):
@@ -111,6 +111,6 @@ def print_final_verdict(passed_tests):
 
 
 if __name__ == "__main__":
-    clear_previous_run(exec_list, master_dir)
-    compile_source_codes(exec_list, master_dir, compiler_args, compiler)
+    clear_previous_run(exec_list, root_dir)
+    compile_source_codes(exec_list, root_dir, compiler_args, compiler)
     perform_tests(test_count)

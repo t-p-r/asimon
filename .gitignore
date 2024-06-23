@@ -4,6 +4,6 @@
 /src/judge.cpp
 /src/testgen.cpp
 dump/
-vnoj_tests/
+tests/
 .vscode/
 __pycache__/

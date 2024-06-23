@@ -1,9 +1,9 @@
 """ 
-src/vnoj_testgen.py - Generate tests for VNOJ by:
+src/testgen.py - Generate tests for VNOJ by:
     1. Use the commands stated in `subtask_script` to generate input
     2. Use "judge.cpp" to generate outputs
-    3. Transfer them to "/vnoj_tests/task_name"
-    4. Compress them into "/vnoj_tests/task_name.zip"
+    3. Transfer them to "/tests/vnoj/task_name"
+    4. Compress them into "/tests/vnoj/task_name.zip"
 """
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
@@ -17,6 +17,9 @@ Generation mode. Affect only the current problem. Must be one of:
     - "add" to add new tests while leaving old tests untouched;
     - "replace" to delete old tests before generating tests.
 """
+
+bundle_source = True
+"""Whether to include test generation and solution files in the test folder."""
 
 subtask_test_count = [10]
 """Number of tests for each subtasks."""
@@ -40,14 +43,15 @@ Compiler arguments. See your C++ compiler for documentation. Do note that:
 
 import os
 import shutil
+import pathlib
 import lib.asimon_utils as asutils
 from lib.asimon_base import *
 from datetime import datetime
 
-master_dir = os.path.dirname(__file__)  # .../asimon/src
+root_dir = os.path.dirname(__file__)  # .../asimon/src
 
-input_dump = master_dir + "/dump/input.txt"
-judge_output = master_dir + "/dump/output_judge.txt"
+input_dump = root_dir + "/dump/input.txt"
+judge_output = root_dir + "/dump/output_judge.txt"
 
 exec_list = ["judge"]
 
@@ -93,9 +97,9 @@ def generate_test(subtask_index, test_index, tests_folder):
         )
     )
     os.system(
-        "%s > %s" % (master_dir + "/dump/" + subtask_script[subtask_index], input_dump)
+        "%s > %s" % (root_dir + "/dump/" + subtask_script[subtask_index], input_dump)
     )
-    os.system("%s < %s > %s" % (master_dir + "/dump/judge", input_dump, judge_output))
+    os.system("%s < %s > %s" % (root_dir + "/dump/judge", input_dump, judge_output))
 
     test_dir = "%s-%s-%s" % (
         tests_folder + "/" + "sub" + str(subtask_index),
@@ -111,18 +115,19 @@ def generate_tests():
     total_test_count = sum(subtask_test_count)
     subtask_count = len(subtask_test_count)
 
-    tests_folder = master_dir + "/vnoj_tests/"
-    if os.path.exists(tests_folder) == False:
-        os.mkdir(tests_folder)
+    test_dir = root_dir + "/tests/vnoj/" + task_name
+    if generation_mode == "replace" and os.path.exists(test_dir):
+        shutil.rmtree(test_dir)
+        if os.path.exists(test_dir + ".zip"):
+            os.remove(test_dir + ".zip")
 
-    tests_folder += task_name
-    if generation_mode == "replace" and os.path.exists(tests_folder):
-        shutil.rmtree(tests_folder)
-        if os.path.exists(tests_folder + ".zip"):
-            os.remove(tests_folder + ".zip")
+    pathlib.Path(test_dir).mkdir(parents=True, exist_ok=True)
 
-    if os.path.exists(tests_folder) == False:
-        os.mkdir(tests_folder)
+    if bundle_source == True:
+        for exec in exec_list:
+            shutil.copyfile(
+                "%s/%s.cpp" % (root_dir, exec), "%s/%s.cpp" % (test_dir, exec)
+            )
 
     print(
         "\nGenerator will generate %s subtasks for a total of %s tests:"
@@ -134,20 +139,20 @@ def generate_tests():
 
     for subtask_index in range(0, subtask_count):
         for test_index in range(1, subtask_test_count[subtask_index] + 1):
-            generate_test(subtask_index, test_index, tests_folder)
+            generate_test(subtask_index, test_index, test_dir)
 
 
 def compress():
     asutils.send_message("\nNow compressing:", asutils.text_colors.YELLOW)
-    os.chdir(master_dir + "/vnoj_tests/")
+    os.chdir(root_dir + "/tests/vnoj/")
     os.system("zip -r %s.zip ." % (task_name))
 
 
 if __name__ == "__main__":
     user_argument_check()
-    clear_previous_run(exec_list, master_dir)
+    clear_previous_run(exec_list, root_dir)
     list_generators()
-    compile_source_codes(exec_list, master_dir, compiler_args, compiler)
+    compile_source_codes(exec_list, root_dir, compiler_args, compiler)
     generate_tests()
     compress()
     asutils.send_message(
