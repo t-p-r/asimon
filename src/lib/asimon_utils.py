@@ -1,4 +1,7 @@
-# boilerplates
+"""
+lib/asimon_utils.py - Helper functions and classes for asimon.
+"""
+
 import os
 
 
@@ -22,7 +25,12 @@ def delete_file(s):
 
 def seek_file(output, source):
     if os.path.exists(output) == False:
-        raise Exception(source + " cannot be compiled")
+        raise Exception(
+            wrap_message(
+                source + " cannot be compiled, or doesn't exist.",
+                text_colors.RED,
+            )
+        )
 
 
 def wrap_message(message_text, color):
@@ -35,5 +43,5 @@ def send_message(message_text, color, message_end="\n"):
 
 
 def compile(source, output, compiler, args):
-    """Tested for `g++` and `gcc`."""
+    """Compile a C++ file with the above attributes. Tested for `g++` and `gcc`."""
     os.system(compiler + " " + args + " " + source + " -o " + output)

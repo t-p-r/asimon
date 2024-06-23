@@ -1,26 +1,38 @@
-# Generate tests for VNOJ by:
-# 1. Use the commands stated in subtask_script to generate input
-# 2. Use "judge.cpp" to generate outputs
-# 3. Transfer them to "/vnoj_tests/task_name"
-# 4. Compress them into "/vnoj_tests/task_name.zip"
+""" 
+src/vnoj_testgen.py - Generate tests for VNOJ by:
+    1. Use the commands stated in `subtask_script` to generate input
+    2. Use "judge.cpp" to generate outputs
+    3. Transfer them to "/vnoj_tests/task_name"
+    4. Compress them into "/vnoj_tests/task_name.zip"
+"""
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
 task_name = "add"
-# name of the problem
+"""Name of the problem."""
 
-mode = "replace"
-# one of: "add" to add new tests while leaving old tests untouched; "replace" to delete old tests before generating tests.
+generation_mode = "replace"
+"""
+Generation mode. Affect only the current problem. Must be one of:
+    - "add" to add new tests while leaving old tests untouched;
+    - "replace" to delete old tests before generating tests.
+"""
 
 subtask_test_count = [10]
-# Number of tests for each of the subtasks
+"""Number of tests for each subtasks."""
 
-subtask_script = ["testgen 1 2 3 4"]
-# Script used to generate tests for each of the subtasks.
+subtask_script = ["testgen"]
+"""
+Script used to generate tests for each subtasks.
+Additional arguments, if any, must be configured by the user.
+"""
 
 compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
-# note that some arguments are specific to either Unix or Windows (e.g. "-Wl,--stack=<desired_stack_size>")
-# in case stdc++.h has been precompiled, should use every argument you compiled it with to save time
+"""
+Compiler arguments. See your C++ compiler for documentation. Do note that:
+    - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
+    - if you have precompiled headers (e.g. `stdc++.h`), use the exact arguments you compiled them with to save time
+"""
 
 # HIC SUNT DRACONES ---------------------------------------------------------------------------------------
 
@@ -41,13 +53,16 @@ exec_list = ["judge"]
 def list_generators():
     listgen = set()
     for script in subtask_script:
+        first_word_end = script.find(" ")
+        if first_word_end == -1:
+            first_word_end = len(script)
         gen_name = script[
-            0 : script.find(" ")
+            0:first_word_end
         ]  # first word of string, the rest should be args
         listgen.add(gen_name)
 
     asutils.send_message(
-        "Test generators found included in subtask scripts:",
+        "Test generators detected in subtask scripts:",
         asutils.text_colors.OK_CYAN,
         " ",
     )
@@ -57,7 +72,7 @@ def list_generators():
     print()
 
 
-def user_args_checks():
+def user_argument_check():
     if len(subtask_script) != len(subtask_test_count):
         raise Exception(
             asutils.wrap_message(
@@ -99,7 +114,7 @@ def generate_tests():
         os.mkdir(tests_folder)
 
     tests_folder += task_name
-    if mode == "replace" and os.path.exists(tests_folder):
+    if generation_mode == "replace" and os.path.exists(tests_folder):
         shutil.rmtree(tests_folder)
         if os.path.exists(tests_folder + ".zip"):
             os.remove(tests_folder + ".zip")
@@ -127,7 +142,7 @@ def compress():
 
 
 if __name__ == "__main__":
-    user_args_checks()
+    user_argument_check()
     clear_previous_run(exec_list, master_dir)
     list_generators()
     compile_source_codes(exec_list, compiler_args, master_dir)

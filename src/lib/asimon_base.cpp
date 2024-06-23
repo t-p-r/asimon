@@ -1,6 +1,6 @@
 /**
- * src/base.cpp - Provides common functions for `contestant.cpp`, `judge.cpp`
- * and `testgen.cpp`. These includes:
+ * src/asimon_base.cpp - Provides common functions for `contestant.cpp`,
+ * `judge.cpp` and `testgen.cpp`. These includes:
  *  - a RNG with helper functions (to be moved into CPDSA when matured enough)
  *  - data parsing from argc and argv. The format is described in README.md
  */
@@ -42,7 +42,7 @@ int32_t seed(int32_t r) {
 }
 
 int arg_count = 0;
-char* arg_vector[];
+char** arg_vector;
 
 /**
  * @brief Save the arguments.

@@ -1,21 +1,25 @@
-# Compare executing times of "judge.cpp" and "contestant.cpp" by:
-#   1. Using "testgen.cpp" to generate tests.
-#   2. Using "judge.cpp" and "contestant.cpp" to run these tests and compare their executing times, where "judge.cpp" is the reference program.
-
-# Stop either when the desired number of tests have been run.
-# The three files above must stay in the same folder as this Python file, must reads from stdin and writes to stdout (so e.g. no freopen()).
+""" 
+src/time_compare.py - Compare executing times of `judge.cpp` and `contestant.cpp` using test generated from command line.
+Stop either when the desired number of tests have been run.
+The files above must stay in the same folder as this Python file, and must reads from `stdin` and writes to `stdout`.
+"""
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
 test_generation_command_line = "testgen"
-# often, just "testgen" should be enough; additional arguments (those passed to argv[]) can be customized.
+"""
+Script used to generate tests. Additional arguments, if any, must be configured by the user.
+"""
 
-number_of_tests = 16
-# what you think it is
+test_count = 16
+"""What you think it is."""
 
 compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
-# note that some arguments are specific to either Unix or Windows (e.g. "-Wl,--stack=<desired_stack_size>")
-# in case stdc++.h has been precompiled, should use every argument you compiled it with to save time
+"""
+Compiler arguments. See your C++ compiler for documentation. Do note that:
+    - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
+    - if you have precompiled headers (e.g. `stdc++.h`), use the exact arguments you compiled them with to save time
+"""
 
 # HIC SUNT DRACONES ---------------------------------------------------------------------------------------
 
@@ -84,4 +88,4 @@ def print_final_verdict(total_contestant_time, total_checker_time):
 if __name__ == "__main__":
     clear_previous_run(exec_list, master_dir)
     compile_source_codes(exec_list, compiler_args, master_dir)
-    perform_tests(number_of_tests)
+    perform_tests(test_count)

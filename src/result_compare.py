@@ -1,25 +1,31 @@
-# Fuzz testing by:
-#   1. Using "testgen.cpp" to generate tests.
-#   2. Using "judge.cpp" and "contestant.cpp" to run these tests and compare their outputs, where "judge.cpp" is the reference program.
+"""
+src/result_compare.py - Fuzz testing by:
+    1. Generate tests from command line.
+    2. Use "judge.cpp" and "contestant.cpp" to run these tests and compare their outputs, where "judge.cpp" is the reference code.
 
-# Stop either when the desired number of tests have been run, or if there is a difference between the outputs of "judge.cpp" and "contestant.cpp", in which case the test and both outputs shall be wrote down the file "log.txt".
-
-# The three files above must stay in the same folder as this Python file, must reads from stdin and writes to stdout (so e.g. no freopen()).
+Stop either when the desired number of tests have been run, or if a test where the outputs of "judge.cpp" and "contestant.cpp" differs is found.
+In that case, the test data and both outputs shall be wrote down the file `log.txt`.
+The three files above must stay in the same folder as this Python file, must reads from stdin and writes to stdout.
 
 # TODO: add multiple output comparing modes including a custom checker.
-
+"""
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
 test_generation_command_line = "testgen"
-# often, just "testgen" should be enough; additional arguments (those passed to argv[]) can be customized.
+"""
+Script used to generate tests. Additional arguments, if any, must be configured by the user.
+"""
 
-number_of_tests = 16
-# what you think it is
+test_count = 16
+"""What you think it is."""
 
 compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
-# note that some arguments are specific to either Unix or Windows (e.g. "-Wl,--stack=<desired_stack_size>")
-# in case stdc++.h has been precompiled, should use every argument you compiled it with to save time
+"""
+Compiler arguments. See your C++ compiler for documentation. Do note that:
+    - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
+    - if you have precompiled headers (e.g. `stdc++.h`), use the exact arguments you compiled them with to save time
+"""
 
 
 # HIC SUNT DRACONES ---------------------------------------------------------------------------------------
@@ -81,13 +87,13 @@ def perform_tests(iterations):
 
 
 def print_final_verdict(passed_tests):
-    percentage = passed_tests / number_of_tests
+    percentage = passed_tests / test_count
     message = (
         "Progress: %d/%d (%s"
         % (
             passed_tests,
-            number_of_tests,
-            100.0 * passed_tests / number_of_tests,
+            test_count,
+            100.0 * passed_tests / test_count,
         )
         + " %)"
     )
@@ -105,4 +111,4 @@ def print_final_verdict(passed_tests):
 if __name__ == "__main__":
     clear_previous_run(exec_list, master_dir)
     compile_source_codes(exec_list, compiler_args, master_dir)
-    perform_tests(number_of_tests)
+    perform_tests(test_count)

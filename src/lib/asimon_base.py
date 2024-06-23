@@ -1,4 +1,7 @@
-# Functions that most/all .py files in the master directory uses.
+"""
+lib/asimon_base.py - Functions shared between .py files in the master directory.
+"""
+
 import lib.asimon_utils as asutils
 import os
 
@@ -9,7 +12,7 @@ def clear_previous_run(exec_list, current_dir):
     )
     for exec in exec_list:
         asutils.delete_file("%s/dump/%s" % (current_dir, exec))
-
+        
 
 def compile_source_codes(exec_list, compiler_args, current_dir):
     if os.path.exists(current_dir + "/dump") == False:
