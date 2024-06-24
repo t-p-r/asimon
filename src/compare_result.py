@@ -1,5 +1,5 @@
 """
-src/result_compare.py - Fuzz testing by:
+src/compare_result.py - Fuzz testing by:
     1. Generate tests from command line.
     2. Use "judge.cpp" and "contestant.cpp" to run these tests and compare their outputs, where "judge.cpp" is the reference code.
 
@@ -35,20 +35,19 @@ Compiler arguments. See your C++ compiler for documentation. Do note that:
 import os
 import filecmp
 import lib.asimon_utils as asutils
-from lib.asimon_base import *
+from lib.asimon_shared import *
 
 # not in lib file (for easier understanding)
 PASS_ALL = 1
 PASS_NONE = 0
 
-root_dir = os.path.dirname(__file__)
 log_output_stream = open(root_dir + "/log.txt", "w")  # .../asimon/src
 
 input_dump = root_dir + "/dump/input.txt"
 contestant_output = root_dir + "/dump/output_contestant.txt"
 judge_output = root_dir + "/dump/output_judge.txt"
 
-exec_list = ["testgen", "judge", "contestant"]
+exec_list += ["testgen", "judge", "contestant"]
 
 
 def perform_test():
@@ -56,8 +55,7 @@ def perform_test():
         "%s > %s" % (root_dir + "/dump/" + test_generation_command_line, input_dump)
     )
     os.system(
-        "%s < %s > %s"
-        % (root_dir + "/dump/contestant", input_dump, contestant_output)
+        "%s < %s > %s" % (root_dir + "/dump/contestant", input_dump, contestant_output)
     )
     os.system("%s < %s > %s" % (root_dir + "/dump/judge", input_dump, judge_output))
 
@@ -67,7 +65,6 @@ def perform_tests(iterations):
     for i in range(1, iterations + 1):
         asutils.send_message("Executing test: %d" % i, asutils.text_colors.BOLD)
         perform_test()
-
         if filecmp.cmp(contestant_output, judge_output) == False:
             log_output_stream.write("Test %d of %d: \n" % (i, iterations))
             log_output_stream.write("Input:\n%s \n" % open(input_dump, "r").read())
@@ -82,9 +79,7 @@ def perform_tests(iterations):
                 asutils.text_colors.RED + asutils.text_colors.BOLD,
             )
             break
-
         passed_tests += 1
-
     print_final_verdict(passed_tests)
 
 
@@ -99,18 +94,16 @@ def print_final_verdict(passed_tests):
         )
         + " %)"
     )
-
     if percentage == PASS_ALL:
         asutils.send_message(message, asutils.text_colors.OK_GREEN)
     elif percentage == PASS_NONE:
         asutils.send_message(message, asutils.text_colors.RED)
     else:
         asutils.send_message(message, asutils.text_colors.YELLOW)
-
     log_output_stream.write(message)
 
 
 if __name__ == "__main__":
-    clear_previous_run(exec_list, root_dir)
-    compile_source_codes(exec_list, root_dir, compiler_args, compiler)
+    clear_previous_run()
+    compile_source_codes(compiler_args, compiler)
     perform_tests(test_count)

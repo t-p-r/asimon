@@ -1,5 +1,5 @@
 """ 
-src/time_compare.py - Compare executing times of `judge.cpp` and `contestant.cpp` using test generated from command line.
+src/compare_time.py - Compare executing times of `judge.cpp` and `contestant.cpp` using test generated from command line.
 Stop either when the desired number of tests have been run.
 The files above must stay in the same folder as this Python file, and must reads from `stdin` and writes to `stdout`.
 """
@@ -16,7 +16,7 @@ test_count = 16
 
 compiler = "g++"
 
-compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
+compiler_args = "-pipe -O2 -D_TPR_ -std=c++20 -H"
 """
 Compiler arguments. See your C++ compiler for documentation. Do note that:
     - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
@@ -28,16 +28,15 @@ Compiler arguments. See your C++ compiler for documentation. Do note that:
 import os
 import time
 import lib.asimon_utils as asutils
-from lib.asimon_base import *
+from lib.asimon_shared import *
 
-root_dir = os.path.dirname(__file__)
 log_output_stream = open(root_dir + "/log.txt", "w")  # .../asimon/src
 
 input_dump = root_dir + "/dump/input.txt"
 contestant_output = root_dir + "/dump/output_contestant.txt"
 judge_output = root_dir + "/dump/output_judge.txt"
 
-exec_list = ["testgen", "judge", "contestant"]
+exec_list += ["testgen", "judge", "contestant"]
 
 
 def running_time(command):
@@ -52,10 +51,8 @@ def perform_tests(iterations):
 
     for i in range(1, iterations + 1):
         asutils.send_message("Executing test:  %s" % i, asutils.text_colors.BOLD)
-
         os.system(
-            "%s > %s"
-            % (root_dir + "/dump/" + test_generation_command_line, input_dump)
+            "%s > %s" % (root_dir + "/dump/" + test_generation_command_line, input_dump)
         )
         contestant_test_runtime = running_time(
             "%s < %s > %s"
@@ -88,6 +85,6 @@ def print_final_verdict(total_contestant_time, total_checker_time):
 
 
 if __name__ == "__main__":
-    clear_previous_run(exec_list, root_dir)
-    compile_source_codes(exec_list, root_dir, compiler_args, compiler)
+    clear_previous_run()
+    compile_source_codes(compiler_args, compiler)
     perform_tests(test_count)

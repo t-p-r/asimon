@@ -1,5 +1,5 @@
 """ 
-src/testgen.py - Generate tests for VNOJ by:
+src/testgen.py - Generate tests (for VNOJ) by:
     1. Use the commands stated in `subtask_script` to generate input
     2. Use "judge.cpp" to generate outputs
     3. Transfer them to "/tests/vnoj/task_name"
@@ -8,7 +8,7 @@ src/testgen.py - Generate tests for VNOJ by:
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
-task_name = "add"
+task_name = "gcdset"
 """Name of the problem."""
 
 generation_mode = "replace"
@@ -21,10 +21,16 @@ Generation mode. Affect only the current problem. Must be one of:
 bundle_source = True
 """Whether to include test generation and solution files in the test folder."""
 
-subtask_test_count = [10]
+subtask_test_count = [4, 4, 12, 16, 4]
 """Number of tests for each subtasks."""
 
-subtask_script = ["testgen"]
+subtask_script = [
+    "testgen_big 15 5 6",  # sub1
+    "testgen_big 30 6 10",  # sub2
+    "testgen 1000 1000000 rand 1 1000 rand 1 1000",  # sub3
+    "testgen 1000 1000000000000 rand 1 1000 rand 1 1000",  # sub4
+    "testgen_big 1000 48 rand 1 1000",  # sub5
+]
 """
 Script used to generate tests for each subtasks.
 Additional arguments, if any, must be configured by the user.
@@ -43,17 +49,14 @@ Compiler arguments. See your C++ compiler for documentation. Do note that:
 
 import os
 import shutil
-import pathlib
 import lib.asimon_utils as asutils
-from lib.asimon_base import *
+from lib.asimon_shared import *
 from datetime import datetime
-
-root_dir = os.path.dirname(__file__)  # .../asimon/src
 
 input_dump = root_dir + "/dump/input.txt"
 judge_output = root_dir + "/dump/output_judge.txt"
 
-exec_list = ["judge"]
+exec_list += ["judge"]
 
 
 def list_generators():
@@ -106,7 +109,7 @@ def generate_test(subtask_index, test_index, tests_folder):
         "test" + str(test_index),
         datetime.now().strftime("%Y%m%d_%H%M%S"),
     )
-    os.mkdir(test_dir)
+    Path(test_dir).mkdir()
     shutil.copyfile(input_dump, "%s/%s.inp" % (test_dir, task_name))
     shutil.copyfile(judge_output, "%s/%s.out" % (test_dir, task_name))
 
@@ -116,12 +119,12 @@ def generate_tests():
     subtask_count = len(subtask_test_count)
 
     test_dir = root_dir + "/tests/vnoj/" + task_name
-    if generation_mode == "replace" and os.path.exists(test_dir):
+    if generation_mode == "replace" and Path(test_dir).exists():
         shutil.rmtree(test_dir)
-        if os.path.exists(test_dir + ".zip"):
+        if Path(test_dir + ".zip").exists():
             os.remove(test_dir + ".zip")
 
-    pathlib.Path(test_dir).mkdir(parents=True, exist_ok=True)
+    Path(test_dir).mkdir(parents=True, exist_ok=True)
 
     if bundle_source == True:
         for exec in exec_list:
@@ -150,9 +153,10 @@ def compress():
 
 if __name__ == "__main__":
     user_argument_check()
-    clear_previous_run(exec_list, root_dir)
     list_generators()
-    compile_source_codes(exec_list, root_dir, compiler_args, compiler)
+    clear_previous_run()
+    compile_source_codes(compiler_args, compiler)
+    exit(0)
     generate_tests()
     compress()
     asutils.send_message(

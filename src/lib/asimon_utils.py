@@ -2,6 +2,7 @@
 lib/asimon_utils.py - Helper functions and classes for asimon.
 """
 
+from pathlib import Path
 import os
 
 
@@ -19,12 +20,12 @@ class text_colors:
 
 
 def delete_file(s):
-    if os.path.exists(s):
+    if Path(s).exists():
         os.remove(s)
 
 
 def seek_file(output, source):
-    if os.path.exists(output) == False:
+    if Path(output).exists() == False:
         raise Exception(
             wrap_message(
                 source + " cannot be compiled, or doesn't exist.",
@@ -43,5 +44,4 @@ def send_message(message_text, color, message_end="\n"):
 
 
 def compile(compiler, args, source, output):
-    """Compile a C++ file with the above attributes. Tested for `g++` and `gcc`."""
     os.system("%s %s %s -o %s" % (compiler, args, source, output))

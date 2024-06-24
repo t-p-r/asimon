@@ -10,7 +10,7 @@ A collection of tools to help you create, test and manage [competitive programmi
 ## Features:
 
 - Test creation and packaging.
-- Time and result comparision between implementations.
+- Time and result comparison between implementations.
 
 Currently C++ is the only supported language.
 
@@ -29,6 +29,13 @@ A Linux-running machine with the following packages installed:
 
 ## Usage
 
-Open your prefered editor inside the `src` directory. Inside you will find three Python files:
+Open your preferred editor inside the `src` directory.
+Inside the `example` directory are the three default C++ files. Copy them to the `src` directory. 
 
-- `vnoj_testgen.py`
+Now you will find three Python files:
+
+- `compare_result.py`
+- `compare_time.py`
+- `testgen.py`
+
+They pretty much do what you expect them to do. Each file has a list of user variables that you are expected to edit (which is powerful enough that no GUI is needed) before running.
