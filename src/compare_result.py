@@ -12,7 +12,7 @@ The three files above must stay in the same folder as this Python file, must rea
 
 # USER VARIABLES ------------------------------------------------------------------------------------------
 
-test_generation_command_line = "testgen"
+script = "testgen"
 """
 Script used to generate tests. Additional arguments, if any, must be configured by the user.
 """
@@ -22,7 +22,7 @@ test_count = 16
 
 compiler = "g++"
 
-compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
+compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20"]
 """
 Compiler arguments. See your C++ compiler for documentation. Do note that:
     - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
@@ -32,48 +32,44 @@ Compiler arguments. See your C++ compiler for documentation. Do note that:
 
 # HIC SUNT DRACONES ---------------------------------------------------------------------------------------
 
-import os
-import filecmp
 import lib.asimon_utils as asutils
 from lib.asimon_shared import *
 
-# not in lib file (for easier understanding)
-PASS_ALL = 1
-PASS_NONE = 0
-
-log_output_stream = open(root_dir + "/log.txt", "w")  # .../asimon/src
-
-input_dump = root_dir + "/dump/input.txt"
-contestant_output = root_dir + "/dump/output_contestant.txt"
-judge_output = root_dir + "/dump/output_judge.txt"
-
 exec_list += ["testgen", "judge", "contestant"]
 
-
-def perform_test():
-    os.system(
-        "%s > %s" % (root_dir + "/dump/" + test_generation_command_line, input_dump)
-    )
-    os.system(
-        "%s < %s > %s" % (root_dir + "/dump/contestant", input_dump, contestant_output)
-    )
-    os.system("%s < %s > %s" % (root_dir + "/dump/judge", input_dump, judge_output))
+# result status (whether all or none of the tests passed)
+PASS_ALL = 1
+PASS_NONE = 0
 
 
 def perform_tests(iterations):
     passed_tests = 0
     for i in range(1, iterations + 1):
         asutils.send_message("Executing test: %d" % i, asutils.text_colors.BOLD)
-        perform_test()
-        if filecmp.cmp(contestant_output, judge_output) == False:
+
+        subprocess.run(dump_dir + script, stdout=subprocess.PIPE)
+
+        contestant_output = subprocess.run(
+            dump_dir + "/contestant",
+            stdin=subprocess.PIPE,
+            capture_output=True,
+            encoding="UTF-8",
+        ).stdout
+
+        judge_output = subprocess.run(
+            dump_dir + "/judge",
+            stdin=subprocess.PIPE,
+            capture_output=True,
+            encoding="UTF-8",
+        ).stdout
+
+        # The only mode for comparing outputs is to check whether they differs in any characters.
+        # Should be replaced by comparision modules in the future.
+        if contestant_output != judge_output:
             log_output_stream.write("Test %d of %d: \n" % (i, iterations))
-            log_output_stream.write("Input:\n%s \n" % open(input_dump, "r").read())
-            log_output_stream.write(
-                "Contestant's output:\n%s \n" % open(contestant_output, "r").read()
-            )
-            log_output_stream.write(
-                "Judge's output:\n%s \n\n" % open(judge_output, "r").read()
-            )
+            log_output_stream.write("Input:\n%s \n" % input_dump)
+            log_output_stream.write("Contestant's output:\n%s \n" % contestant_output)
+            log_output_stream.write("Judge's output:\n%s \n\n" % judge_output)
             asutils.send_message(
                 "Disparity found, aborting execution...",
                 asutils.text_colors.RED + asutils.text_colors.BOLD,

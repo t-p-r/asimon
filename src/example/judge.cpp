@@ -1,5 +1,5 @@
 /**
- * src/example/judge.cpp - Judge's solution (example).
+ * @file src/example/judge.cpp - Judge's solution (example).
  *
  * This file is supposed to be the correct answer. This
  * example takes two numbers as input, then prints out their (perhaps

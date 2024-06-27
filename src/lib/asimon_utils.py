@@ -2,7 +2,6 @@
 lib/asimon_utils.py - Helper functions and classes for asimon.
 """
 
-from pathlib import Path
 import os
 
 
@@ -20,18 +19,11 @@ class text_colors:
 
 
 def delete_file(s):
-    if Path(s).exists():
+    "Silently deletes a file, suppressing any `OSerror` raised."
+    try:
         os.remove(s)
-
-
-def seek_file(output, source):
-    if Path(output).exists() == False:
-        raise Exception(
-            wrap_message(
-                source + " cannot be compiled, or doesn't exist.",
-                text_colors.RED,
-            )
-        )
+    except OSError:
+        pass
 
 
 def wrap_message(message_text, color):
@@ -41,7 +33,3 @@ def wrap_message(message_text, color):
 
 def send_message(message_text, color, message_end="\n"):
     print(wrap_message(message_text, color), end=message_end)
-
-
-def compile(compiler, args, source, output):
-    os.system("%s %s %s -o %s" % (compiler, args, source, output))

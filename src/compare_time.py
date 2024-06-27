@@ -16,7 +16,8 @@ test_count = 16
 
 compiler = "g++"
 
-compiler_args = "-pipe -O2 -D_TPR_ -std=c++20 -H"
+# compiler_args = "-pipe -O2 -D_TPR_ -std=c++20 -H"
+compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20"]
 """
 Compiler arguments. See your C++ compiler for documentation. Do note that:
     - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
@@ -29,12 +30,6 @@ import os
 import time
 import lib.asimon_utils as asutils
 from lib.asimon_shared import *
-
-log_output_stream = open(root_dir + "/log.txt", "w")  # .../asimon/src
-
-input_dump = root_dir + "/dump/input.txt"
-contestant_output = root_dir + "/dump/output_contestant.txt"
-judge_output = root_dir + "/dump/output_judge.txt"
 
 exec_list += ["testgen", "judge", "contestant"]
 

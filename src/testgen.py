@@ -38,7 +38,7 @@ Additional arguments, if any, must be configured by the user.
 
 compiler = "g++"
 
-compiler_args = "-pipe -O2 -D_TPR_ -std=c++20"
+compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20"]
 """
 Compiler arguments. See your C++ compiler for documentation. Do note that:
     - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
@@ -52,9 +52,6 @@ import shutil
 import lib.asimon_utils as asutils
 from lib.asimon_shared import *
 from datetime import datetime
-
-input_dump = root_dir + "/dump/input.txt"
-judge_output = root_dir + "/dump/output_judge.txt"
 
 exec_list += ["judge"]
 
@@ -118,18 +115,17 @@ def generate_tests():
     total_test_count = sum(subtask_test_count)
     subtask_count = len(subtask_test_count)
 
-    test_dir = root_dir + "/tests/vnoj/" + task_name
-    if generation_mode == "replace" and Path(test_dir).exists():
-        shutil.rmtree(test_dir)
-        if Path(test_dir + ".zip").exists():
-            os.remove(test_dir + ".zip")
+    problem_test_dir = universal_test_dir + "/vnoj/" + task_name
+    if generation_mode == "replace" and Path(problem_test_dir).exists():
+        shutil.rmtree(problem_test_dir)
+        asutils.delete_file(problem_test_dir + ".zip")
 
-    Path(test_dir).mkdir(parents=True, exist_ok=True)
+    Path(problem_test_dir).mkdir(parents=True, exist_ok=True)
 
     if bundle_source == True:
         for exec in exec_list:
             shutil.copyfile(
-                "%s/%s.cpp" % (root_dir, exec), "%s/%s.cpp" % (test_dir, exec)
+                "%s/%s.cpp" % (root_dir, exec), "%s/%s.cpp" % (problem_test_dir, exec)
             )
 
     print(
@@ -142,12 +138,12 @@ def generate_tests():
 
     for subtask_index in range(0, subtask_count):
         for test_index in range(1, subtask_test_count[subtask_index] + 1):
-            generate_test(subtask_index, test_index, test_dir)
+            generate_test(subtask_index, test_index, problem_test_dir)
 
 
 def compress():
     asutils.send_message("\nNow compressing:", asutils.text_colors.YELLOW)
-    os.chdir(root_dir + "/tests/vnoj/")
+    os.chdir(universal_test_dir + "/vnoj/")
     os.system("zip -r %s.zip ." % (task_name))
 
 
@@ -156,7 +152,6 @@ if __name__ == "__main__":
     list_generators()
     clear_previous_run()
     compile_source_codes(compiler_args, compiler)
-    exit(0)
     generate_tests()
     compress()
     asutils.send_message(

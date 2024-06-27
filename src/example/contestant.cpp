@@ -1,5 +1,5 @@
 /**
- * src/example/contestant.cpp - Contestant's solution (example).
+ * @file src/example/contestant.cpp - Contestant's solution (example).
  *
  * This file is supposed to be evaluated against the correct answer. This
  * example takes two numbers as input using the experimental

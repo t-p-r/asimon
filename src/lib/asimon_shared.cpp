@@ -1,5 +1,5 @@
 /**
- * src/lib/asimon_shared.cpp - Provides common functions for `contestant.cpp`,
+ * @file src/lib/asimon_shared.cpp - Provides common functions for `contestant.cpp`,
  * `judge.cpp` and `testgen.cpp`. These includes:
  *  - a RNG with helper functions (to be moved into CPDSA when matured enough)
  *  - data parsing from argc and argv. The format is described in README.md
@@ -29,7 +29,7 @@ _Tp rand(_Tp l, _Tp r) {
 
 /**
  * @brief Returns a random integral number in the range [l,r].
- * Conflicts with `stdlib.h`'s `rand()`.
+ * Conflicts with `stdlib.h`'s `randf()`.
  */
 template <std::floating_point _Tp>
 _Tp randf(_Tp l, _Tp r) {
@@ -87,7 +87,7 @@ void set_rng_seed(_Tp seed) {
  * @brief If the input token is parsed as `rand x y`, returns a random 64-bit
  * integer in the range [x,y]; else return the parsed token as a 64-bit integer.
  */
-long long get_arg_ll() {
+[[nodiscard]] long long get_arg_ll() {
     if (arg_vector[++arg_count][0] != 'r') return stoll(arg_vector[arg_count]);
     return arg_count += 2, cpdsa::rand(stoll(arg_vector[arg_count - 1]),
                                        stoll(arg_vector[arg_count]));
@@ -97,7 +97,7 @@ long long get_arg_ll() {
  * @brief If the input token is parsed as `rand x y`, returns a random `double`
  * in the range [x,y]; else return the parsed token as a `double`.
  */
-double get_argd() {
+[[nodiscard]] double get_argd() {
     if (arg_vector[++arg_count][0] != 'r') return stof(arg_vector[arg_count]);
     return arg_count += 2, cpdsa::randf(stof(arg_vector[arg_count - 1]),
                                         stof(arg_vector[arg_count]));

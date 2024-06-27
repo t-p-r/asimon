@@ -1,5 +1,5 @@
 /**
- * src/example/testgen.cpp - Test generator (example).
+ * @file src/example/testgen.cpp - Test generator (example).
  *
  * The output of this file is then taken as input for `judge.cpp` and
  * `contestant.cpp`. Arguments MUST be either `$number` or `rand $number1
@@ -8,7 +8,7 @@
  */
 
 #include <bits/stdc++.h>
-#include "lib/asimon_base.cpp"
+#include "lib/asimon_shared.cpp"
 #include "lib/cpp/cpdsa/cpdsa.hpp"
 using namespace std;
 
