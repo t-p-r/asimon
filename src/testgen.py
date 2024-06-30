@@ -1,12 +1,14 @@
 """ 
-src/testgen.py - Generate tests (for VNOJ) by:
+src/testgen.py - Generate tests.
+
+This tool will repeat the following process:
     1. Use the commands stated in `subtask_script` to generate input
     2. Use "judge.cpp" to generate outputs
-    3. Transfer them to "/tests/vnoj/task_name"
-    4. Compress them into "/tests/vnoj/task_name.zip"
+    3. Transfer them to "/tests/<platform_>/task_name"
+    4. (Optional) Compress them into "/tests/<platform_>/task_name.zip"
 """
 
-# USER VARIABLES ------------------------------------------------------------------------------------------
+# USER PARAMETERS ------------------------------------------------------------------------------------------
 
 task_name = "gcdset"
 """Name of the problem."""
@@ -21,20 +23,24 @@ Generation mode. Affect only the current problem. Must be one of:
 bundle_source = True
 """Whether to include test generation and solution files in the test folder."""
 
-subtask_test_count = [4, 4, 12, 16, 4]
+subtask_test_count = [17]
 """Number of tests for each subtasks."""
 
 subtask_script = [
-    "testgen_big 15 5 6",  # sub1
-    "testgen_big 30 6 10",  # sub2
-    "testgen 1000 1000000 rand 1 1000 rand 1 1000",  # sub3
-    "testgen 1000 1000000000000 rand 1 1000 rand 1 1000",  # sub4
-    "testgen_big 1000 48 rand 1 1000",  # sub5
+    "testgen",  # sub5
 ]
 """
 Script used to generate tests for each subtasks.
 Additional arguments, if any, must be configured by the user.
 """
+
+worker_count = 4
+"""
+The number of workers (i.e. tests to be executed at the same time). \\
+Since each CPU thread can only be occupied by one worker at a time, for best performance, this number should not exceed your CPU's thread count.
+"""
+
+compress = False
 
 compiler = "g++"
 
@@ -49,111 +55,137 @@ Compiler arguments. See your C++ compiler for documentation. Do note that:
 
 import os
 import shutil
-import lib.asimon_utils as asutils
 from lib.asimon_shared import *
 from datetime import datetime
 
-exec_list += ["judge"]
+bin_list = ["judge"]
+workers = [Worker("dummy")] * worker_count
 
 
-def list_generators():
+def detect_generators():
     listgen = set()
     for script in subtask_script:
-        first_word_end = script.find(" ")
-        if first_word_end == -1:
-            first_word_end = len(script)
-        gen_name = script[
-            0:first_word_end
-        ]  # first word of string, the rest should be args
-        listgen.add(gen_name)
+        bin = script_split(script)[0]  # first word of script is always the executable
+        listgen.add(bin)
 
-    asutils.send_message(
+    send_message(
         "Test generators detected in subtask scripts:",
-        asutils.text_colors.OK_CYAN,
+        text_colors.OK_CYAN,
         " ",
     )
+
     for gen in listgen:
-        asutils.send_message(gen, asutils.text_colors.PURPLE, " ")
-        exec_list.append(gen)
-    print()
+        send_message(gen, text_colors.PURPLE, " ")
+        bin_list.append(gen)
+    print(" ")
 
 
 def user_argument_check():
     if len(subtask_script) != len(subtask_test_count):
         raise Exception(
-            asutils.wrap_message(
+            wrap_message(
                 "Script count is diffrent from the number of subtasks.",
-                asutils.text_colors.RED,
+                text_colors.RED,
             )
         )
 
 
-def generate_test(subtask_index, test_index, tests_folder):
+def generate_test(subtask_index: int, problem_test_dir: Path):
     print(
-        "Generating test %s of subtask %s."
-        % (
-            asutils.wrap_message(str(test_index), asutils.text_colors.OK_CYAN),
-            asutils.wrap_message(str(subtask_index), asutils.text_colors.OK_GREEN),
-        )
+        "Generating subtask %s:"
+        % (wrap_message(str(subtask_index), text_colors.OK_GREEN),)
     )
-    os.system(
-        "%s > %s" % (root_dir + "/dump/" + subtask_script[subtask_index], input_dump)
-    )
-    os.system("%s < %s > %s" % (root_dir + "/dump/judge", input_dump, judge_output))
 
-    test_dir = "%s-%s-%s" % (
-        tests_folder + "/" + "sub" + str(subtask_index),
-        "test" + str(test_index),
-        datetime.now().strftime("%Y%m%d_%H%M%S"),
-    )
-    Path(test_dir).mkdir()
-    shutil.copyfile(input_dump, "%s/%s.inp" % (test_dir, task_name))
-    shutil.copyfile(judge_output, "%s/%s.out" % (test_dir, task_name))
+    testgen_bin, testgen_args = script_split(subtask_script[subtask_index])
+    test_count = subtask_test_count[subtask_index]
+    batch_count = int(test_count / worker_count)
+    if test_count % worker_count != 0:
+        # Cover the case where e.g. there are 9 test and 4 workers (the batches are 1-4, 5-8 and 9).
+        batch_count += 1
+
+    with ThreadPoolExecutor(max_workers=worker_count) as worker_pool:
+        for batch in range(0, batch_count):
+            first_test_of_batch = batch * worker_count + 1
+            last_test_of_batch = min(first_test_of_batch + worker_count - 1, test_count)
+            send_message(
+                "Executing batch %d (test %d - %d)"
+                % (batch, first_test_of_batch, last_test_of_batch),
+                text_colors.BOLD,
+            )
+
+            for test_index in range(first_test_of_batch, last_test_of_batch + 1):
+                testcase_dir = problem_test_dir / (
+                    "%s-%s-%s"
+                    % (
+                        "sub" + str(subtask_index),
+                        "test" + str(test_index),
+                        datetime.now().strftime("%Y%m%d_%H%M%S"),
+                    )
+                )
+                testcase_dir.mkdir()
+
+                # Multithread variant:
+                worker_pool.submit(
+                    workers[(test_index - 1) % worker_count].generate_test,
+                    testgen_command=[bin_dir / testgen_bin] + testgen_args,
+                    judge_command=bin_dir / "judge",
+                    export_testdata_at=problem_test_dir
+                    / ("%s/%s.inp" % (testcase_dir, task_name)),
+                    export_answer_at=problem_test_dir
+                    / ("%s/%s.out" % (testcase_dir, task_name)),
+                )
+                # Non-multithread debug variant:
+                # workers[(test_index - 1) % worker_count].generate_test(
+                #     testgen_command=[bin_dir / testgen_bin] + testgen_args,
+                #     judge_command=bin_dir / "judge",
+                #     export_testdata_at=problem_test_dir
+                #     / ("%s/%s.inp" % (testcase_dir, task_name)),
+                #     export_answer_at=problem_test_dir
+                #     / ("%s/%s.out" % (testcase_dir, task_name)),
+                # )
 
 
 def generate_tests():
     total_test_count = sum(subtask_test_count)
     subtask_count = len(subtask_test_count)
 
-    problem_test_dir = universal_test_dir + "/vnoj/" + task_name
-    if generation_mode == "replace" and Path(problem_test_dir).exists():
+    problem_test_dir = universal_test_dir / "vnoj" / task_name
+    if generation_mode == "replace" and problem_test_dir.exists():
         shutil.rmtree(problem_test_dir)
-        asutils.delete_file(problem_test_dir + ".zip")
+        delete_file(problem_test_dir / ".zip")
 
-    Path(problem_test_dir).mkdir(parents=True, exist_ok=True)
+    problem_test_dir.mkdir(parents=True, exist_ok=True)
 
     if bundle_source == True:
-        for exec in exec_list:
+        for bin in bin_list:
             shutil.copyfile(
-                "%s/%s.cpp" % (root_dir, exec), "%s/%s.cpp" % (problem_test_dir, exec)
+                "%s/%s.cpp" % (root_dir, bin), "%s/%s.cpp" % (problem_test_dir, bin)
             )
 
     print(
         "\nGenerator will generate %s subtasks for a total of %s tests:"
         % (
-            asutils.wrap_message(str(subtask_count), asutils.text_colors.OK_GREEN),
-            asutils.wrap_message(str(total_test_count), asutils.text_colors.OK_CYAN),
+            wrap_message(str(subtask_count), text_colors.OK_GREEN),
+            wrap_message(str(total_test_count), text_colors.OK_CYAN),
         )
     )
 
     for subtask_index in range(0, subtask_count):
-        for test_index in range(1, subtask_test_count[subtask_index] + 1):
-            generate_test(subtask_index, test_index, problem_test_dir)
+        generate_test(subtask_index, problem_test_dir)
 
 
-def compress():
-    asutils.send_message("\nNow compressing:", asutils.text_colors.YELLOW)
-    os.chdir(universal_test_dir + "/vnoj/")
+def do_compress():
+    send_message("\nNow compressing:", text_colors.YELLOW)
+    os.chdir(universal_test_dir / "vnoj")
     os.system("zip -r %s.zip ." % (task_name))
 
 
 if __name__ == "__main__":
     user_argument_check()
-    list_generators()
-    clear_previous_run()
-    compile_source_codes(compiler_args, compiler)
+    detect_generators()
+    clear_previous_run(bin_list)
+    compile_source_codes(compiler, compiler_args, bin_list)
     generate_tests()
-    compress()
-    asutils.send_message(
-        "\nGeneration completed succesfully.", asutils.text_colors.OK_CYAN
-    )
+    if compress == True:
+        do_compress()
+    send_message("\nGeneration completed succesfully.", text_colors.OK_CYAN)

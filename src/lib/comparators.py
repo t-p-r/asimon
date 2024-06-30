@@ -1,1 +1,0 @@
-# /src/lib/comparators.py - Compare modes for result

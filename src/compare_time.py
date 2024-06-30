@@ -4,7 +4,7 @@ Stop either when the desired number of tests have been run.
 The files above must stay in the same folder as this Python file, and must reads from `stdin` and writes to `stdout`.
 """
 
-# USER VARIABLES ------------------------------------------------------------------------------------------
+# USER PARAMETERS ------------------------------------------------------------------------------------------
 
 test_generation_command_line = "testgen"
 """
@@ -16,7 +16,6 @@ test_count = 16
 
 compiler = "g++"
 
-# compiler_args = "-pipe -O2 -D_TPR_ -std=c++20 -H"
 compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20"]
 """
 Compiler arguments. See your C++ compiler for documentation. Do note that:
@@ -31,7 +30,7 @@ import time
 import lib.asimon_utils as asutils
 from lib.asimon_shared import *
 
-exec_list += ["testgen", "judge", "contestant"]
+bin_list += ["testgen", "judge", "contestant"]
 
 
 def running_time(command):
@@ -45,16 +44,16 @@ def perform_tests(iterations):
     total_checker_time = 0
 
     for i in range(1, iterations + 1):
-        asutils.send_message("Executing test:  %s" % i, asutils.text_colors.BOLD)
+        send_message("Executing test:  %s" % i, text_colors.BOLD)
         os.system(
-            "%s > %s" % (root_dir + "/dump/" + test_generation_command_line, input_dump)
+            "%s > %s" % (root_dir + "/bin/" + test_generation_command_line, input_dump)
         )
         contestant_test_runtime = running_time(
             "%s < %s > %s"
-            % (root_dir + "/dump/contestant", input_dump, contestant_output)
+            % (root_dir + "/bin/contestant", input_dump, contestant_output)
         )
         judge_test_runtime = running_time(
-            "%s < %s > %s" % (root_dir + "/dump/judge", input_dump, judge_output)
+            "%s < %s > %s" % (root_dir + "/bin/judge", input_dump, answer)
         )
 
         log_output_stream.write("Test %d:\n" % i)
@@ -68,13 +67,13 @@ def perform_tests(iterations):
 
 
 def print_final_verdict(total_contestant_time, total_checker_time):
-    asutils.send_message(
+    send_message(
         "Judge took:      %f (s)" % total_checker_time,
-        asutils.text_colors.OK_GREEN,
+        text_colors.OK_GREEN,
     )
-    asutils.send_message(
+    send_message(
         "Contestant took: %f (s)" % total_contestant_time,
-        asutils.text_colors.OK_CYAN,
+        text_colors.OK_CYAN,
     )
     print("(see log.txt for details)")
 

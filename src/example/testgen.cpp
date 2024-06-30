@@ -8,7 +8,7 @@
  */
 
 #include <bits/stdc++.h>
-#include "lib/asimon_shared.cpp"
+#include "lib/shared.cpp"
 #include "lib/cpp/cpdsa/cpdsa.hpp"
 using namespace std;
 
@@ -16,5 +16,5 @@ int32_t main(int argc, char* argv[]) {
     cin.tie(0)->sync_with_stdio(0);
     register_arguments(argc, argv); // this enables the retrieval of args
     int lo = INT_MIN, hi = INT_MAX;
-    cout << rand(lo, hi) << ' ' << rand(lo, hi) << '\n';
+    cout << cpdsa::rand(lo, hi) << ' ' << cpdsa::rand(lo, hi) << '\n';
 }

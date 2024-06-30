@@ -1,9 +1,10 @@
 *.txt
 *.zip
+*.gch
 /src/contestant.cpp
 /src/judge.cpp
 /src/testgen.cpp
-dump/
+bin/
 tests/
 .vscode/
 __pycache__/

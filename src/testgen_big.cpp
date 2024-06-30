@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include "lib/asimon_shared.cpp"
+#include "lib/shared.cpp"
 #include "lib/cpp/cpdsa/cpdsa.hpp"
 using namespace std;
 
@@ -19,7 +19,7 @@ int big_primes[] = {9263231,      4291843,      5525059,      9655777,
                     97594098323,  87383351249,  75061397809,  14009308153,
                     136138940929, 385752648289, 871704145199, 263336366333};
 
-int32_t main(int argc, char* argv[]) {
+int32_t main(int32_t argc, char* argv[]) {
     for (int i = 2; i * i <= EPS; i++)
         if (!mindiv[i])
             for (int j = i * i; j <= EPS; j += i)

@@ -25,17 +25,37 @@ A Linux-running machine with the following packages installed:
 ## Getting started
 
 1. Clone the repository.
-2. (Optional but highly recommended) Initiate git submodules. Simply `cd` to the repo folder and `git submodule update --init`.
+
+```bash
+$ git clone https://github.com/t-p-r/asimon
+```
+
+2. Go into the source directory
+
+```bash
+$ cd asimon
+$ cd src
+```
+2. (Optional but highly recommended) Initiate git submodules. 
+
+```bash
+$ git submodule update --init.
+```
 
 ## Usage
 
-Open your preferred editor inside the `src` directory.
-Inside the `example` directory are the three default C++ files. Copy them to the `src` directory. 
-
-Now you will find three Python files:
+Open your preferred text editor inside the `src` directory. You will find three Python files:
 
 - `compare_result.py`
 - `compare_time.py`
 - `testgen.py`
 
-They pretty much do what you expect them to do. Each file has a list of user variables that you are expected to edit (which is powerful enough that no GUI is needed) before running.
+These file drives the following C++ programs:
+
+- `testgen.cpp` - responsible for generating inputs.
+- `judge.cpp` - the reference solution (also used for generating outputs).
+- `contestant.cpp` - another solution, which (except in `testgen.py`) is tested against `judge.cpp`.
+
+Input generators other than `testgen.cpp` are allowed.
+
+To use the tools, go into each of the Python files, configure the parameters as needed and run them.

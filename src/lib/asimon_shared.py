@@ -1,48 +1,100 @@
 """
-lib/asimon_shared.py - Shared functions and data between .py files in the master directory.
+Shared functions and data between .py files in the master directory.
 """
 
-import lib.asimon_utils as asutils
-from pathlib import Path
+import os
 import subprocess
+from pathlib import Path
+from concurrent.futures import Future, ThreadPoolExecutor
+from lib.worker import Worker
+from lib.text_colors import text_colors
+
+# These are common paths in asimon:
+root_dir = Path(__file__).parent.parent
+# The project's root absolute directory, .../asimon/src/
+bin_dir = root_dir / "bin"
+# Where the C++ executables are dumped into.
+universal_test_dir = root_dir / "tests"
+# Test folder. Each platform has its own subfolder (e.g. /tests/vnoj, /tests/polygon).
+log_output_stream = open(root_dir / "log.txt", "w")
+# Will be closed when the tools exit anyway.
 
 
-root_dir = __file__[:-20]  # .../asimon/src/, without the "lib/asimon_shared.py" part
-"""this is scrubbed, i know, but works for now"""
-
-dump_dir = root_dir + "/dump/"
-universal_test_dir = root_dir + "/tests/"
-
-log_output_stream = open(root_dir + "log.txt", "w")
-input_dump = dump_dir + "input.txt"
-contestant_output = dump_dir + "output_contestant.txt"
-judge_output = dump_dir + "output_judge.txt"
-
-exec_list = []
+def clear_previous_run(bin_list: list[str]):
+    send_message("Deleting executable files from previous run...", text_colors.YELLOW)
+    for bin in bin_list:
+        delete_file("%s/bin/%s" % (root_dir, bin))
 
 
-def clear_previous_run():
-    asutils.send_message(
-        "Deleting executable files from previous run...", asutils.text_colors.YELLOW
-    )
-    for exec in exec_list:
-        asutils.delete_file("%s/dump/%s" % (root_dir, exec))
-
-
-def compile_source_codes(compiler_args, compiler="g++"):
-    Path(root_dir + "/dump").mkdir(parents=True, exist_ok=True)
-    asutils.send_message(
+def compile_source_codes(compiler: str, compiler_args: list[str], bin_list: list[str]):
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    send_message(
         "Compiling source codes, warnings and/or errors may be shown below...",
-        asutils.text_colors.OK_GREEN,
+        text_colors.OK_GREEN,
     )
-    for exec in exec_list:
-        source = "%s/%s.cpp" % (root_dir, exec)
-        output = "%s/dump/%s" % (root_dir, exec)
+    for bin in bin_list:
+        # should these be paths?
+        source = "%s/%s.cpp" % (root_dir, bin)
+        output = "%s/%s" % (bin_dir, bin)
         ret = subprocess.run([compiler] + compiler_args + [source, "-o", output])
+        # e.g. g++ -O2 hello.cpp -o /bin/hello
         if ret.returncode != 0:
             raise Exception(
-                asutils.wrap_message(
+                wrap_message(
                     source + " cannot be compiled, or doesn't exist.",
-                    asutils.text_colors.RED,
+                    text_colors.RED,
                 )
             )
+
+
+def perform_test_batch(
+    batch_size: int,
+    worker_pool: ThreadPoolExecutor,
+    testgen_command: list[str],
+    judge_command: str,  # judge and contestant has no args
+    contestant_command: str,
+    workers: list[Worker],
+) -> list[Future]:
+    """Perform a batch of tests by pushing workers from `workers` to `worker_pool`."""
+
+    procs = []
+    for i in range(0, batch_size):
+        procs.append(
+            worker_pool.submit(
+                workers[i].evaluate_test,
+                testgen_command,
+                judge_command,
+                contestant_command,
+            )
+        )
+
+    # Somehow the code only reaches this part after all jobs in `worker_pool` finishes.
+    # Truly a mystery of the ages.
+    return procs
+
+
+# Below are miscellanous helpers:
+
+
+def delete_file(s: str):
+    "Silently deletes a file, suppressing any `OSError` raised."
+    try:
+        os.remove(s)
+    except OSError:
+        pass
+
+
+def wrap_message(message_text: str, color: text_colors) -> str:
+    """Wraps `color` around `message_text`. Only works for supported terminals. See `text_colors` for some examples."""
+    return color + message_text + text_colors.END_COLOR
+
+
+def send_message(message_text: str, color: text_colors, message_end="\n"):
+    """Print a message with colors and/or other attributes. See `text_colors` for some examples."""
+    print(wrap_message(message_text, color), end=message_end)
+
+
+def script_split(script: str) -> tuple[str, list]:
+    """Split an execution script into the executable (first token) and its arguments (the other tokens).."""
+    tokens = script.split()
+    return (tokens[0], tokens[1:])
