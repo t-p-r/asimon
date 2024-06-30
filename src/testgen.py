@@ -38,6 +38,7 @@ worker_count = 4
 """
 The number of workers (i.e. tests to be executed at the same time). \\
 Since each CPU thread can only be occupied by one worker at a time, for best performance, this number should not exceed your CPU's thread count.
+For IO-intensive problem, it's recommended to leave the number at 1.
 """
 
 compress = False
@@ -153,7 +154,6 @@ def generate_tests():
     if generation_mode == "replace" and problem_test_dir.exists():
         shutil.rmtree(problem_test_dir)
         delete_file(problem_test_dir / ".zip")
-
     problem_test_dir.mkdir(parents=True, exist_ok=True)
 
     if bundle_source == True:
@@ -161,7 +161,6 @@ def generate_tests():
             shutil.copyfile(
                 "%s/%s.cpp" % (root_dir, bin), "%s/%s.cpp" % (problem_test_dir, bin)
             )
-
     print(
         "\nGenerator will generate %s subtasks for a total of %s tests:"
         % (
@@ -169,7 +168,6 @@ def generate_tests():
             wrap_message(str(total_test_count), text_colors.OK_CYAN),
         )
     )
-
     for subtask_index in range(0, subtask_count):
         generate_test(subtask_index, problem_test_dir)
 
