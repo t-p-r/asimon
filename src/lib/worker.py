@@ -21,7 +21,6 @@ class Worker:
 
     # def handle(command:str | list[str], input, encoding, stdin=PIPE,stdout=PIPE):
 
-
     def evaluate_test(
         self,
         testgen_command: str | list[str],
@@ -31,40 +30,42 @@ class Worker:
         """
         Perform a test case.
         """
-        testdata = run(testgen_command, stdout=PIPE, encoding="UTF-8").stdout
+        input = run(testgen_command, stdout=PIPE, encoding="UTF-8").stdout
         answer = run(
-            judge_command, input=testdata, stdout=PIPE, encoding="UTF-8"
+            judge_command, input=input, stdout=PIPE, encoding="UTF-8"
         ).stdout
+
+        
 
         # this is optional e.g. `testgen.py` only needs `judge.cpp`
         if contestant_command != None:
-            contestant_output = run(
-                contestant_command, input=testdata, stdout=PIPE, encoding="UTF-8"
+            output = run(
+                contestant_command, input=input, stdout=PIPE, encoding="UTF-8"
             ).stdout
         else:
-            contestant_output = ""
+            output = ""
 
-        return self.checker.check(testdata, answer, contestant_output)
+        return self.checker.check(input, answer, output)
 
     def generate_test(
         self,
         testgen_command: str,
         judge_command: str,
-        export_testdata_at: Path,
+        export_input_at: Path,
         export_answer_at: Path,
     ) -> bool:
-        """Generate a test case."""
+        """Generate a test case. TODO: add timeout."""
 
-        with open(export_testdata_at, "wb") as testdata_output:
+        with open(export_input_at, "wb") as input_file:
             # I could have achieved a much more efficient piping scheme than this fuckery
             # (will become very apparent for large IO sets),
             # but both run and Popen refused to coorporate, so I gave up.
             # P/S : this doesn't even matter for some eldritch reasons.
-            testdata = run(testgen_command, stdout=PIPE).stdout
-            testdata_output.write(testdata)
+            input = run(testgen_command, stdout=PIPE).stdout
+            input_file.write(input)
 
             with open(export_answer_at, "wb") as answer_output:
-                answer = run(judge_command, input=testdata, stdout=PIPE).stdout
+                answer = run(judge_command, input=input, stdout=PIPE).stdout
                 answer_output.write(answer)
 
             return True

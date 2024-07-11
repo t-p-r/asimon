@@ -46,14 +46,14 @@ def perform_tests(iterations):
     for i in range(1, iterations + 1):
         send_message("Executing test:  %s" % i, text_colors.BOLD)
         os.system(
-            "%s > %s" % (root_dir + "/bin/" + test_generation_command_line, input_dump)
+            "%s > %s" % (rootdir + "/bin/" + test_generation_command_line, input_dump)
         )
         contestant_test_runtime = running_time(
             "%s < %s > %s"
-            % (root_dir + "/bin/contestant", input_dump, contestant_output)
+            % (rootdir + "/bin/contestant", input_dump, output)
         )
         judge_test_runtime = running_time(
-            "%s < %s > %s" % (root_dir + "/bin/judge", input_dump, answer)
+            "%s < %s > %s" % (rootdir + "/bin/judge", input_dump, answer)
         )
 
         log_output_stream.write("Test %d:\n" % i)

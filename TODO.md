@@ -21,5 +21,5 @@ C++ side:
 - Support for arg identifier (e.g. `--vertex_count` / `-vC`, `--maxn` etc).
     - Allow tests to be reproducible (e.g. by saving its seed in a metadata file)
 
-- "testlib.h" compatilibity
+- ~~"testlib.h" compatilibity~~ Customize `testlib` to suit single-stdin.
 - test folder name formatting?

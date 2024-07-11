@@ -7,9 +7,5 @@ class DummyChecker(Checker):
     def __init__(self) -> None:
         pass
 
-    def check(
-        self, testdata: str, answer: str, contestant_output: str
-    ) -> CheckerResult:
-        return CheckerResult(
-            True, "All seems well.", testdata, answer, contestant_output
-        )
+    def check(self, input: str, answer: str, output: str) -> CheckerResult:
+        return CheckerResult(True, "All seems well.", input, output, answer)

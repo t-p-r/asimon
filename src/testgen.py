@@ -28,18 +28,16 @@ Target platform. For now only "vnoj" is supported.
 bundle_source = True
 """Whether to include test generation and solution files in the test folder."""
 
-subtask_test_count = [20]
+subtask_test_count = [60]
 """Number of tests for each subtasks."""
 
-subtask_script = [
-    "testgen -1000 1000"
-]
+subtask_script = ["testgen -1000 1000"]
 """
 Script used to generate tests for each subtasks.
 Additional arguments, if any, must be configured by the user.
 """
 
-worker_count = 16
+worker_count = 4
 """
 The number of workers (i.e. tests to be executed at the same time). \\
 Since each CPU thread can only be occupied by one worker at a time, for best performance, this number should not exceed your CPU's thread count.
@@ -121,7 +119,7 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
                 % (batch, first_test_of_batch, last_test_of_batch),
                 text_colors.BOLD,
             )
-
+            
             for test_index in range(first_test_of_batch, last_test_of_batch + 1):
                 testcase_dir = problem_test_dir / (
                     "%s-%s-%s"
@@ -134,11 +132,12 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
                 testcase_dir.mkdir()
 
                 # Multithread variant, which somehow suppresses errors:
-                worker_pool.submit(
-                    workers[(test_index - 1) % worker_count].generate_test,
-                    testgen_command=[bin_dir / testgen_bin] + testgen_args,
-                    judge_command=bin_dir / "judge",
-                    export_testdata_at=problem_test_dir
+                perform_test_batch(
+                    worker_pool=worker_pool,
+                    worker_fns=[workers[(test_index - 1) % worker_count].generate_test],
+                    testgen_command=[bindir / testgen_bin] + testgen_args,
+                    judge_command=bindir / "judge",
+                    export_input_at=problem_test_dir
                     / ("%s/%s.inp" % (testcase_dir, task_name)),
                     export_answer_at=problem_test_dir
                     / ("%s/%s.out" % (testcase_dir, task_name)),
@@ -148,7 +147,7 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
                 # workers[(test_index - 1) % worker_count].generate_test(
                 #     testgen_command=[bin_dir / testgen_bin] + testgen_args,
                 #     judge_command=bin_dir / "judge",
-                #     export_testdata_at=problem_test_dir
+                #     export_input_at=problem_test_dir
                 #     / ("%s/%s.inp" % (testcase_dir, task_name)),
                 #     export_answer_at=problem_test_dir
                 #     / ("%s/%s.out" % (testcase_dir, task_name)),
@@ -158,19 +157,21 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
 def generate_tests():
     total_test_count = sum(subtask_test_count)
     subtask_count = len(subtask_test_count)
-
-    platform_test_dir = universal_test_dir / platform
+    platform_test_dir = universal_testdir / platform
     problem_test_dir = platform_test_dir / task_name
+
     if generation_mode == "replace":
         delete_folder(problem_test_dir)
         delete_file(platform_test_dir / ("%s.zip" % task_name))
-    problem_test_dir.mkdir(parents=True, exist_ok=True)
+
+    get_dir(problem_test_dir)
 
     if bundle_source == True:
         for bin in bin_list:
             shutil.copyfile(
-                "%s/%s.cpp" % (root_dir, bin), "%s/%s.cpp" % (problem_test_dir, bin)
+                "%s/%s.cpp" % (rootdir, bin), "%s/%s.cpp" % (problem_test_dir, bin)
             )
+
     print(
         "\nGenerator will generate %s subtasks for a total of %s tests:"
         % (
@@ -184,7 +185,7 @@ def generate_tests():
 
 def do_compress():
     send_message("\nNow compressing:", text_colors.YELLOW)
-    os.chdir(universal_test_dir / "vnoj")
+    os.chdir(universal_testdir / "vnoj")
     subprocess.run(["zip", "-r", ("%s.zip" % task_name), "."])
 
 
