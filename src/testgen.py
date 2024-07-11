@@ -51,11 +51,6 @@ Multiple workers work best for computationally intensive problems; for IO-intens
 1 or 2 workers yields the best performance. 
 """
 
-compress = True
-"""
-Whether to compress the test folder into a .zip file.
-"""
-
 compiler = "g++"
 
 compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20"]
@@ -70,10 +65,16 @@ Compiler arguments. See your C++ compiler for documentation. Do note that:
 import os
 import shutil
 import random
+
 from lib.asimon_shared import *
 
 bin_list = ["judge"]
 workers = [Worker("dummy")] * worker_count
+
+total_test_count = sum(subtask_test_count)
+subtask_count = len(subtask_test_count)
+platform_test_dir = universal_testdir / platform
+problem_test_dir = platform_test_dir / task_name
 
 
 def detect_generators():
@@ -167,11 +168,6 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
 
 
 def generate_tests():
-    total_test_count = sum(subtask_test_count)
-    subtask_count = len(subtask_test_count)
-    platform_test_dir = universal_testdir / platform
-    problem_test_dir = platform_test_dir / task_name
-
     delete_folder(problem_test_dir)
     delete_file(platform_test_dir / ("%s.zip" % task_name))
     get_dir(problem_test_dir)
@@ -195,8 +191,13 @@ def generate_tests():
 
 def do_compress():
     send_message("\nNow compressing:", text_colors.YELLOW)
-    os.chdir(universal_testdir / "vnoj")
-    subprocess.run(["zip", "-r", ("%s.zip" % task_name), "."])
+    os.chdir(platform_test_dir)
+    shutil.make_archive(
+        base_name=str(task_name),
+        format="zip",
+        root_dir=platform_test_dir,
+        base_dir=problem_test_dir,
+    )
 
 
 if __name__ == "__main__":
@@ -204,6 +205,9 @@ if __name__ == "__main__":
     detect_generators()
     compile_source_codes(compiler, compiler_args, bin_list)
     generate_tests()
-    if compress == True:
-        do_compress()
-    send_message("\nGeneration completed succesfully.", text_colors.OK_CYAN)
+    do_compress()
+    send_message(
+        "\nGeneration completed succesfully. Test file can be found at: %s/%s.zip"
+        % (platform_test_dir, task_name),
+        text_colors.OK_CYAN,
+    )
