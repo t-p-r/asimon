@@ -5,6 +5,7 @@
 /src/judge.cpp
 /src/testgen.cpp
 bin/
+log/
 tests/
 .vscode/
 __pycache__/
