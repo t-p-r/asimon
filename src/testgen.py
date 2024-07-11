@@ -107,7 +107,7 @@ def user_argument_check():
 def generate_test(subtask_index: int, problem_test_dir: Path):
     print(
         "Generating subtask %s:"
-        % (wrap_message(str(subtask_index + 1), text_colors.OK_GREEN),)
+        % (wrap_message(str(subtask_index + 1), text_colors.OK_GREEN))
     )
 
     testgen_bin, testgen_args = script_split(subtask_script[subtask_index])
@@ -196,7 +196,7 @@ def generate_tests():
 def do_compress():
     send_message("\nNow compressing:", text_colors.YELLOW)
     os.chdir(universal_testdir / "vnoj")
-    subprocess.run(["zip", "-r", ("%s.zip" % task_name), "."])
+    subprocess.run(["zip", "-r", ("%s.zip" % task_name), "."], shell=True)
 
 
 if __name__ == "__main__":
