@@ -4,7 +4,10 @@ Worker for running tests.
 
 from subprocess import run, PIPE
 from pathlib import Path
+from collections import namedtuple
 from lib.checkers import *
+
+ProcessResult = namedtuple("ProcessResult", ["runtime", "retcode", "output"])
 
 
 class Worker:
@@ -19,7 +22,9 @@ class Worker:
 
         self.timeout = timeout
 
-    # def handle(command:str | list[str], input, encoding, stdin=PIPE,stdout=PIPE):
+    def anal_process(command: str | list[str], **kwargs):
+        """Run a subprocess and returns a ProcessResult representing its result."""
+        pass
 
     def evaluate_test(
         self,
@@ -31,11 +36,7 @@ class Worker:
         Perform a test case.
         """
         input = run(testgen_command, stdout=PIPE, encoding="UTF-8").stdout
-        answer = run(
-            judge_command, input=input, stdout=PIPE, encoding="UTF-8"
-        ).stdout
-
-        
+        answer = run(judge_command, input=input, stdout=PIPE, encoding="UTF-8").stdout
 
         # this is optional e.g. `testgen.py` only needs `judge.cpp`
         if contestant_command != None:

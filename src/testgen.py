@@ -10,15 +10,8 @@ This tool will repeat the following process:
 
 # USER PARAMETERS ------------------------------------------------------------------------------------------
 
-task_name = "abc"
+task_name = "desert"
 """Name of the problem."""
-
-generation_mode = "replace"
-"""
-Generation mode. Affect only the current problem. Must be one of:
-    - "add" to add new tests while leaving old tests untouched;
-    - "replace" to delete old tests before generating tests.
-"""
 
 platform = "vnoj"
 """
@@ -28,20 +21,34 @@ Target platform. For now only "vnoj" is supported.
 bundle_source = True
 """Whether to include test generation and solution files in the test folder."""
 
-subtask_test_count = [60]
+subtask_test_count = [10, 10, 10, 10, 10]
 """Number of tests for each subtasks."""
 
-subtask_script = ["testgen -1000 1000"]
+subtask_script = [
+    "testgen --n 10 --limxy 20",
+    "testgen --n 1000 --limxy 1000000000",
+    "testgen --n 5000 --limxy 1000000000",
+    "testgen --n 30000 --limxy 1000000000",
+    "testgen --n 100000 --limxy 1000000000",
+]
 """
 Script used to generate tests for each subtasks.
-Additional arguments, if any, must be configured by the user.
 """
 
-worker_count = 4
+testlib_persistent = True
 """
-The number of workers (i.e. tests to be executed at the same time). \\
-Since each CPU thread can only be occupied by one worker at a time, for best performance, this number should not exceed your CPU's thread count.
-For IO-intensive problem, it's recommended to leave the number at 1.
+Testlib-specific. \\
+Each script corresponds to a specific seed in testlib. Therefore, to generate distinct test cases from one script, each test case
+will have its script appended by `--index i` (where `i` is the index of the test case within the subtask) before being invoked. \\
+Disabling this option will instead randomizes `i`, which will also makes it impossible to reproduce the tests.
+"""
+
+worker_count = 16
+"""
+The number of workers (i.e. tests to be executed at the same time).\\
+For best performance, this number should not exceed your CPU's thread count. \\
+Multiple workers work best for computationally intensive problems; for IO-intensize problems (e.g. 10^5 integers or more), 
+1 or 2 workers yields the best performance. 
 """
 
 compress = True
@@ -62,8 +69,8 @@ Compiler arguments. See your C++ compiler for documentation. Do note that:
 
 import os
 import shutil
+import random
 from lib.asimon_shared import *
-from datetime import datetime
 
 bin_list = ["judge"]
 workers = [Worker("dummy")] * worker_count
@@ -100,7 +107,7 @@ def user_argument_check():
 def generate_test(subtask_index: int, problem_test_dir: Path):
     print(
         "Generating subtask %s:"
-        % (wrap_message(str(subtask_index), text_colors.OK_GREEN),)
+        % (wrap_message(str(subtask_index + 1), text_colors.OK_GREEN),)
     )
 
     testgen_bin, testgen_args = script_split(subtask_script[subtask_index])
@@ -116,26 +123,31 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
             last_test_of_batch = min(first_test_of_batch + worker_count - 1, test_count)
             send_message(
                 "Executing batch %d (test %d - %d)"
-                % (batch, first_test_of_batch, last_test_of_batch),
+                % (batch + 1, first_test_of_batch, last_test_of_batch),
                 text_colors.BOLD,
             )
-            
+
             for test_index in range(first_test_of_batch, last_test_of_batch + 1):
                 testcase_dir = problem_test_dir / (
-                    "%s-%s-%s"
+                    "%s-%s"
                     % (
-                        "sub" + str(subtask_index),
+                        "sub" + str(subtask_index + 1),
                         "test" + str(test_index),
-                        datetime.now().strftime("%Y%m%d_%H%M%S"),
                     )
                 )
                 testcase_dir.mkdir()
+
+                test_seed = test_index
+                if testlib_persistent == False:
+                    test_seed = random.getrandbits(31)
 
                 # Multithread variant, which somehow suppresses errors:
                 perform_test_batch(
                     worker_pool=worker_pool,
                     worker_fns=[workers[(test_index - 1) % worker_count].generate_test],
-                    testgen_command=[bindir / testgen_bin] + testgen_args,
+                    testgen_command=[bindir / testgen_bin]
+                    + testgen_args
+                    + ["--index %d" % test_seed],
                     judge_command=bindir / "judge",
                     export_input_at=problem_test_dir
                     / ("%s/%s.inp" % (testcase_dir, task_name)),
@@ -160,10 +172,8 @@ def generate_tests():
     platform_test_dir = universal_testdir / platform
     problem_test_dir = platform_test_dir / task_name
 
-    if generation_mode == "replace":
-        delete_folder(problem_test_dir)
-        delete_file(platform_test_dir / ("%s.zip" % task_name))
-
+    delete_folder(problem_test_dir)
+    delete_file(platform_test_dir / ("%s.zip" % task_name))
     get_dir(problem_test_dir)
 
     if bundle_source == True:

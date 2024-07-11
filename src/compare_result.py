@@ -2,11 +2,11 @@
 src/compare_result.py - Fuzz testing.
 
 This tool will repeat the following process:
-    - Generate test data from command line.
-    - Pipe the data to "judge.cpp" (the reference program) and "contestant.cpp"'s stdin and run these files.
+    - Generate test data from command line;
+    - Pipe the data to "judge.cpp" (the reference program) and "contestant.cpp"'s stdin and run these files;
     - Evaluate the results, either by comparing the output of "judge.cpp" and "contestant.cpp" against each other, 
-    or using a custom C++ checker to evaluate "contestant.cpp"'s output.
-until either the desired number of tests or a test which doesn't pass the evaluation process is reached.
+    or by using a custom C++ or Python checker to evaluate "contestant.cpp"'s output.
+until either all test are run or a test which doesn't pass the evaluation process is found.
 
 In the latter case, the input, both outputs, and the checker's comment shall be wrote down the file `status`.
 The C++ files specified above must stay in the same folder as this Python file, must reads from stdin and writes to stdout.
@@ -36,7 +36,7 @@ checker = "token"
 """
 
 verbose = True
-"""Whether to also log passed tests (input, output, answer and comment)."""
+"""Whether to log passed tests's input, output and answer."""
 
 worker_count = 8
 """

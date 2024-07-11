@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 
 CheckerResult = namedtuple(
-    "checkerResult",
+    "CheckerResult",
     ["status", "comment", "input", "output", "answer"],
 )
 """The result of the evaluation process."""
