@@ -196,7 +196,7 @@ def generate_tests():
 def do_compress():
     send_message("\nNow compressing:", text_colors.YELLOW)
     os.chdir(universal_testdir / "vnoj")
-    subprocess.run(["zip", "-r", ("%s.zip" % task_name), "."], shell=True)
+    subprocess.run(["zip", "-r", ("%s.zip" % task_name), "."])
 
 
 if __name__ == "__main__":

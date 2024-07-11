@@ -29,9 +29,7 @@ def compile_source_codes(compiler: str, compiler_args: list[str], bin_list: list
         # TODO: Should these be Paths?
         source = str(rootdir / bin) + ".cpp"
         output = str(bindir / bin)
-        ret = subprocess.run(
-            [compiler] + compiler_args + [source, "-o", output], shell=True
-        )
+        ret = subprocess.run([compiler] + compiler_args + [source, "-o", output])
         # e.g. g++ -O2 hello.cpp -o /bin/hello
         if ret.returncode != 0:
             raise Exception(
