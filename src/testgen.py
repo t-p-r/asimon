@@ -195,8 +195,7 @@ def do_compress():
     shutil.make_archive(
         base_name=str(task_name),
         format="zip",
-        root_dir=platform_test_dir,
-        base_dir=problem_test_dir,
+        root_dir=task_name
     )
 
 
