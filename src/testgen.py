@@ -207,7 +207,7 @@ if __name__ == "__main__":
     generate_tests()
     do_compress()
     send_message(
-        "\nGeneration completed succesfully. Test file can be found at: %s/%s.zip"
+        "\nGeneration completed succesfully. Test file can be found at: %s/%s.zip."
         % (platform_test_dir, task_name),
         text_colors.OK_CYAN,
     )
