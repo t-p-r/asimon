@@ -19,7 +19,7 @@ Currently C++ is the only supported language.
 
 A Linux-running machine with the following packages installed:
 - `python`
-- `zip`
+- `python-zstandard`
 - A C++ compiler supporting C++20, preferably `gcc` (`clang` may work but isn't tested).
 
 ## Getting started

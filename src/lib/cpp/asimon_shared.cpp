@@ -1,6 +1,6 @@
 /**
- * @file src/lib/asimon_shared.cpp - Provides common functions for `contestant.cpp`,
- * `judge.cpp` and `testgen.cpp`. These includes:
+ * @file src/lib/asimon_shared.cpp - Provides common functions for
+ * `contestant.cpp`, `judge.cpp` and `testgen.cpp`. These includes:
  *  - a RNG with helper functions (to be moved into CPDSA when matured enough)
  *  - data parsing from argc and argv. The format is described in README.md
  */
@@ -53,6 +53,25 @@ _Tp rand(const std::vector<_Tp>& v) {
 }
 }  // namespace cpdsa
 
+/**
+ * @brief Set the RNG's seed to a specific value.
+ * @param seed The RNG's new seed.
+ */
+template <std::integral _Tp>
+void set_rng_seed(_Tp seed) {
+    cpdsa::asimon_rng = std::mt19937_64(seed);
+}
+
+#define ASIMON_LEGACY_ARGS_PARSING
+
+/**
+ * Legacy argument parsing mode. Arguments have form `x` or `rand x y` where x
+ * and y are numeric values. These numbers can then be fetched using `get_arg()`
+ * and similar functions.
+ */
+
+#ifdef ASIMON_LEGACY_ARGS_PARSING
+
 int arg_count = 0;
 std::vector<std::string> arg_vector;
 
@@ -62,15 +81,6 @@ std::vector<std::string> arg_vector;
 void register_arguments(int argc, char* argv[]) {
     for (int i = 0; i < argc; i++)
         arg_vector.emplace_back(std::string(argv[i]));
-}
-
-/**
- * @brief Set the RNG's seed to a specific value.
- * @param seed The RNG's new seed.
- */
-template <std::integral _Tp>
-void set_rng_seed(_Tp seed) {
-    cpdsa::asimon_rng = std::mt19937_64(seed);
 }
 
 /**
@@ -102,5 +112,7 @@ void set_rng_seed(_Tp seed) {
     return arg_count += 2, cpdsa::randf(stof(arg_vector[arg_count - 1]),
                                         stof(arg_vector[arg_count]));
 };
+
+#endif
 
 #endif /* ASIMON_BASE */

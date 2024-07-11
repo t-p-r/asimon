@@ -8,22 +8,22 @@ This tool will repeat the following process:
     or using a custom C++ checker to evaluate "contestant.cpp"'s output.
 until either the desired number of tests or a test which doesn't pass the evaluation process is reached.
 
-In the latter case, the input, both outputs, and the evaluator's comment shall be wrote down the file `log.txt`.
+In the latter case, the input, both outputs, and the checker's comment shall be wrote down the file `log.txt`.
 The C++ files specified above must stay in the same folder as this Python file, must reads from stdin and writes to stdout.
 """
 
 # USER PARAMETERS ------------------------------------------------------------------------------------------
 
-testgen_script = "testgen"
+testgen_script = "testgen 100 100"
 """
 Script used to generate tests. Additional arguments, if any, must be configured by the user.
 """
 
-test_count = 16
+test_count = 60
 """What you think it is."""
 
-evaluation_policy = "token"
-"""Test evaluation policy. Must be one of:
+checker = "token"
+"""Result checker. Must be one of:
     - "token"   : Check if the outputs' token sequences match.
     - "line"    : Check if every line of the outputs match (whitespace ignored).
     - "double4" : Like "token", but corresponding number tokens must be within 1E-4 of each other.
@@ -31,11 +31,11 @@ evaluation_policy = "token"
     - "double9" : Like double4, but the epsilon is 1E-9.
     - "custom"  : Custom checker. The file "checker.cpp" shall be feeded the test data and the contestant's output.
                   Evaluating them is the user's responsibility.
-    - "noeval"   : Always returns True. The default evaluator policy for `testgen.py` as no evaluation happens there 
+    - "noeval"   : Always returns True. The default checker for `testgen.py` as no evaluation happens there 
                   except when custom checkers are involved.
 """
 
-worker_count = 16
+worker_count = 8
 """
 The number of workers (i.e. tests to be executed at the same time). \\
 Since each CPU thread can only be occupied by one worker at a time, for best performance, this number should not exceed your CPU's thread count.
@@ -58,7 +58,7 @@ from lib.asimon_shared import *
 
 testgen_bin, testgen_args = script_split(testgen_script)
 bin_list = [testgen_bin, "judge", "contestant"]
-workers = [Worker(evaluation_policy)] * worker_count
+workers = [Worker(checker)] * worker_count
 
 batch_count = int(test_count / worker_count)
 passed_batches = 0
@@ -140,7 +140,6 @@ def print_final_verdict(passed_batches):
 
 
 if __name__ == "__main__":
-    clear_previous_run(bin_list)
     compile_source_codes(compiler, compiler_args, bin_list)
     perform_tests()
     print_final_verdict(passed_batches)

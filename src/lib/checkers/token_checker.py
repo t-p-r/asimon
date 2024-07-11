@@ -1,20 +1,20 @@
-from lib.evaluators.base import *
+from lib.checkers.base import *
 
 
-class TokenEvaluator(Evaluator):
+class TokenChecker(Checker):
     """Test whether the token list of `answer` and `contestant_output` is the same."""
 
     def __init__(self) -> None:
         pass
 
-    def evaluate(
+    def check(
         self, testdata: str, answer: str, contestant_output: str
-    ) -> EvaluatorResult:
+    ) -> CheckerResult:
         answer_tokens = answer.split()
         contestant_tokens = contestant_output.split()
 
         if len(answer_tokens) != len(contestant_tokens):
-            return EvaluatorResult(
+            return CheckerResult(
                 False,
                 "The answer contains %d tokens while the contestant's output contains %d tokens."
                 % (len(answer_tokens), len(contestant_tokens)),
@@ -25,7 +25,7 @@ class TokenEvaluator(Evaluator):
 
         for i in range(0, len(answer_tokens)):
             if answer_tokens[i] != contestant_tokens[i]:
-                return EvaluatorResult(
+                return CheckerResult(
                     False,
                     "%s token is different: answer has '%s', contestant's output has '%s'."
                     % (ordinal(i+1), answer_tokens[i], contestant_tokens[i]),
@@ -34,7 +34,7 @@ class TokenEvaluator(Evaluator):
                     contestant_output,
                 )
 
-        return EvaluatorResult(
+        return CheckerResult(
             True, testdata, "All token matches.", answer, contestant_output
         )
 

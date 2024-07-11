@@ -3,27 +3,22 @@ Shared functions and data between .py files in the master directory.
 """
 
 import os
+import shutil
 import subprocess
 from pathlib import Path
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from lib.worker import Worker
 from lib.text_colors import text_colors
 
-# These are common paths in asimon:
+# Common paths in asimon:
 root_dir = Path(__file__).parent.parent
-# The project's root absolute directory, .../asimon/src/
+# The project's absolute root directory, .../asimon/src/
 bin_dir = root_dir / "bin"
 # Where the C++ executables are dumped into.
 universal_test_dir = root_dir / "tests"
 # Test folder. Each platform has its own subfolder (e.g. /tests/vnoj, /tests/polygon).
 log_output_stream = open(root_dir / "log.txt", "w")
 # Will be closed when the tools exit anyway.
-
-
-def clear_previous_run(bin_list: list[str]):
-    send_message("Deleting executable files from previous run...", text_colors.YELLOW)
-    for bin in bin_list:
-        delete_file("%s/bin/%s" % (root_dir, bin))
 
 
 def compile_source_codes(compiler: str, compiler_args: list[str], bin_list: list[str]):
@@ -33,7 +28,7 @@ def compile_source_codes(compiler: str, compiler_args: list[str], bin_list: list
         text_colors.OK_GREEN,
     )
     for bin in bin_list:
-        # should these be paths?
+        # should these be Paths?
         source = "%s/%s.cpp" % (root_dir, bin)
         output = "%s/%s" % (bin_dir, bin)
         ret = subprocess.run([compiler] + compiler_args + [source, "-o", output])
@@ -50,7 +45,7 @@ def compile_source_codes(compiler: str, compiler_args: list[str], bin_list: list
 def perform_test_batch(
     batch_size: int,
     worker_pool: ThreadPoolExecutor,
-    testgen_command: list[str],
+    testgen_command: str | list[str],
     judge_command: str,  # judge and contestant has no args
     contestant_command: str,
     workers: list[Worker],
@@ -73,13 +68,21 @@ def perform_test_batch(
     return procs
 
 
-# Below are miscellanous helpers:
+# Miscellanous helpers:
 
 
-def delete_file(s: str):
+def delete_file(s: Path):
     "Silently deletes a file, suppressing any `OSError` raised."
     try:
         os.remove(s)
+    except OSError:
+        pass
+
+
+def delete_folder(p: Path):
+    "Silently deletes a folder, suppressing any `OSError` raised."
+    try:
+        shutil.rmtree(p)
     except OSError:
         pass
 
@@ -98,3 +101,13 @@ def script_split(script: str) -> tuple[str, list]:
     """Split an execution script into the executable (first token) and its arguments (the other tokens).."""
     tokens = script.split()
     return (tokens[0], tokens[1:])
+
+
+# Deprecated functions which should only be used for debugging:
+
+
+def clear_previous_runs(bin_list: list[str]):
+    """Deprecated."""
+    send_message("Deleting executable files from previous runs...", text_colors.YELLOW)
+    for bin in bin_list:
+        delete_file("%s/bin/%s" % (root_dir, bin))

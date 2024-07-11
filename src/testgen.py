@@ -10,7 +10,7 @@ This tool will repeat the following process:
 
 # USER PARAMETERS ------------------------------------------------------------------------------------------
 
-task_name = "gcdset"
+task_name = "abc"
 """Name of the problem."""
 
 generation_mode = "replace"
@@ -20,28 +20,36 @@ Generation mode. Affect only the current problem. Must be one of:
     - "replace" to delete old tests before generating tests.
 """
 
+platform = "vnoj"
+"""
+Target platform. For now only "vnoj" is supported.
+"""
+
 bundle_source = True
 """Whether to include test generation and solution files in the test folder."""
 
-subtask_test_count = [17]
+subtask_test_count = [20]
 """Number of tests for each subtasks."""
 
 subtask_script = [
-    "testgen",  # sub5
+    "testgen -1000 1000"
 ]
 """
 Script used to generate tests for each subtasks.
 Additional arguments, if any, must be configured by the user.
 """
 
-worker_count = 4
+worker_count = 16
 """
 The number of workers (i.e. tests to be executed at the same time). \\
 Since each CPU thread can only be occupied by one worker at a time, for best performance, this number should not exceed your CPU's thread count.
 For IO-intensive problem, it's recommended to leave the number at 1.
 """
 
-compress = False
+compress = True
+"""
+Whether to compress the test folder into a .zip file.
+"""
 
 compiler = "g++"
 
@@ -125,7 +133,7 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
                 )
                 testcase_dir.mkdir()
 
-                # Multithread variant:
+                # Multithread variant, which somehow suppresses errors:
                 worker_pool.submit(
                     workers[(test_index - 1) % worker_count].generate_test,
                     testgen_command=[bin_dir / testgen_bin] + testgen_args,
@@ -135,7 +143,8 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
                     export_answer_at=problem_test_dir
                     / ("%s/%s.out" % (testcase_dir, task_name)),
                 )
-                # Non-multithread debug variant:
+
+                # Non-multithread variant for debugging:
                 # workers[(test_index - 1) % worker_count].generate_test(
                 #     testgen_command=[bin_dir / testgen_bin] + testgen_args,
                 #     judge_command=bin_dir / "judge",
@@ -150,10 +159,11 @@ def generate_tests():
     total_test_count = sum(subtask_test_count)
     subtask_count = len(subtask_test_count)
 
-    problem_test_dir = universal_test_dir / "vnoj" / task_name
-    if generation_mode == "replace" and problem_test_dir.exists():
-        shutil.rmtree(problem_test_dir)
-        delete_file(problem_test_dir / ".zip")
+    platform_test_dir = universal_test_dir / platform
+    problem_test_dir = platform_test_dir / task_name
+    if generation_mode == "replace":
+        delete_folder(problem_test_dir)
+        delete_file(platform_test_dir / ("%s.zip" % task_name))
     problem_test_dir.mkdir(parents=True, exist_ok=True)
 
     if bundle_source == True:
@@ -175,13 +185,12 @@ def generate_tests():
 def do_compress():
     send_message("\nNow compressing:", text_colors.YELLOW)
     os.chdir(universal_test_dir / "vnoj")
-    os.system("zip -r %s.zip ." % (task_name))
+    subprocess.run(["zip", "-r", ("%s.zip" % task_name), "."])
 
 
 if __name__ == "__main__":
     user_argument_check()
     detect_generators()
-    clear_previous_run(bin_list)
     compile_source_codes(compiler, compiler_args, bin_list)
     generate_tests()
     if compress == True:

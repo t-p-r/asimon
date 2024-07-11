@@ -79,6 +79,6 @@ def print_final_verdict(total_contestant_time, total_checker_time):
 
 
 if __name__ == "__main__":
-    clear_previous_run()
+    clear_previous_runs()
     compile_source_codes(compiler_args, compiler)
     perform_tests(test_count)

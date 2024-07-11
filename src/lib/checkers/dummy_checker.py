@@ -1,15 +1,15 @@
-from lib.evaluators.base import *
+from lib.checkers.base import *
 
 
-class DummyEvaluator(Evaluator):
+class DummyChecker(Checker):
     """Does no evaluation and returns all data as-is."""
 
     def __init__(self) -> None:
         pass
 
-    def evaluate(
+    def check(
         self, testdata: str, answer: str, contestant_output: str
-    ) -> EvaluatorResult:
-        return EvaluatorResult(
+    ) -> CheckerResult:
+        return CheckerResult(
             True, "All seems well.", testdata, answer, contestant_output
         )
