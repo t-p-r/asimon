@@ -21,15 +21,11 @@ Target platform. For now only "vnoj" is supported.
 bundle_source = True
 """Whether to include test generation and solution files in the test folder."""
 
-subtask_test_count = [10, 10, 10, 10, 10]
+subtask_test_count = [64]
 """Number of tests for each subtasks."""
 
 subtask_script = [
-    "testgen --n 10 --limxy 20",
-    "testgen --n 1000 --limxy 1000000000",
-    "testgen --n 5000 --limxy 1000000000",
-    "testgen --n 30000 --limxy 1000000000",
-    "testgen --n 100000 --limxy 1000000000",
+    "testgen --n 100000 --lima 1000000000",
 ]
 """
 Script used to generate tests for each subtasks.
@@ -64,6 +60,7 @@ Compiler arguments. See your C++ compiler for documentation. Do note that:
 
 import os
 import shutil
+import random
 
 from lib.asimon_shared import *
 
@@ -142,9 +139,8 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
                     test_seed = random.getrandbits(31)
 
                 # Multithread variant, which somehow suppresses errors:
-                perform_test_batch(
-                    worker_pool=worker_pool,
-                    worker_fns=[workers[(test_index - 1) % worker_count].generate_test],
+                worker_pool.submit(
+                    workers[(test_index - 1) % worker_count].generate_test,
                     testgen_command=[bindir / testgen_bin]
                     + testgen_args
                     + ["--index %d" % test_seed],
@@ -191,11 +187,7 @@ def generate_tests():
 def do_compress():
     send_message("\nNow compressing:", text_colors.YELLOW)
     os.chdir(platform_test_dir)
-    shutil.make_archive(
-        base_name=str(task_name),
-        format="zip",
-        root_dir=task_name
-    )
+    shutil.make_archive(base_name=str(task_name), format="zip", root_dir=task_name)
 
 
 if __name__ == "__main__":
