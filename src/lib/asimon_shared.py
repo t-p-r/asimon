@@ -4,6 +4,7 @@ Shared functions and data between .py files in the master directory.
 
 import subprocess
 import multiprocessing
+import random
 from concurrent.futures import *
 from lib.worker import Worker
 from lib.asimon_utils import *

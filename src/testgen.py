@@ -64,7 +64,6 @@ Compiler arguments. See your C++ compiler for documentation. Do note that:
 
 import os
 import shutil
-import random
 
 from lib.asimon_shared import *
 

@@ -14,12 +14,12 @@ The C++ files specified above must stay in the same folder as this Python file, 
 
 # USER PARAMETERS ------------------------------------------------------------------------------------------
 
-testgen_script = "testgen 1000"
+testgen_script = "testgen --n 6 --lima 10"
 """
 Script used to generate tests. Additional arguments, if any, must be configured by the user.
 """
 
-test_count = 16
+test_count = 1024
 """What you think it is."""
 
 checker = "token"
@@ -38,7 +38,7 @@ checker = "token"
 verbose = True
 """Whether to log passed tests's input, output and answer."""
 
-worker_count = 8
+worker_count = 1
 """
 The number of workers (i.e. tests to be executed at the same time).\\
 For best performance, this number should not exceed your CPU's thread count. \\
@@ -90,10 +90,14 @@ def perform_tests() -> bool:
                 text_colors.BOLD,
             )
 
+            test_seed = random.getrandbits(31)
+
             procs = perform_test_batch(
                 worker_pool=worker_pool,
                 worker_fns=[workers[i].evaluate_test for i in range(batch_size)],
-                testgen_command=[bindir / testgen_bin] + testgen_args,
+                testgen_command=[bindir / testgen_bin]
+                + testgen_args
+                + ["--index %d" % test_seed],
                 judge_command=bindir / "judge",
                 contestant_command=bindir / "contestant",
             )
