@@ -38,7 +38,7 @@ checker = "token"
 verbose = True
 """Whether to log passed tests's input, output and answer."""
 
-worker_count = 1
+worker_count = 16
 """
 The number of workers (i.e. tests to be executed at the same time).\\
 For best performance, this number should not exceed your CPU's thread count. \\
@@ -90,17 +90,19 @@ def perform_tests() -> bool:
                 text_colors.BOLD,
             )
 
-            test_seed = random.getrandbits(31)
-
-            procs = perform_test_batch(
-                worker_pool=worker_pool,
-                worker_fns=[workers[i].evaluate_test for i in range(batch_size)],
-                testgen_command=[bindir / testgen_bin]
-                + testgen_args
-                + ["--index %d" % test_seed],
-                judge_command=bindir / "judge",
-                contestant_command=bindir / "contestant",
-            )
+            procs = []
+            for i in range(0, batch_size):
+                test_seed = random.getrandbits(31)
+                procs.append(
+                    worker_pool.submit(
+                        workers[i].evaluate_test,
+                        testgen_command=[bindir / testgen_bin]
+                        + testgen_args
+                        + ["--index %d" % test_seed],
+                        judge_command=bindir / "judge",
+                        contestant_command=bindir / "contestant",
+                    )
+                )
 
             for proc in procs:
                 test_result = proc.result()
