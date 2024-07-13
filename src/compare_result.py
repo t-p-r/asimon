@@ -14,7 +14,7 @@ The C++ files specified above must stay in the same folder as this Python file, 
 
 # USER PARAMETERS ------------------------------------------------------------------------------------------
 
-testgen_script = "testgen --n 6 --lima 10"
+testgen_script = "testgen --n 99999 --limxy 999999999"
 """
 Script used to generate tests. Additional arguments, if any, must be configured by the user.
 """
@@ -38,7 +38,7 @@ checker = "token"
 verbose = True
 """Whether to log passed tests's input, output and answer."""
 
-worker_count = 16
+worker_count = 4
 """
 The number of workers (i.e. tests to be executed at the same time).\\
 For best performance, this number should not exceed your CPU's thread count. \\
@@ -48,7 +48,7 @@ Multiple workers work best for computationally intensive problems; for IO-intens
 compiler = "g++"
 """C++ compiler. Only `g++` has been tested and used extensively."""
 
-compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20"]
+compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20", "-H"]
 """
 Compiler arguments. See your C++ compiler for documentation. Do note that:
     - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
@@ -98,7 +98,7 @@ def perform_tests() -> bool:
                         workers[i].evaluate_test,
                         testgen_command=[bindir / testgen_bin]
                         + testgen_args
-                        + ["--index %d" % test_seed],
+                        + ["--testlib_seed %d" % test_seed],
                         judge_command=bindir / "judge",
                         contestant_command=bindir / "contestant",
                     )

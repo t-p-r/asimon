@@ -17,7 +17,7 @@ class Checker(ABC):
         pass
 
     @abstractmethod
-    def check(self, input: str, answer: str, output: str) -> CheckerResult:
+    def check(self, input: str, output: str, answer: str) -> CheckerResult:
         """Evaluate the test result and return a `CheckerResult`.
         See concrete `checker` classes for the specific comments.
         """

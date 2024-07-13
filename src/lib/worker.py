@@ -11,7 +11,7 @@ ProcessResult = namedtuple("ProcessResult", ["runtime", "retcode", "output"])
 
 
 class Worker:
-    def __init__(self, checker: str, timeout=99):
+    def __init__(self, checker: str, timeout=5):
         """Create a worker."""
         if checker == "token":
             self.checker = TokenChecker()
@@ -38,7 +38,7 @@ class Worker:
         input = run(testgen_command, stdout=PIPE, encoding="UTF-8").stdout
         answer = run(judge_command, input=input, stdout=PIPE, encoding="UTF-8").stdout
 
-        # this is optional e.g. `testgen.py` only needs `judge.cpp`
+        # this is optional e.g. testgen.py only needs judge's code to run
         if contestant_command != None:
             output = run(
                 contestant_command, input=input, stdout=PIPE, encoding="UTF-8"
@@ -56,17 +56,16 @@ class Worker:
         export_answer_at: Path,
     ) -> bool:
         """Generate a test case. TODO: add timeout."""
+        input_file = open(export_input_at, "w")
+        output_file = open(export_answer_at, "w")
 
-        with open(export_input_at, "wb") as input_file:
-            # I could have achieved a much more efficient piping scheme than this fuckery
-            # (will become very apparent for large IO sets),
-            # but both run and Popen refused to coorporate, so I gave up.
-            # P/S : this doesn't even matter for some eldritch reasons.
-            input = run(testgen_command, stdout=PIPE).stdout
-            input_file.write(input)
+        run(testgen_command, stdout=input_file)
+        # These two lines exists because even if input_file's open mode is set to be w+,
+        # the second run command wouldn't be able to fetch any data from it.
+        input_file.close()
+        input_file = open(export_input_at, "r")
 
-            with open(export_answer_at, "wb") as answer_output:
-                answer = run(judge_command, input=input, stdout=PIPE).stdout
-                answer_output.write(answer)
-
-            return True
+        run(judge_command, stdin=input_file, stdout=output_file)
+        input_file.close()
+        output_file.close()
+        return True

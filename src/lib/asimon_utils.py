@@ -1,4 +1,4 @@
-# Various miscellanous helpers:
+"""Various miscellanous helpers for asimon"""
 
 import os
 import shutil

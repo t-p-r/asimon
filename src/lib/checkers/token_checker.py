@@ -7,7 +7,7 @@ class TokenChecker(Checker):
     def __init__(self) -> None:
         pass
 
-    def check(self, input: str, answer: str, output: str) -> CheckerResult:
+    def check(self, input: str, output: str, answer: str) -> CheckerResult:
         answer_tokens = answer.split()
         output_tokens = output.split()
 
@@ -32,8 +32,9 @@ class TokenChecker(Checker):
                     answer,
                 )
 
-        return CheckerResult(True, "All token matches.", input, output, answer)
-
+        return CheckerResult(
+            True, "%d token(s) all matches." % len(answer_tokens), input, output, answer
+        )
 
 def ordinal(n: int) -> str:
     """

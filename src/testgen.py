@@ -25,7 +25,7 @@ subtask_test_count = [64]
 """Number of tests for each subtasks."""
 
 subtask_script = [
-    "testgen --n 100000 --lima 1000000000",
+    "testgen --n 99999 --limxy 999999999",
 ]
 """
 Script used to generate tests for each subtasks.
@@ -35,7 +35,7 @@ testlib_persistent = True
 """
 Testlib-specific. \\
 Each script corresponds to a specific seed in testlib. Therefore, to generate distinct test cases from one script, each test case
-will have its script appended by `--index i` (where `i` is the index of the test case within the subtask) before being invoked. \\
+will have its script appended by `--testlib_seed i` (`i` being the index of the test case within the subtask) before being ran. \\
 Disabling this option will instead randomizes `i`, which will also makes it impossible to reproduce the tests.
 """
 
@@ -49,11 +49,11 @@ Multiple workers work best for computationally intensive problems; for IO-intens
 
 compiler = "g++"
 
-compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20"]
+compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20", "-H"]
 """
 Compiler arguments. See your C++ compiler for documentation. Do note that:
     - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
-    - if you have precompiled headers (e.g. `stdc++.h`), use the exact arguments you compiled them with to save time
+    - if you have precompiled headers (e.g. `stdc++.h`), use the exact set of arguments you compiled them with to save time.
 """
 
 # HIC SUNT DRACONES ---------------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
                     workers[(test_index - 1) % worker_count].generate_test,
                     testgen_command=[bindir / testgen_bin]
                     + testgen_args
-                    + ["--index %d" % test_seed],
+                    + ["--testlib_seed %d" % test_seed],
                     judge_command=bindir / "judge",
                     export_input_at=problem_test_dir
                     / ("%s/%s.inp" % (testcase_dir, task_name)),
@@ -180,6 +180,7 @@ def generate_tests():
             wrap_message(str(total_test_count), text_colors.OK_CYAN),
         )
     )
+
     for subtask_index in range(0, subtask_count):
         generate_test(subtask_index, problem_test_dir)
 
@@ -187,7 +188,7 @@ def generate_tests():
 def do_compress():
     send_message("\nNow compressing:", text_colors.YELLOW)
     os.chdir(platform_test_dir)
-    shutil.make_archive(base_name=str(task_name), format="zip", root_dir=task_name)
+    shutil.make_archive(base_name=task_name, format="zip", root_dir=task_name)
 
 
 if __name__ == "__main__":

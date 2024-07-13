@@ -4,9 +4,9 @@ Python side:
 - Organize tests in Polygon format.
 
 - migrate `list_generators()` elsewhere
-- migrate `os.system()` calls to `subprocess.run()` calls
-    - create helpers to pipe the testgen -> contestant / judge process
-- migrate RNG helpers to CPDSA
+- ~~migrate `os.system()` calls to `subprocess.run()` calls~~ (done)
+    - ~~create helpers to pipe the testgen -> contestant / judge process~~
+- ~~migrate RNG helpers to CPDSA~~ (done, now use testlib)
 - support for unorthodox executable behaviour (TLE, MLE, etc)
 
 - docs:
@@ -18,8 +18,10 @@ Python side:
 
 
 C++ side:
-- Support for arg identifier (e.g. `--vertex_count` / `-vC`, `--maxn` etc).
-    - Allow tests to be reproducible (e.g. by saving its seed in a metadata file)
+- ~~Support for arg identifier (e.g. `--vertex_count` / `-vC`, `--maxn` etc).~~ (done, now use testlib)
+    - ~~Allow tests to be reproducible (e.g. by saving its seed in a metadata file)~~
 
-- ~~"testlib.h" compatilibity~~ Customize `testlib` to suit single-stdin.
+- ~~"testlib.h" compatilibity~~ Customize `testlib` to bypass multiple file input.
 - test folder name formatting?
+- PROBLEM DATABASE
+- 
