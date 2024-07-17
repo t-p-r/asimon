@@ -26,7 +26,7 @@ class TokenChecker(Checker):
                 return CheckerResult(
                     False,
                     "%s token is different: contestant's output has '%s', answer has '%s'."
-                    % (ordinal(i + 1), answer_tokens[i], output_tokens[i]),
+                    % (ordinal(i + 1), output_tokens[i], answer_tokens[i]),
                     input,
                     output,
                     answer,

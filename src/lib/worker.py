@@ -46,7 +46,7 @@ class Worker:
         else:
             output = ""
 
-        return self.checker.check(input, answer, output)
+        return self.checker.check(input, output, answer)
 
     def generate_test(
         self,
