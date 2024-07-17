@@ -6,11 +6,10 @@
  * overflowed) sum, using the standard C++ `cin`/`cout` functions.
  */
 
-#include <bits/stdc++.h>
-#include "lib/cpp/cpdsa/cpdsa.hpp"
+#include <iostream>
 using namespace std;
 
-int32_t main() {
+int main() {
     cin.tie(0)->sync_with_stdio(0);
     int a, b;
     cin >> a >> b;

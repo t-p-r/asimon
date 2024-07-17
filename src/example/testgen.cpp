@@ -7,14 +7,12 @@
  * prints out two randomly generated number (RNG) among all 32-bit integers.
  */
 
-#include <bits/stdc++.h>
-#include "lib/shared.cpp"
-#include "lib/cpp/cpdsa/cpdsa.hpp"
+#include "lib/testlib-asimon/testlib.h"
 using namespace std;
 
 int32_t main(int argc, char* argv[]) {
     cin.tie(0)->sync_with_stdio(0);
-    register_arguments(argc, argv); // this enables the retrieval of args
-    int lo = INT_MIN, hi = INT_MAX;
-    cout << cpdsa::rand(lo, hi) << ' ' << cpdsa::rand(lo, hi) << '\n';
+    registerGen(argc, argv, 1);
+    int lo = opt<int>("lo"), hi = opt<int>("hi");
+    cout << rnd.next(lo, hi) << ' ' << rnd.next(lo, hi);
 }
