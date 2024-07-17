@@ -1,14 +1,14 @@
-"""Various miscellanous helpers for asimon"""
+"""Filesystem and output formatting utilities for asimon."""
 
 import os
 import shutil
-from io import *
 from pathlib import Path
+from io import TextIOWrapper
 from lib.text_colors import text_colors
 
 
 def get_dir(p: Path) -> Path:
-    """Create a path if it doesn't exist and returns it."""
+    """Create a path regardless of its status and returns it."""
     p.mkdir(parents=True, exist_ok=True)
     return p
 
@@ -48,11 +48,10 @@ def script_split(script: str) -> tuple[str, list]:
 def write_prefix(ostream: TextIOWrapper, content: str, limit: int, end: str) -> None:
     """
     Write at most `limit` first characters of `content` to `ostream`.
-    If `content` is longer than that then also write `...`.
     """
     if len(content) <= limit:
         ostream.write(content)
     else:
         ostream.write(content[: (limit + 1)])
-        ostream.write(" ...")
+        ostream.write(" ...\n(%d character(s) remains)" % (len(content) - limit))
     ostream.write(end)
