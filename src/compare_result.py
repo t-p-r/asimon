@@ -14,12 +14,12 @@ The C++ files specified above must stay in the same folder as this Python file, 
 
 # USER PARAMETERS ------------------------------------------------------------------------------------------
 
-testgen_script = "testgen --n 99999 --limxy 999999999"
+testgen_script = "testgen --lo=-1000 --hi=1000"
 """
 Script used to generate tests. Additional arguments, if any, must be configured by the user.
 """
 
-test_count = 1024
+test_count = 32
 """What you think it is."""
 
 checker = "token"
@@ -35,10 +35,10 @@ checker = "token"
                   except when custom checkers are involved.
 """
 
-verbose = True
+verbose = False
 """Whether to log passed tests's input, output and answer."""
 
-worker_count = 4
+worker_count = 8
 """
 The number of workers (i.e. tests to be executed at the same time).\\
 For best performance, this number should not exceed your CPU's thread count. \\
@@ -96,11 +96,11 @@ def perform_tests() -> bool:
                 procs.append(
                     worker_pool.submit(
                         workers[i].evaluate_test,
-                        testgen_command=[bindir / testgen_bin]
+                        [bindir / testgen_bin]
                         + testgen_args
                         + ["--testlib_seed %d" % test_seed],
-                        judge_command=bindir / "judge",
-                        contestant_command=bindir / "contestant",
+                        bindir / "judge",
+                        bindir / "contestant",
                     )
                 )
 
@@ -109,21 +109,33 @@ def perform_tests() -> bool:
                 test_index = passed_tests + 1
 
                 if test_result.status != True or verbose == True:
-                    test_logdir = get_dir(logdir / ("test" + str(test_index)))
+                    test_logdir = get_dir(
+                        logdir
+                        / (
+                            "test"
+                            + str(test_index)
+                            + ("-failed" if test_result.status != True else "")
+                        )
+                    )
                     status = open(test_logdir / "status.txt", "w")
                     input = open(test_logdir / "input.txt", "w")
                     output = open(test_logdir / "output.txt", "w")
                     answer = open(test_logdir / "answer.txt", "w")
 
-                    def write_log(ostream, headline, content):
+                    def write_to_log(ostream, headline, content, limit=256):
                         status.write(headline)
-                        write_prefix(status, content, 100, "\n\n")
+                        write_prefix(status, content, limit, "\n\n")
                         ostream.write(content)
 
-                    write_log(input, "Input:\n", test_result.input)
+                    write_to_log(input, "Input:\n", test_result.input)
                     status.write("Comment:\n%s\n\n" % test_result.comment)
-                    write_log(output, "Output:\n", test_result.output)
-                    write_log(answer, "Answer:\n", test_result.answer)
+                    write_to_log(output, "Output:\n", test_result.output)
+                    write_to_log(answer, "Answer:\n", test_result.answer)
+
+                    status.close()
+                    input.close()
+                    output.close()
+                    answer.close()
 
                     if test_result.status != True:
                         send_message(
@@ -131,6 +143,7 @@ def perform_tests() -> bool:
                             text_colors.RED + text_colors.BOLD,
                         )
                         return False
+
                 passed_tests += 1
 
     return True

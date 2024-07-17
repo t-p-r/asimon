@@ -10,7 +10,7 @@ This tool will repeat the following process:
 
 # USER PARAMETERS ------------------------------------------------------------------------------------------
 
-task_name = "desert"
+task_name = "aplusb"
 """Name of the problem."""
 
 platform = "vnoj"
@@ -21,11 +21,12 @@ Target platform. For now only "vnoj" is supported.
 bundle_source = True
 """Whether to include test generation and solution files in the test folder."""
 
-subtask_test_count = [64]
+subtask_test_count = [4, 4]
 """Number of tests for each subtasks."""
 
 subtask_script = [
-    "testgen --n 99999 --limxy 999999999",
+    "testgen --lo -1000 --hi 1000",
+    "testgen --lo -1000 --hi 1000",
 ]
 """
 Script used to generate tests for each subtasks.
@@ -34,7 +35,7 @@ Script used to generate tests for each subtasks.
 testlib_persistent = True
 """
 Testlib-specific. \\
-Each script corresponds to a specific seed in testlib. Therefore, to generate distinct test cases from one script, each test case
+Each script is used by testlib to hash a specific seed. Therefore, to generate distinct test cases from one script, each test case
 will have its script appended by `--testlib_seed i` (`i` being the index of the test case within the subtask) before being ran. \\
 Disabling this option will instead randomizes `i`, which will also makes it impossible to reproduce the tests.
 """
@@ -126,10 +127,10 @@ def generate_test(subtask_index: int, problem_test_dir: Path):
 
             for test_index in range(first_test_of_batch, last_test_of_batch + 1):
                 testcase_dir = problem_test_dir / (
-                    "%s-%s"
+                    "sub%d-test%d"
                     % (
-                        "sub" + str(subtask_index + 1),
-                        "test" + str(test_index),
+                        subtask_index + 1,
+                        test_index,
                     )
                 )
                 testcase_dir.mkdir()
@@ -170,7 +171,7 @@ def generate_tests():
     if bundle_source == True:
         for bin in bin_list:
             shutil.copyfile(
-                "%s/%s.cpp" % (rootdir, bin), "%s/%s.cpp" % (problem_test_dir, bin)
+                "%s/%s.cpp" % (cppdir, bin), "%s/%s.cpp" % (problem_test_dir, bin)
             )
 
     print(
