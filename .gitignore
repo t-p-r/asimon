@@ -1,9 +1,9 @@
 *.txt
 *.zip
 *.gch
-/src/contestant.cpp
-/src/judge.cpp
-/src/testgen.cpp
+/src/cpp/contestant.cpp
+/src/cpp/judge.cpp
+/src/cpp/testgen.cpp
 bin/
 log/
 tests/

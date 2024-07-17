@@ -1,6 +1,6 @@
-[submodule "src/lib/cpp/cpdsa"]
-	path = src/lib/cpp/cpdsa
+[submodule "src/cpp/lib/cpdsa"]
+	path = src/cpp/lib/cpdsa
 	url = https://github.com/t-p-r/cpdsa
-[submodule "src/lib/cpp/testlib-asimon"]
-	path = src/lib/cpp/testlib-asimon
+[submodule "src/cpp/lib/testlib-asimon"]
+	path = src/cpp/lib/testlib-asimon
 	url = https://github.com/t-p-r/testlib-asimon
