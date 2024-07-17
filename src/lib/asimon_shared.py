@@ -2,16 +2,17 @@
 Shared functions and data between .py files in the master directory.
 """
 
-import subprocess
-import multiprocessing
 import random
-from concurrent.futures import *
+import subprocess
+from concurrent.futures import ThreadPoolExecutor, Future
 from lib.worker import Worker
 from lib.asimon_utils import *
 
 # Common paths in asimon:
 rootdir = Path(__file__).parent.parent
 # The project's absolute root directory, .../asimon/src/
+cppdir = rootdir / "cpp"
+# C++ workspace
 bindir = rootdir / "bin"
 # Where the C++ executables are dumped into.
 universal_testdir = rootdir / "tests"
@@ -28,7 +29,7 @@ def compile_source_codes(compiler: str, compiler_args: list[str], bin_list: list
     )
     for bin in bin_list:
         # TODO: Should these be Paths?
-        source = str(rootdir / bin) + ".cpp"
+        source = str(cppdir / bin) + ".cpp"
         output = str(bindir / bin)
         ret = subprocess.run([compiler] + compiler_args + [source, "-o", output])
         # e.g. g++ -O2 hello.cpp -o /bin/hello
@@ -41,6 +42,7 @@ def compile_source_codes(compiler: str, compiler_args: list[str], bin_list: list
             )
 
 
+# Slated for deprecation
 def perform_test_batch(
     worker_pool: ThreadPoolExecutor, worker_fns: list, *args, **kwargs
 ) -> list[Future]:
