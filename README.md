@@ -1,4 +1,4 @@
-# ASIMON - Automated System for problem Management and creatION
+# ASIMON - automated system for problem management and creation
 
 (no i'm not fixing that acronym)
 
