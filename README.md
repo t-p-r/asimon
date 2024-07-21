@@ -45,7 +45,7 @@ $ git submodule update --init.
 
 ## Usage
 
-See [tutorial.md](/docs/tutorial.md).
+See [the tutorial](/docs/tutorial.md).
 
 ## FAQ
 
