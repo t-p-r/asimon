@@ -1,42 +1,43 @@
-# ASIMON - Automated System for task Management and creatION
+# ASIMON - Automated System for problem Management and creatION
 
 (no i'm not fixing that acronym)
 
 
 ## What is this?
 
-A collection of tools to help you create, test and manage [competitive programming problems](cp_intro.md).
+A set of tools (in Python) and libraries (in C++) to help you create and manage [competitive programming (CP) problems](cp_intro.md).
 
 ## Features:
 
-- Test creation and packaging.
-- Time and result comparison between implementations.
-
-Currently C++ is the only supported language.
-
+- *Using your C++ source files*, ASIMON can:
+    - create multi-subtask tests from your prompts *in an optionally reproducible manner*.
+    - archive said tests in a format compatible to online judges (currently only DMOJ and its derivatives are supported).
+    - stress-test and judge your implementations.
+    - store all those resources in a foolproof format.
+- *To help you write the C++ source files*, ASIMON includes these submodules:
+    - an [version](https://github.com/t-p-r/testlib-asimon) of [testlib.h](https://github.com/MikeMirzayanov/testlib/) which completely bypasses file I/O.
+    - [CPDSA](https://github.com/t-p-r/cpdsa) - a library containing many well-known data structures and algorithms but has yet to appear in the C++ STL.
 
 ## Requirement
 
-A Linux-running machine with the following packages installed:
+A Linux or Windows-running machine with the following packages installed:
 - `python`
-- `python-zstandard`
-- A C++ compiler supporting C++20, preferably `gcc` (`clang` may work but isn't tested).
+- A C++ compiler, preferably `gcc` (`clang` may work but isn't tested). If you use CPDSA then the compiler must also supports C++20.
 
-## Getting started
+## Installation
 
 1. Clone the repository.
 
 ```bash
 $ git clone https://github.com/t-p-r/asimon
 ```
-
 2. Go into the source directory
 
 ```bash
 $ cd asimon
 $ cd src
 ```
-2. (Optional but highly recommended) Initiate git submodules. 
+3. (Optional but highly recommended) Initiate git submodules. 
 
 ```bash
 $ git submodule update --init.
@@ -44,18 +45,8 @@ $ git submodule update --init.
 
 ## Usage
 
-Open your preferred text editor inside the `src` directory. You will find three Python files:
+See [tutorial.md](/docs/tutorial.md).
 
-- `compare_result.py`
-- `compare_time.py`
-- `testgen.py`
+## FAQ
 
-These file drives the following C++ programs:
-
-- `testgen.cpp` - responsible for generating inputs.
-- `judge.cpp` - the reference solution (also used for generating outputs).
-- `contestant.cpp` - another solution, which (except in `testgen.py`) is tested against `judge.cpp`.
-
-Input generators other than `testgen.cpp` are allowed.
-
-To use the tools, go into each of the Python files, configure the parameters as needed and run them.
+See [FAQ.md](/docs/FAQ.md).
