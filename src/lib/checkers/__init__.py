@@ -3,3 +3,4 @@
 from lib.checkers.base import *
 from lib.checkers.dummy_checker import *
 from lib.checkers.token_checker import *
+from lib.checkers.custom_checker import *
