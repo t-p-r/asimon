@@ -1,6 +1,7 @@
 """
-A list of colors and attributes to be wrapped around  texts. Supported terminals only.
+A list of colors and attributes that can be wrapped around texts. Supported terminals only.
 Some attributes can be combined (e.g. `PURPLE` + `BOLD` + `UNDERLINE`).
+More at: https://www.embedded.pub/linux/misc/escape-codes.html
 """
 
 
