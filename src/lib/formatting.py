@@ -1,33 +1,7 @@
-"""Filesystem and output formatting utilities for asimon."""
+"""Formatting utilities."""
 
-import os
-import shutil
-from pathlib import Path
 from io import TextIOWrapper
-from lib.text_colors import text_colors
-
-
-def get_dir(p: Path) -> Path:
-    """Create a path regardless of its status and returns it."""
-    p.mkdir(parents=True, exist_ok=True)
-    return p
-
-
-def delete_file(s: Path):
-    "Silently deletes a file, suppressing any `OSError` raised."
-    try:
-        os.remove(s)
-    except OSError:
-        pass
-
-
-def delete_folder(p: Path):
-    "Silently deletes a folder, suppressing any `OSError` raised."
-    try:
-        shutil.rmtree(p)
-    except OSError:
-        pass
-
+from lib import text_colors
 
 def wrap_message(content: str, color: text_colors) -> str:
     """Wraps `color` around `content`. Only works for supported terminals. See `text_colors` for some examples."""
@@ -55,3 +29,12 @@ def write_prefix(ostream: TextIOWrapper, content: str, limit: int, end: str) -> 
         ostream.write(content[: (limit + 1)])
         ostream.write(" ...\n(%d character(s) remains)" % (len(content) - limit))
     ostream.write(end)
+
+
+def remove_c_ext(args: list[str]):
+    """Remove `.c` and `.cpp` extensions from all items in `args`."""
+    result = []
+    for arg in args:
+        pos = arg.find(".c")  # also works for .cpp
+        result.append(arg[:pos] if pos != -1 else arg)
+    return result
