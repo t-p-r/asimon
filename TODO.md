@@ -16,6 +16,7 @@ Python side:
 
 - Include time and memory (maybe some other analysis module) in result() (and merge compare_*.py tools)
 
+- Support for many contestant solutions.
 
 C++ side:
 - ~~Support for arg identifier (e.g. `--vertex_count` / `-vC`, `--maxn` etc).~~ (done, now use testlib)
@@ -23,5 +24,8 @@ C++ side:
 
 - ~~"testlib.h" compatilibity~~ Customize `testlib` to bypass multiple file input.
 - test folder name formatting?
-- PROBLEM DATABASE (with unified problem format in a .json file)
 - customize the linking the process (so that all `include` calls to libraries other than `testlib` or the C++ STL are rendered explicitly to the end .cpp file).
+
+- Misc:
+  - PROBLEM DATABASE (with unified problem format in a .json file)
+- Solution caching
