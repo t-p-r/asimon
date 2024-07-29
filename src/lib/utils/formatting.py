@@ -1,7 +1,8 @@
 """Formatting utilities."""
 
 from io import TextIOWrapper
-from lib import text_colors
+from lib.utils import text_colors
+
 
 def wrap_message(content: str, color: text_colors) -> str:
     """Wraps `color` around `content`. Only works for supported terminals. See `text_colors` for some examples."""
@@ -23,6 +24,8 @@ def write_prefix(ostream: TextIOWrapper, content: str, limit: int, end: str) -> 
     """
     Write at most `limit` first characters of `content` to `ostream`.
     """
+    if content is None:
+        content = ""
     if len(content) <= limit:
         ostream.write(content)
     else:
