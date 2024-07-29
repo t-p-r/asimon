@@ -15,7 +15,7 @@ src
 		|	└──	...
 		├──	solution
 		|	├── main-correct-solution.cpp
-		|	└── contestant
+		|	└── contestants
 		|		├── another-correct-solution.cpp
 		|		├──	20-percent-solution.cpp
 		|		├──	50-percent-solution.cpp
