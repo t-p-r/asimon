@@ -9,14 +9,14 @@
 - Local hosting.
 - Very simple layout.
 - Full control (and responsibility) over what you do.
-- Multithread support (especially useful for problems with great time complexity, e.g. $O(n^3)$ where $n=420$).
+- Multithread support (especially useful for problems with great time complexity e.g. $O(n^3)$ where $n=420$).
 - You are creating problems for anything other than Codeforces contests (if not, just use Polygon :)
 
 
 
 ### **Q:** What would a created problem look like?
 
-**A:** See [created_problem.md](/docs/created_problem.md).
+**A:** See [this](/docs/created_problem.md).
 
 
 ### **Q:** Why are there no support for problem statement and solution? 
