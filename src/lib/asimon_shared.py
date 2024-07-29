@@ -4,45 +4,54 @@ Shared functions and data between .py files in the master directory.
 
 import random
 import subprocess
-from concurrent.futures import ThreadPoolExecutor, Future
-from lib.worker import Worker
-from lib.asimon_utils import *
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, Future
 
-# Common paths in asimon:
+from lib.models import *
+from lib.utils import *
+
+# Below are common paths in asimon:
 rootdir = Path(__file__).parent.parent
-# The project's absolute root directory, .../asimon/src/
-cppdir = rootdir / "cpp"
+# The project's root directory, .../asimon/src/
+workspace = rootdir / "workspace"
 # C++ workspace
 bindir = rootdir / "bin"
 # Where the C++ executables are dumped into.
-universal_testdir = rootdir / "tests"
-# Test folder. Each platform has its own subfolder (e.g. /tests/vnoj, /tests/polygon).
 logdir = rootdir / "log"
 # Log folder.
+general_status_file = logdir / "general_status.txt"
+# Reports on generic informations about the run.
+universal_problems_dir = rootdir / "problems"
+# Where we store problems.
+cache_dir = rootdir / "cache"
+# Store pair of .c/.cpp files and its binary. Enables skipping of compilation.
 
 
-def compile_source_codes(compiler: str, compiler_args: list[str], bin_list: list[str]):
+def compile_source_codes(
+    compiler: str, compiler_args: list[str], source_files: list[str]
+):
     get_dir(bindir)
     send_message(
         "Compiling source codes, warnings and/or errors may be shown below...",
         text_colors.OK_GREEN,
     )
-    for bin in bin_list:
-        # TODO: Should these be Paths?
-        source = str(cppdir / bin) + ".cpp"
-        output = str(bindir / bin)
-        ret = subprocess.run([compiler] + compiler_args + [source, "-o", output])
+
+    for source_file in source_files:
+        source_path = str(workspace / source_file) + ".cpp"
+        output_path = str(bindir / source_file)
+        ret = subprocess.run(
+            [compiler] + compiler_args + [source_path, "-o", output_path]
+        )
         # e.g. g++ -O2 hello.cpp -o /bin/hello
         if ret.returncode != 0:
             raise Exception(
                 wrap_message(
-                    source + " cannot be compiled, or doesn't exist.",
+                    source_path + " cannot be compiled, or doesn't exist.",
                     text_colors.RED,
                 )
             )
 
 
-# Slated for deprecation
+# Slated for future deprecation.
 def perform_test_batch(
     worker_pool: ThreadPoolExecutor, worker_fns: list, *args, **kwargs
 ) -> list[Future]:
