@@ -6,7 +6,7 @@ from subprocess import run, PIPE, TimeoutExpired, CalledProcessError
 from pathlib import Path
 from enum import Enum
 from lib.models.checkers import *
-from lib.utils import text_colors, send_message
+from lib.utils import text_colors, send_message, wrap_message
 import time
 
 __all__ = [
@@ -141,14 +141,12 @@ class Worker:
             end = time.perf_counter()
         except TimeoutExpired as timeout:
             if timeout_message != None:
-                send_message(timeout_message, text_colors.YELLOW)
-                exit(0)
+                raise Exception(wrap_message(timeout_message, text_colors.RED))
             else:
                 raise timeout
         except CalledProcessError as proc_error:
             if kill_message != None:
-                send_message(kill_message, text_colors.RED)
-                exit(0)
+                raise Exception(wrap_message(kill_message, text_colors.RED))
             else:
                 raise proc_error
 
@@ -165,14 +163,14 @@ class Worker:
 
         input = self.anal_process(
             testgen_command,
-            timeout_message="Critical error: test generator timed out.",
-            kill_message="Critical error: test generator exited with an error code.",
+            timeout_message="Fatal error: test generator timed out.",
+            kill_message="Fatal error: test generator exited with an error code.",
         ).stdout
 
         answer = self.anal_process(
             self.judge,
-            timeout_message="Critical error: judge's solution timed out.",
-            kill_message="Critical error: judge's solution exited with an error code.",
+            timeout_message="Fatal error: judge's solution timed out.",
+            kill_message="Fatal error: judge's solution exited with an error code.",
             input=input,
         ).stdout
 
