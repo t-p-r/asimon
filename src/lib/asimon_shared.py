@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, Future
 from lib.models import *
 from lib.utils import *
 
-# Below are common paths in asimon:
+# Common paths in asimon:
 
 rootdir = Path(__file__).parent.parent
 # The project's root directory, .../asimon/src/
@@ -26,6 +26,8 @@ universal_problems_dir = rootdir / "problems"
 cache_dir = rootdir / "cache"
 # Store pair of .c/.cpp files and its binary. Enables skipping of compilation.
 
+# Some constants:
+PATH_DELIMITER = ("\\" if is_windows() else "/")
 
 def compile_source_codes(
     compiler: str, compiler_args: list[str], source_files: list[str]

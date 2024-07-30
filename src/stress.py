@@ -92,7 +92,7 @@ def run_tests():
 
             for contestant_result in test_result.contestant_results:
                 contestant = str(contestant_result.path).removeprefix(
-                    str(bindir) + "\\"
+                    str(bindir) + PATH_DELIMITER
                 )
                 exec_times[contestant].append(contestant_result.exec_time)
 
@@ -146,7 +146,7 @@ def run_tests():
 
 def print_final_verdict():
     for contestant in workers[0].contestants:
-        contestant_name = str(contestant).removeprefix(str(bindir) + "\\")
+        contestant_name = str(contestant).removeprefix(str(bindir) + PATH_DELIMITER)
         general_status.append(
             [
                 contestant_name,

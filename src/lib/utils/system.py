@@ -1,4 +1,4 @@
-"""Filesystem utilities."""
+"""System utilities."""
 
 from pathlib import Path
 from shutil import rmtree
@@ -45,3 +45,11 @@ def find_file_with_name(name: str, p: Path):
         )
         % name
     )
+
+def is_windows():
+    try:
+        import msvcrt
+    except ModuleNotFoundError:
+        return False
+    else:
+        returnTrue
