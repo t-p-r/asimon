@@ -9,7 +9,7 @@ import sys
 sys.dont_write_bytecode = True  # disables the creation of __pycache__ folders
 
 from lib.asimon_shared import *
-from config.stress_config import *
+from config.config_stress import *
 from tabulate import tabulate
 
 testgen_source, testgen_args = script_split(testgen_script)
@@ -54,90 +54,93 @@ def run_tests():
         # Cover the case where e.g. there are 9 test and 4 workers (the batches are 1-4, 5-8 and 9).
         batch_count += 1
 
-    with ProcessPoolExecutor(max_workers=cpu_count) as worker_pool:
-        for batch in range(0, batch_count):
-            if len(workers[0].contestants) == 0:
-                send_message(
-                    "All solutions have failed, aborting execution...",
-                    text_colors.YELLOW,
-                )
-                break
+    worker_pool = ProcessPoolExecutor(max_workers=cpu_count)
 
-            first_test_of_batch = processed_tests + 1
-            last_test_of_batch = min(processed_tests + cpu_count, test_count)
-            batch_size = last_test_of_batch - first_test_of_batch + 1
+    for batch in range(0, batch_count):
+        if len(workers[0].contestants) == 0:
             send_message(
-                "Executing batch %d (test %d - %d)"
-                % (batch, first_test_of_batch, last_test_of_batch),
-                text_colors.BOLD,
+                "All solutions have failed, aborting execution...",
+                text_colors.YELLOW,
+            )
+            break
+
+        first_test_of_batch = processed_tests + 1
+        last_test_of_batch = min(processed_tests + cpu_count, test_count)
+        batch_size = last_test_of_batch - first_test_of_batch + 1
+        send_message(
+            "Executing batch %d (test %d - %d)"
+            % (batch, first_test_of_batch, last_test_of_batch),
+            text_colors.BOLD,
+        )
+
+        procs: list[Future] = []
+        for i in range(0, batch_size):
+            test_seed = random.getrandbits(31)
+            procs.append(
+                worker_pool.submit(
+                    workers[i].perform_test,
+                    [bindir / testgen_source]
+                    + testgen_args
+                    + ["--seed %d" % test_seed],
+                )
             )
 
-            procs: list[Future] = []
-            for i in range(0, batch_size):
-                test_seed = random.getrandbits(31)
-                procs.append(
-                    worker_pool.submit(
-                        workers[i].perform_test,
-                        [bindir / testgen_source]
-                        + testgen_args
-                        + ["--seed %d" % test_seed],
-                    )
+        for proc in procs:
+            test_result: WorkerResult = proc.result()
+            test_index = processed_tests + 1
+
+            for contestant_result in test_result.contestant_results:
+                contestant = str(contestant_result.path).removeprefix(
+                    str(bindir) + "\\"
                 )
+                exec_times[contestant].append(contestant_result.exec_time)
 
-            for proc in procs:
-                test_result: WorkerResult = proc.result()
-                test_index = processed_tests + 1
+                if (
+                    contestant_result.status != ContestantResultStatus.AC
+                    and contestant_result.path in workers[0].contestants
+                ):
+                    for worker in workers:
+                        worker.contestants.remove(contestant_result.path)
 
-                for contestant_result in test_result.contestant_results:
-                    contestant = str(contestant_result.path).removeprefix(
-                        str(bindir) + "\\"
+                    send_message(
+                        "Solution %s failed (%s, test %d)"
+                        % (contestant, contestant_result.status, test_index),
+                        text_colors.RED,
                     )
-                    exec_times[contestant].append(contestant_result.exec_time)
+                    general_status.append(
+                        [
+                            contestant,
+                            "%s (test %d)" % (contestant_result.status, test_index),
+                        ]
+                    )
 
-                    if (
-                        contestant_result.status != ContestantResultStatus.AC
-                        and contestant_result.path in workers[0].contestants
-                    ):
-                        for worker in workers:
-                            worker.contestants.remove(contestant_result.path)
+                    if status_only == False:
+                        contestant_logdir = get_dir(logdir / contestant)
+                        status = open(contestant_logdir / "status.txt", "w")
+                        input = open(contestant_logdir / "input.txt", "w")
+                        answer = open(contestant_logdir / "answer.txt", "w")
+                        output = open(contestant_logdir / "output.txt", "w")
 
-                        send_message(
-                            "Solution %s failed (%s, test %d)"
-                            % (contestant, contestant_result.status, test_index),
-                            text_colors.RED,
-                        )
-                        general_status.append(
-                            [
-                                contestant,
-                                "%s (test %d)" % (contestant_result.status, test_index),
-                            ]
-                        )
+                        def write_to_log(ostream, headline, content, limit=256):
+                            if content is None:  # e.g. when the solution TLE
+                                content = ""
+                            status.write(headline)
+                            write_prefix(status, content, limit, "\n\n")
+                            ostream.write(content)
 
-                        if status_only == False:
-                            contestant_logdir = get_dir(logdir / contestant)
-                            status = open(contestant_logdir / "status.txt", "w")
-                            input = open(contestant_logdir / "input.txt", "w")
-                            answer = open(contestant_logdir / "answer.txt", "w")
-                            output = open(contestant_logdir / "output.txt", "w")
+                        write_to_log(input, "Input:\n", test_result.input)
+                        write_to_log(answer, "Answer:\n", test_result.answer)
+                        write_to_log(output, "Output:\n", contestant_result.output)
+                        status.write("Comment:\n%s\n\n" % contestant_result.comment)
 
-                            def write_to_log(ostream, headline, content, limit=256):
-                                if content is None:  # e.g. when the solution TLE
-                                    content = ""
-                                status.write(headline)
-                                write_prefix(status, content, limit, "\n\n")
-                                ostream.write(content)
+                        status.close()
+                        input.close()
+                        output.close()
+                        answer.close()
 
-                            write_to_log(input, "Input:\n", test_result.input)
-                            write_to_log(answer, "Answer:\n", test_result.answer)
-                            write_to_log(output, "Output:\n", contestant_result.output)
-                            status.write("Comment:\n%s\n\n" % contestant_result.comment)
+            processed_tests += 1
 
-                            status.close()
-                            input.close()
-                            output.close()
-                            answer.close()
-
-                processed_tests += 1
+    worker_pool.shutdown()
 
 
 def print_final_verdict():
@@ -149,23 +152,24 @@ def print_final_verdict():
                 "%s (%d tests)" % (ContestantResultStatus.AC, test_count),
             ]
         )
-
     general_status.sort()
-    logfile = open(general_status_file, "w+")
-    logfile.write("General status:\n\n")
-    logfile.write(
-        tabulate(general_status, headers=["solution", "status"], tablefmt="simple")
-    )
-    logfile.write("\n\n\nExecution time statistics:\n\n")
 
-    exec_time_stat = []
+    exec_time_stats = []
     for contestant, times in exec_times.items():
         min, max, avg, median = aggregate(times)
-        exec_time_stat.append([contestant, min, max, avg, median])
+        exec_time_stats.append([contestant, min, max, avg, median])
+    exec_time_stats.sort()
 
-    logfile.write(
+    result_file = open(result_file_location, "w+")
+    result_file.write("General status:\n\n")
+    result_file.write(
+        tabulate(general_status, headers=["solution", "status"], tablefmt="simple")
+    )
+
+    result_file.write("\n\n\nExecution time statistics:\n\n")
+    result_file.write(
         tabulate(
-            exec_time_stat,
+            exec_time_stats,
             headers=[
                 "solution",
                 "min (ms)",
@@ -178,11 +182,14 @@ def print_final_verdict():
         )
     )
 
-    logfile.close()
+    result_file.close()
     send_message(
-        "Execution completed. general status can be found at: %s" % general_status_file,
-        text_colors.OK_CYAN,
+        "Execution completed. general status can be found at: %s"
+        % result_file_location,
+        text_colors.CYAN,
     )
+    send_message("Press any key to close...", color=text_colors.BOLD, end="")
+    input()
 
 
 if __name__ == "__main__":

@@ -56,8 +56,8 @@ No test data will be given.
 cpu_count = 4
 """
 The number of CPUs used to execute tests concurrently. \\
-Note that performance gains and individual tests' execution time varies for each use cases; see documentations for more details. \\
-As a rule of thumb, this number should be HALF your CPU's physical core count.
+For the best balance between various CPU/IO factors (see documentation for more details), 
+this number should be HALF your CPU's physical core count.
 """
 
 compiler = "g++"
