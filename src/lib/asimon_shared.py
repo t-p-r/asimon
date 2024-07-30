@@ -10,15 +10,16 @@ from lib.models import *
 from lib.utils import *
 
 # Below are common paths in asimon:
+
 rootdir = Path(__file__).parent.parent
 # The project's root directory, .../asimon/src/
 workspace = rootdir / "workspace"
-# C++ workspace
+# C++ workspace.
 bindir = rootdir / "bin"
 # Where the C++ executables are dumped into.
 logdir = rootdir / "log"
 # Log folder.
-general_status_file = logdir / "general_status.txt"
+result_file_location = logdir / "result.txt"
 # Reports on generic informations about the run.
 universal_problems_dir = rootdir / "problems"
 # Where we store problems.
@@ -32,11 +33,11 @@ def compile_source_codes(
     get_dir(bindir)
     send_message(
         "Compiling source codes, warnings and/or errors may be shown below...",
-        text_colors.OK_GREEN,
+        text_colors.GREEN,
     )
 
     for source_file in source_files:
-        source_path = str(workspace / source_file) + ".cpp"
+        source_path = str(workspace / source_file) # extension already in config
         output_path = str(bindir / source_file)
         ret = subprocess.run(
             [compiler] + compiler_args + [source_path, "-o", output_path]
