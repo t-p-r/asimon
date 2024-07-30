@@ -52,4 +52,4 @@ def is_windows():
     except ModuleNotFoundError:
         return False
     else:
-        returnTrue
+        return True
