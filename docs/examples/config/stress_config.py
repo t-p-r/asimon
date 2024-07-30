@@ -8,11 +8,10 @@ Name of the saved problem, or `$workspace` if you want to source your C++ files 
 """
 
 if problem == "$workspace":
-    main_correct_solution = "judge"
-    """DO NOT include the .c/.cpp extension."""
+    main_correct_solution = "judge.cpp"
 
-    other_solutions = ["contestant"]
-    """These are to be compared against the MCS. DO NOT include the .c/.cpp extensions."""
+    other_solutions = ["contestant.cpp"]
+    """These are to be compared against the MCS."""
 
     checker = "token"
     """Result checker. Must be one of:
@@ -42,7 +41,7 @@ So, if `testgen_script` is "abc -n 10", the actual scripts invoked would be
 `abc -n 10 --seed 1`, `abc -n 10 --seed 2`, `abc -n 10 --seed 3` etc.
 """
 
-time_limit = 0.1
+time_limit = 1
 """In seconds."""
 
 test_count = 64
