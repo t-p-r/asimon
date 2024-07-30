@@ -1,55 +1,10 @@
 """ 
-src/gen_problem.py - Generate problem (create tests from workspace files and bundle them all into a folder).
+src/create_problem.py - Generate problem (create tests from workspace files and bundle them all into a folder).
 """
 
 # USER PARAMETERS ------------------------------------------------------------------------------------------
 
-task_name = "aplusb"
-"""Name of the problem."""
 
-platform = "vnoj"
-"""
-Target platform. For now only "vnoj" is supported.
-"""
-
-bundle_source = True
-"""Whether to include test generation and solution files in the test folder."""
-
-subtask_test_count = [4, 4]
-"""Number of tests for each subtasks."""
-
-subtask_script = [
-    "testgen --lo -1000 --hi 1000",
-    "testgen --lo -1000 --hi 1000",
-]
-"""
-Script used to generate tests for each subtasks.
-"""
-
-testlib_persistent = True
-"""
-Testlib-specific. \\
-Each script is used by testlib to hash a specific seed. Therefore, to generate distinct test cases from one script, each test case
-will have its script appended by `--testlib_seed i` (`i` being the index of the test case within the subtask) before being ran. \\
-Disabling this option will instead randomizes `i`, which will also makes it impossible to reproduce the tests.
-"""
-
-worker_count = 16
-"""
-The number of workers (i.e. tests to be executed at the same time).\\
-For best performance, this number should not exceed your CPU's thread count. \\
-Multiple workers work best for computationally intensive problems; for IO-intensize problems (e.g. 10^5 integers or more), 
-1 or 2 workers yields the best performance. 
-"""
-
-compiler = "g++"
-
-compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20", "-H"]
-"""
-Compiler arguments. See your C++ compiler for documentation. Do note that:
-    - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
-    - if you have precompiled headers (e.g. `stdc++.h`), use the exact set of arguments you compiled them with to save time.
-"""
 
 # HIC SUNT DRACONES ---------------------------------------------------------------------------------------
 
@@ -60,7 +15,7 @@ import random
 from lib.asimon_shared import *
 
 bin_list = ["judge"]
-workers = [Worker("dummy")] * worker_count
+workers = [TestGenerator()] * worker_count
 
 total_test_count = sum(subtask_test_count)
 subtask_count = len(subtask_test_count)
@@ -76,7 +31,7 @@ def detect_generators():
 
     send_message(
         "Test generators detected in subtask scripts:",
-        text_colors.OK_CYAN,
+        text_colors.CYAN,
         " ",
     )
 
@@ -99,7 +54,7 @@ def user_argument_check():
 def generate_test(subtask_index: int, problem_test_dir: Path):
     print(
         "Generating subtask %s:"
-        % (wrap_message(str(subtask_index + 1), text_colors.OK_GREEN))
+        % (wrap_message(str(subtask_index + 1), text_colors.GREEN))
     )
 
     testgen_bin, testgen_args = script_split(subtask_script[subtask_index])
@@ -165,14 +120,14 @@ def generate_tests():
     if bundle_source == True:
         for bin in bin_list:
             shutil.copyfile(
-                "%s/%s.cpp" % (cppdir, bin), "%s/%s.cpp" % (problem_testdir, bin)
+                "%s/%s.cpp" % (workspace, bin), "%s/%s.cpp" % (problem_testdir, bin)
             )
 
     print(
         "\nGenerator will generate %s subtasks for a total of %s tests:"
         % (
-            wrap_message(str(subtask_count), text_colors.OK_GREEN),
-            wrap_message(str(total_test_count), text_colors.OK_CYAN),
+            wrap_message(str(subtask_count), text_colors.GREEN),
+            wrap_message(str(total_test_count), text_colors.CYAN),
         )
     )
 
@@ -195,5 +150,5 @@ if __name__ == "__main__":
     send_message(
         "\nGeneration completed succesfully. Test file can be found at: %s/%s.zip."
         % (platform_test_dir, task_name),
-        text_colors.OK_CYAN,
+        text_colors.CYAN,
     )
