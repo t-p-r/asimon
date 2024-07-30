@@ -2,6 +2,7 @@
 *.zip
 *.gch
 src/workspace/*.*
+src/config/
 bin/
 log/
 tests/
