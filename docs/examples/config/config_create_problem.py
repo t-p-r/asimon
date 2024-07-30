@@ -1,23 +1,19 @@
-task_name = "aplusb"
+problem = "io"
 """Name of the problem."""
 
-platform = "vnoj"
-"""
-Target platform. For now only "vnoj" is supported.
-"""
-
 bundle_source = True
-"""Whether to include test generation and solution files in the test folder."""
+"""Whether to include test generator, solutions, ... (in general every files in the `workspace` folder) in the `tests` folder."""
 
-subtask_test_count = [4, 4]
-"""Number of tests for each subtasks."""
-
-subtask_script = [
-    "testgen --lo -1000 --hi 1000",
-    "testgen --lo -1000 --hi 1000",
+subtasks = [
+    (1, "testgen 10 10"),
+    ["gentest %d" % i for i in range(2, 9)],
+    "gentest 10",
+    "formatttttttttttttttt",
 ]
 """
-Script used to generate tests for each subtasks.
+Each item in this list contains information about one subtask.
+An item can be:
+    - a single command line (e.g. `testgen.exe):
 """
 
 testlib_persistent = True
