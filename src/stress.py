@@ -13,6 +13,7 @@ from config.config_stress import *
 from tabulate import tabulate
 
 testgen_source, testgen_args = script_split(testgen_script)
+testgen_source = find_file_with_name(testgen_source, workspace)
 
 if problem == "$workspace":
     source_files = [testgen_source, main_correct_solution] + other_solutions

@@ -34,10 +34,12 @@ def write_prefix(ostream: TextIOWrapper, content: str, limit: int, end: str) -> 
     ostream.write(end)
 
 
-def remove_c_ext(args: list[str]):
-    """Remove `.c` and `.cpp` extensions from all items in `args`."""
+def remove_ext(args: list[str]):
+    """
+    Remove extensions from all items in `args` (i.e. all character including and after the last `.`).
+    """
     result = []
     for arg in args:
-        pos = arg.find(".c")  # also works for .cpp
+        pos = arg.rfind(".")  # also works for .cpp
         result.append(arg[:pos] if pos != -1 else arg)
     return result

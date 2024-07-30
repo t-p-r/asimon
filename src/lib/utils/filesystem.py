@@ -3,6 +3,7 @@
 from pathlib import Path
 from shutil import rmtree
 import os
+from lib.utils import wrap_message, text_colors
 
 
 def get_dir(p: Path) -> Path:
@@ -25,3 +26,22 @@ def delete_folder(p: Path):
         rmtree(p)
     except OSError:
         pass
+
+
+def find_file_with_name(name: str, p: Path):
+    """Find a file with name `name`.* in the directory `p`."""
+    path, dirnames, filenames = list(p.walk())[0]  # we just care about p
+    for filename in filenames:
+        if (
+            len(filename) > len(name)
+            and filename.startswith(name)
+            and filename[len(name)] == "."
+        ):
+            return filename
+    raise Exception(
+        wrap_message(
+            "No source file corresponding with the name %s is found in the /workspace folder.",
+            text_colors.RED,
+        )
+        % name
+    )
