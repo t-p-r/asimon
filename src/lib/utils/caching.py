@@ -1,1 +1,1 @@
-"""Manages caching of solutions and its binaries."""
+"""Manages caching of C++ solutions and its binaries."""
