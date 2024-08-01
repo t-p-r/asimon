@@ -40,11 +40,12 @@ def find_file_with_name(name: str, p: Path):
             return filename
     raise Exception(
         wrap_message(
-            "No source file corresponding with the name %s is found in the /workspace folder.",
+            'No source file with name "%s.cpp" or "%s.c" is found in the /workspace folder.',
             text_colors.RED,
         )
-        % name
+        % (name, name)
     )
+
 
 def is_windows():
     try:
@@ -53,3 +54,6 @@ def is_windows():
         return False
     else:
         return True
+
+
+PATH_DELIMITER = "\\" if is_windows() else "/"
