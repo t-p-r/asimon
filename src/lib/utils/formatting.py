@@ -1,7 +1,7 @@
 """Formatting utilities."""
 
 from io import TextIOWrapper
-from lib.utils import text_colors
+from lib.utils.text_colors import text_colors
 
 
 def wrap_message(content: str, color: text_colors) -> str:
