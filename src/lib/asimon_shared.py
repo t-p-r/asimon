@@ -1,34 +1,19 @@
 """
 Shared functions and data between .py files in the master directory.
+This file is gradually being stripped of code; when this is done it will be renamed __init__.py
 """
 
 import random
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, Future
 
-from lib.models import *
-from lib.utils import *
+from .models import *
+from .utils import *
+from .exceptions import *
+from .paths import *
 
-# Common paths in asimon:
 
-rootdir = Path(__file__).parent.parent
-# The project's root directory, .../asimon/src/
-workspace = rootdir / "workspace"
-# C++ workspace.
-bindir = rootdir / "bin"
-# Where the C++ executables are dumped into.
-logdir = rootdir / "log"
-# Log folder.
-result_file_location = logdir / "result.txt"
-# Reports on generic informations about the run.
-universal_problems_dir = rootdir / "problems"
-# Where we store problems.
-cache_dir = rootdir / "cache"
-# Store pair of .c/.cpp files and its binary. Enables skipping of compilation.
-
-# Some constants:
-PATH_DELIMITER = ("\\" if is_windows() else "/")
-
+# Will be moved to utils/compiler.py soon.
 def compile_source_codes(
     compiler: str, compiler_args: list[str], source_files: list[str]
 ):
@@ -39,7 +24,7 @@ def compile_source_codes(
     )
 
     for source_file in source_files:
-        source_path = str(workspace / source_file) # extension already in config
+        source_path = str(workspace / source_file)  # extension already in config
         output_path = str(bindir / source_file)
         ret = subprocess.run(
             [compiler] + compiler_args + [source_path, "-o", output_path]
@@ -54,7 +39,7 @@ def compile_source_codes(
             )
 
 
-# Slated for future deprecation.
+# Slated for deprecation.
 def perform_test_batch(
     worker_pool: ThreadPoolExecutor, worker_fns: list, *args, **kwargs
 ) -> list[Future]:
