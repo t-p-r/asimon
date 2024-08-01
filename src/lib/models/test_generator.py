@@ -4,7 +4,9 @@ from subprocess import run
 
 class TestGenerator:
     """Umbrella class for generating test data."""
-    def __init__(self) -> None:
+
+    def __init__(self, timeout: int = 5) -> None:
+        self.timeout = timeout
         pass
 
     def generate_test(
