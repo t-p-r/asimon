@@ -5,17 +5,16 @@ src/stress.py - Stress testing a problem's implementations.
 # HIC SUNT DRACONES ---------------------------------------------------------------------------------------
 
 import sys
-
 sys.dont_write_bytecode = True  # disables the creation of __pycache__ folders
 
 from lib.asimon_shared import *
-from config.config_stress import *
+from config_stress import *
 from tabulate import tabulate
 
 testgen_source, testgen_args = script_split(testgen_script)
 testgen_source = find_file_with_name(testgen_source, workspace)
 
-if problem == "$workspace":
+if problem_name == "$workspace":
     source_files = [testgen_source, main_correct_solution] + other_solutions
     if checker == "custom":
         source_files.append(custom_checker)
@@ -115,7 +114,7 @@ def run_tests():
                         ]
                     )
 
-                    if status_only == False:
+                    if failed_test_data == True:
                         contestant_logdir = get_dir(logdir / contestant)
                         status = open(contestant_logdir / "status.txt", "w")
                         input = open(contestant_logdir / "input.txt", "w")
@@ -185,7 +184,7 @@ def print_final_verdict():
 
     result_file.close()
     send_message(
-        "Execution completed. general status can be found at: %s"
+        "Execution completed. Information about result can be found at: %s"
         % result_file_location,
         text_colors.CYAN,
     )
