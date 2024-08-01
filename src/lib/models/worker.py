@@ -55,7 +55,8 @@ class ContestantExecutionResult:
 
 
 class WorkerResult:
-    """Result of the Worker class, returned by `perform_test()`. Fields are:
+    """
+    Result of the Worker class, returned by `perform_test()`. Fields are:
     - `input`: the test data
     - `answer`: the result from the judge
     - `contestant_results`: a list of `ContestantExecutionResult`.
