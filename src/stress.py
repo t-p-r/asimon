@@ -184,7 +184,7 @@ def print_final_verdict():
 
     result_file.close()
     send_message(
-        "Execution completed. Information about result can be found at: %s"
+        "Execution completed. Information about the result can be found at: %s"
         % result_file_location,
         text_colors.CYAN,
     )
