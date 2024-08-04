@@ -1,9 +1,11 @@
 /**
- * @file src/example/judge.cpp - Judge's solution (example).
+ * Judge's solution (example).
+ *
+ * @file docs/example/workspace/judge.cpp
  *
  * This file is supposed to be the correct answer. This
- * example takes two numbers as input, then prints out their (perhaps
- * overflowed) sum, using the standard C++ `cin`/`cout` functions.
+ * example takes two numbers as input, then prints out their sum,
+ * using the standard C++ @c cin>> / @c cout<< functions.
  */
 
 #include <iostream>

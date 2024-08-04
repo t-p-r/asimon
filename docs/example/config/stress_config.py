@@ -1,17 +1,20 @@
 """
-configuration/stress.py - Configuration for stress.py.
+config_stress.py - Configuration for stress.py.
 """
 
-problem = "$workspace"
+problem_name = "$workspace"
 """
 Name of the saved problem, or `$workspace` if you want to source your C++ files directly from the `workspace` folder.
 """
 
-if problem == "$workspace":
+if problem_name == "$workspace":
     main_correct_solution = "judge.cpp"
 
-    other_solutions = ["contestant.cpp"]
-    """These are to be compared against the MCS."""
+    other_solutions = [
+        "judge.cpp",
+        "contestant.cpp",
+    ]
+    """Includes the main correct solution here if you want to see results on its execution time."""
 
     checker = "token"
     """Result checker. Must be one of:
@@ -27,40 +30,38 @@ if problem == "$workspace":
     custom_checker = ""
     """If `checker` is `custom`, this is the name of the C++ checker."""
 
-testgen_script = "testgen --lo=-1000 --hi=1000"
+testgen_script = "testgen 0 1000"
 """
-Additional arguments are passed to the test generators as `argc` (num. of arguments) and `argv` (list of arguments).
-For testlib.h users: each time the script is run, it will be appended with `--seed X` (where `X` is a random unsigned 31-bit integer), 
-so that outputs are unique even though there is only one script. 
+For testlib.h users: each time this script is run, it will have been appended with "--seed X" (where X is a random unsigned 31-bit integer).
+This will make outputs unique even though there is only one script. 
 """
 
-testlib_persistent = True
+testlib_persistent = False
 """
-For testlib.h users: this will not randomizes `X` but would gradually increments it from 1.
+For testlib.h users: this will not randomizes X but would instead increments it from 1.
 So, if `testgen_script` is "abc -n 10", the actual scripts invoked would be 
-`abc -n 10 --seed 1`, `abc -n 10 --seed 2`, `abc -n 10 --seed 3` etc.
+"abc -n 10 --seed 1", "abc -n 10 --seed 2", "abc -n 10 --seed 3", etc.
 """
 
 time_limit = 1
 """In seconds."""
 
-test_count = 64
+test_count = 32
 
-status_only = True
+failed_test_data = True
 """
-If set to True, the `log` directory will only contains the general status of each solution (e.g. `sol1.cpp: time limit exceeded (test 17).`).
-No test data will be given.
+If set to True, no test data of failed tests will be given in the `log` directory.
 """
 
 cpu_count = 4
 """
 The number of CPUs used to execute tests concurrently. \\
-For the best balance between various CPU/IO factors (see documentation for more details), 
+For the best balance between various CPU and IO factors (see documentation for more details), 
 this number should be HALF your CPU's physical core count.
 """
 
 compiler = "g++"
-"""C++ compiler. Only `g++` has been tested and used extensively."""
+"""C++ compiler. Only `g++` has been tested and used extensively. `clangd++` should also work."""
 
 compiler_args = "-pipe -O2 -D_TPR_ -std=c++20 -H"
 """
