@@ -9,7 +9,7 @@ class DummyChecker(Checker):
 
     def check(self, input: str, answer: str, output: str) -> CheckerResult:
         return CheckerResult(
-            status=ContestantExecutionStatus.AC,
+            status=ContestantResultStatus.AC,
             comment="All seems well.",
             # input=input,
             # answer=answer,

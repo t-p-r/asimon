@@ -11,8 +11,10 @@ if problem_name == "$workspace":
     main_correct_solution = "judge.cpp"
 
     other_solutions = [
+        "judge.cpp",
         "contestant.cpp",
     ]
+    """Includes the main correct solution here if you want to see results on its execution time."""
 
     checker = "token"
     """Result checker. Must be one of:
@@ -30,38 +32,40 @@ if problem_name == "$workspace":
 
 testgen_script = "testgen --lo 0 --hi 1000"
 """
-Each script should have a form `generator-name [params]`.
+For testlib.h users: each time this script is run, it will have been appended with "--seed X" (where X is a random unsigned 31-bit integer).
+This will make outputs unique even though there is only one script. 
+"""
 
-Do not use extensions, like ".exe" in the script.
-
-For `testlib.h` users: each time this script is run, it will have been appended with "--seed X" (where X is a random unsigned 31-bit integer).
-This will make outputs unique even though there is only one script.
+testlib_persistent = False
+"""
+For testlib.h users: this will not randomizes X but would instead increments it from 1.
+So, if `testgen_script` is "abc -n 10", the actual scripts invoked would be 
+"abc -n 10 --seed 1", "abc -n 10 --seed 2", "abc -n 10 --seed 3", etc.
 """
 
 time_limit = 1
-"""
-In seconds, can be decimal (e.g. 0.25).
-"""
-
+"""In seconds."""
 
 test_count = 32
 
 failed_test_data = True
 """
-If set to False, no test data of failed tests will be given in the `log` directory,
-and that directory will only contains a file detailing the overall results.
+If set to True, no test data of failed tests will be given in the `log` directory.
 """
 
-cpu_workers = 4
+cpu_count = 4
 """
 The number of CPUs used to execute tests concurrently. \\
 For the best balance between various CPU and IO factors (see documentation for more details), 
 this number should be HALF your CPU's physical core count.
 """
 
-compilation_command = "g++ -pipe -O2 -Wall -Wexceptions -std=c++20"
+compiler = "g++"
+"""C++ compiler. Only `g++` has been tested and used extensively. `clangd++` should also work."""
+
+compiler_args = "-pipe -O2 -D_TPR_ -std=c++20 -H"
 """
-For compiler arguments, see your C++ compiler for documentation. Do note that:
+Compiler arguments. See your C++ compiler for documentation. Do note that:
     - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
     - if you have any precompiled header (e.g. `stdc++.h`), use the exact argument set you compiled it with to save time.
 """

@@ -9,7 +9,7 @@ class TestGenerator:
         self.timeout = timeout
         pass
 
-    def __call__(
+    def generate_test(
         self,
         testgen_command: str | Path | list[str | Path],
         judge_command: Path,
@@ -25,12 +25,7 @@ class TestGenerator:
         # the next run() command wouldn't be able to fetch any data from it.
         input_file.close()
         input_file = open(export_input_to, "r")
-        run(
-            judge_command,
-            stdin=input_file,
-            stdout=output_file,
-            timeout=self.timeout,
-        )
+        run(judge_command, stdin=input_file, stdout=output_file, timeout=self.timeout)
 
         input_file.close()
         output_file.close()

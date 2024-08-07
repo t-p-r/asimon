@@ -1,31 +1,7 @@
 """Formatting utilities."""
 
 from io import TextIOWrapper
-
-
-class text_colors:
-    """
-    A list of ANSI escape sequences that can be used as colors and other attributes for texts.
-    Supported by UNIX terminals and the new Windows Terminal.
-    Some attributes can be combined (e.g. `PURPLE` + `BOLD` + `UNDERLINE`).
-    More at: https://www.embedded.pub/linux/misc/escape-codes.html.
-    """
-
-    # colors
-    BLUE = "\033[94m"
-    CYAN = "\033[96m"
-    GREEN = "\033[92m"
-    PURPLE = "\033[95m"
-    YELLOW = "\033[93m"
-    RED = "\033[91m"
-
-    # other attributes
-    HEADER = "\033[95m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-
-    # remove any attributes above
-    END_COLOR = "\033[0m"
+from lib.utils.text_colors import text_colors
 
 
 def wrap_message(content: str, color: text_colors) -> str:
@@ -54,7 +30,7 @@ def write_prefix(ostream: TextIOWrapper, content: str, limit: int, end: str) -> 
         ostream.write(content)
     else:
         ostream.write(content[: (limit + 1)])
-        ostream.write(f" ...\n({len(content) - limit} character(s) remains)")
+        ostream.write(" ...\n(%d character(s) remains)" % (len(content) - limit))
     ostream.write(end)
 
 
