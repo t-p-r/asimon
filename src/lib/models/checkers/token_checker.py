@@ -7,40 +7,28 @@ __all__ = ["TokenChecker"]
 class TokenChecker(Checker):
     """Test whether the token list of `answer` and `output` is the same."""
 
-    def __init__(self) -> None:
-        pass
-
     def check(self, input: str, answer: str, output: str) -> CheckerResult:
         answer_tokens = answer.split()
         output_tokens = output.split()
 
         if len(answer_tokens) != len(output_tokens):
             return CheckerResult(
-                status=ContestantResultStatus.WA,
+                status=ContestantExecutionStatus.WA,
                 comment="The answer contains %d tokens while the contestant's output contains %d tokens."
                 % (len(answer_tokens), len(output_tokens)),
-                # input=input,
-                # answer=answer,
-                # output=output,
             )
 
         for i in range(0, len(answer_tokens)):
             if answer_tokens[i] != output_tokens[i]:
                 return CheckerResult(
-                    status=ContestantResultStatus.WA,
+                    status=ContestantExecutionStatus.WA,
                     comment="%s token is different: answer is: '%s', contestant outputs: '%s'."
                     % (ordinal(i + 1), answer_tokens[i], output_tokens[i]),
-                    # input=input,
-                    # answer=answer,
-                    # output=output,
                 )
 
         return CheckerResult(
-            status=ContestantResultStatus.AC,
+            status=ContestantExecutionStatus.AC,
             comment="%d token(s) all matches." % len(answer_tokens),
-            # input=input,
-            # answer=answer,
-            # output=output,
         )
 
 
