@@ -1,7 +1,8 @@
 """
-C++ compiler wrapper that caches compiled programs.
-This enables skipping of compilation when the source code and compilation options are unchanged.
+C++ compiler wrapper.
 """
+
+# TODO: cache compiled programs.
 
 from lib.utils.system import is_windows
 from lib.utils.formatting import send_message
