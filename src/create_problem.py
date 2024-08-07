@@ -27,7 +27,7 @@ from lib.utils.formatting import (
     text_colors,
     wrap_message,
 )
-from lib.utils.system import find_file_with_name, get_dir
+from lib.utils.system import find_file_with_name, get_dir, terminate
 
 from lib.config.paths import *
 import config_create_problem as config
@@ -120,11 +120,9 @@ class ProblemCreator:
                     config.problem_name = input()
                     self.current_problem = Problem(problems_dir / config.problem_name)
                     if self.current_problem.exists():
-                        send_message("Problem already existed.", text_colors.RED)
-                        exit(0)
+                        terminate("Fatal error: Problem already existed.")
                 else:
-                    send_message("Invalid choice, aborting...", text_colors.RED)
-                    exit(0)
+                    terminate("Fatal error: Invalid choice, aborting...")
 
         check_existence()
         self.current_problem.create()

@@ -21,7 +21,7 @@ from lib.models.problem import Problem
 from lib.models.compiler import Compiler
 
 from lib.utils.formatting import send_message, script_split, write_prefix
-from lib.utils.system import find_file_with_name, get_dir, delete_folder
+from lib.utils.system import find_file_with_name, get_dir, delete_folder, terminate
 from lib.utils.numeric_aggregator import aggregate
 from lib.utils.formatting import text_colors
 
@@ -47,11 +47,7 @@ class Stresser:
         if config.problem_name != "$workspace":
             current_problem = Problem(problems_dir / config.problem_name)
             if not current_problem.exists():
-                send_message(
-                    f"There is no problem with name {config.problem_name}, aborting...",
-                    text_colors.RED,
-                )
-                exit(0)
+                terminate(f"Fatal error: There is no problem with name {config.problem_name}.")
 
             self.mcs_path = current_problem.main_correct_solution()
             self.others_path = current_problem.other_solutions()
