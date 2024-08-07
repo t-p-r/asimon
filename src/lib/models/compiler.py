@@ -10,7 +10,7 @@ from lib.utils.formatting import text_colors
 from lib.utils.system import terminate
 
 from lib.config.paths import cache_dir, workspace
-from subprocess import run, Popen, PIPE, CalledProcessError
+from subprocess import run, Popen
 from pathlib import Path
 
 SUPPORTED_COMPILERS = ["g++", "clang++"]
@@ -23,7 +23,7 @@ DEFAULT_COMPILER_ARGS = {
 
 if is_windows():
     # add stack option to G++ and Clang
-    WIN_STACK_SIZE = 268435456  # Codeforces stack size (on Linux this is infinite)
+    WIN_STACK_SIZE = 268435456  # Codeforces stack size (on Linux this is effectively infinite)
     DEFAULT_COMPILER_ARGS["g++"] += f" -static -Wl, --stack={WIN_STACK_SIZE}"  # mind the gap
     DEFAULT_COMPILER_ARGS["clang++"] += f" -static -Wl, --stack={WIN_STACK_SIZE}"
     # add MSVC compiler
@@ -40,13 +40,13 @@ class Compiler:
         try:
             run([compiler, "--version"], check=True, capture_output=True)  # G++, Clang
             return True
-        except CalledProcessError:
+        except Exception:
             pass
 
         try:
             run(compiler, check=True, capture_output=True)  # MSVC
             return True
-        except CalledProcessError:
+        except Exception:
             pass
 
         return False
@@ -60,40 +60,51 @@ class Compiler:
 
         Up to one argument is accepted. This argument must be a string,
         being either:
-            - `"$default"`: ASIMON will find the compiler and appends its default compilation args.
-            - `"g++ $default"`: ASIMON will attempts to use the G++ compiler and appends its
-            default compilation args.
-            - `"clang++ $default"`, `"cl $default`: same as above but for the Clang and MSVC++
-            compilers.
-            - Any other string: ASIMON will interpret the first token as the compiler
-            and the rest as arguments.
+        - `"$default"` or an empty string: ASIMON will find the compiler and appends its
+        default compilation args.
+        - `"g++ $default"`: ASIMON will attempts to use the G++ compiler and appends its
+        default compilation args.
+        - `"clang++ $default"`, `"cl $default`: same as above but for the Clang and MSVC++
+        compilers.
+        - Any other string: ASIMON will interpret the first token as the compiler
+        and the rest as arguments.
         """
-        if compilation_command == "$default" or compilation_command is None:
+
+        def autodetect_compiler():
             for compiler in SUPPORTED_COMPILERS:
                 if self.probe(compiler):
                     self.compiler = compiler
                     self.compiler_args = DEFAULT_COMPILER_ARGS[compiler]
+                    send_message(f"Compiler detected: {compiler}.", text_colors.YELLOW)
                     return
             terminate(
                 "Fatal error: No C++ compiler found. "
                 + "Installation is the user's responsibility (see install.md for a start)."
             )
 
-        tokens = compilation_command.split()
-        if not tokens:
-            terminate("Compilation command is empty!")
-
-        self.compiler = tokens[0]
-        self.compiler_args = ' '.join(tokens[1:])
-
-        if self.compiler_args == "$default":
-            self.compiler_args = DEFAULT_COMPILER_ARGS[self.compiler]
+        if compilation_command == "$default" or compilation_command == "":
+            autodetect_compiler()
+        else:
+            tokens = compilation_command.split()
+            self.compiler = tokens[0]
+            self.compiler_args = ' '.join(tokens[1:])
 
         if not self.probe(self.compiler):
-            raise Warning(
-                "Compiler not supported (though ASIMON will try to run it the G++ way).\
-                You're on your own now. Good luck."
+            send_message(
+                "The specified compiler is not found, falling back to autodetect mode...",
+                text_colors.YELLOW,
             )
+            autodetect_compiler()
+
+        if self.compiler not in SUPPORTED_COMPILERS:
+            send_message(
+                "Compiler not supported (though ASIMON will try to run it as if it is G++). "
+                + "You're on your own now. Good luck.",
+                text_colors.YELLOW,
+            )
+
+        if self.compiler_args == "$default" and self.compiler in SUPPORTED_COMPILERS:
+            self.compiler_args = DEFAULT_COMPILER_ARGS[self.compiler]
 
     def __call__(self, source_output: list[tuple[Path, Path]]):
         """
@@ -116,12 +127,18 @@ class Compiler:
                 "clang++": f"clang++ {self.compiler_args} {source_path} -o {output_path}",
                 "cl": f"cl {self.compiler_args} {source_path} /Fe {output_path}",
             }
-
-            procs.append((source_path, Popen(COMPILATION_SYNTAX[self.compiler].split())))
-            # e.g. g++ -O2 hello.cpp -o /bin/hello
-
-        for proc in procs:
-            if proc[1].wait() != 0:
+            procs.append(
+                (
+                    source_path,
+                    Popen(
+                        COMPILATION_SYNTAX[
+                            self.compiler if self.compiler in SUPPORTED_COMPILERS else "g++"
+                        ].split()
+                    ),
+                )
+            )
+        for source_path, popen_obj in procs:
+            if popen_obj.wait() != 0:  # à la returncode
                 terminate(
-                    f"Fatal error: C++ source file {proc[0]} cannot be compiled, or doesn't exist.",
+                    f"Fatal error: C++ source file {source_path} cannot be compiled, or doesn't exist.",
                 )
