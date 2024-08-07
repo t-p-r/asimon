@@ -79,7 +79,7 @@ this number should be HALF your CPU's physical core count.
 compilation_command = "$default"
 """
 This argument can be either:
-- `"$default"`: ASIMON will automatically detect the compiler 
+- Empty string or `"$default"`: ASIMON will automatically detect the compiler 
 and appends its default compilation args.
 - `"g++ $default"`: ASIMON will attempts to use the G++ compiler and appends its
 default compilation args.
