@@ -19,7 +19,8 @@ A set of tools (in Python) and libraries (in C++) to help you create and manage 
     - [CPDSA](https://github.com/t-p-r/cpdsa) - a library containing some data structures and algorithms not included in the C++ STL.
   
 ### Other goodies
-- Multithreading (especially useful for problems with great time complexity e.g. $O(n^3)$ where $n=420$).
+- Parallel compilation and test execution (especially useful for problems with great time complexity e.g. $O(n^3)$ where $n=420$).
+- ~~Custom checker support~~ (TBA)
 
 ## Requirement
 
@@ -27,7 +28,7 @@ A Linux or Windows-running machine with the following resources installed:
 - Python 3.0+.
 - Python package(s): `tabulate`. 
     - On Windows this can be installed using `pip install <package-name>`. On Arch-based Linux distros this can be done using `pacman -S python-<package-name>`. On any other platforms, refer to their documentations.
-- A C++ compiler. GNU GCC is strongly recommended. If you use CPDSA then also enable support for C++20 or newer standards.
+- A C++ compiler. GNU GCC and Clang is strongly recommended. If you use CPDSA then also enable support for C++20 or newer standards.
 
 
 ## Installation
