@@ -106,7 +106,7 @@ class ProblemCreator:
         def check_existence():
             if self.current_problem.exists():
                 print(
-                    f'A problem with the current name "{config.problem_name}" already existed\n'
+                    f'A problem with the current name "{config.problem_name}" already existed.\n'
                     + 'Enter a selection:'
                 )
                 print("    1: Override the existing problem.")
