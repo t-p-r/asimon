@@ -1,83 +1,42 @@
-problem_name = "aplusb"
-
-main_correct_solution = "judge.cpp"
-other_solutions = ["contestant.cpp"]
-custom_checker = ""
-
-subtasks = [
-    "testgen --lo -100 --hi 100",
-    (8, f"testgen --lo 0 --hi {10**9}"),  # Python 3 string formatting
-    [f"testgen --lo {i} --hi {j}" for i in range(10, 15) for j in range(i, 15)],  # template tricks
-]
-"""
-Each item in this list contains information about one subtask. They can be
-    - A single script (e.g. `testgen 1 2 3`). In this case this subtask has exactly one test case.
-    - A list of scripts.
-    - A pair `(test_count, test_script)`. In this case:
-        - the subtask will have `test_count` tests;
-        - each script will possibly be appended with `--seed X` (see `testlib_seed` below).
-
-Each script should have a form `generator-name [params]`.
-
-Do not use extensions, like ".exe" in the script.
-"""
-
-testlib_seed = "from0"
-"""
-For testlib.h users.
-If this option is not "none", each script will be appended with `--seed X`
-in order to make outputs unique.
-
-Possible options are:
-    - `"from0"`: this will gradually increases X from 0 for each subtask. For example, \
-    if a subtask is  `(8, "testgen")` then the actual sequence of commands executed would be \
-    `testgen --seed 0`, `testgen --seed 1`, ..., `testgen --seed 7`.
-    - `"random"`: this will instead randomizes X, which will also makes it impossible to \
-    reproduce the tests except by directly loading the file `/test/script.json` inside \
-    the problem folder.
-"""
-
-testdir_format = "sub%S-test%T"
-"""
-Format for test case folders.
-
-- %C: cumulative test index
-- %S: subtask index
-- %T: test index within subtask
-
-All indexes are 1-based.
-"""
-
-make_test_folders = False
-"""
-Whether to create folders containing test cases' data in the `test` folder.
-"""
-
-make_zip = False
-"""
-Whether to create a zip file containing those folders.
-"""
+problem = "io"
+"""Name of the problem."""
 
 bundle_source = True
+"""Whether to include test generator, solutions, ... (in general every files in the `workspace` folder) in the `tests` folder."""
+
+subtasks = [
+    (1, "testgen 10 10"),
+    ["gentest %d" % i for i in range(2, 9)],
+    "gentest 10",
+    "formatttttttttttttttt",
+]
 """
-Whether to also include test generators, solutions, checkers ... (in general every file in the `workspace` folder) in the zip file above.
+Each item in this list contains information about one subtask.
+An item can be:
+    - a single command line (e.g. `testgen.exe):
 """
 
-time_limit = 1
+testlib_persistent = True
 """
-In seconds, can be decimal (e.g. 0.25).
-"""
-
-cpu_workers = 4
-"""
-The number of CPUs used to execute tests concurrently. \\
-For the best balance between various CPU and IO factors (see documentation for more details), 
-this number should be HALF your CPU's physical core count.
+Testlib-specific. \\
+Each script is used by testlib to hash a specific seed. Therefore, to generate distinct test cases from one script, each test case
+will have its script appended by `--testlib_seed i` (`i` being the index of the test case within the subtask) before being ran. \\
+Disabling this option will instead randomizes `i`, which will also makes it impossible to reproduce the tests.
 """
 
-compilation_command = "g++ -pipe -O2 -Wall -Wexceptions -std=c++20"
+worker_count = 16
 """
-For compiler arguments, see your C++ compiler for documentation. Do note that:
+The number of workers (i.e. tests to be executed at the same time).\\
+For best performance, this number should not exceed your CPU's thread count. \\
+Multiple workers work best for computationally intensive problems; for IO-intensize problems (e.g. 10^5 integers or more), 
+1 or 2 workers yields the best performance. 
+"""
+
+compiler = "g++"
+
+compiler_args = ["-pipe", "-O2", "-D_TPR_", "-std=c++20", "-H"]
+"""
+Compiler arguments. See your C++ compiler for documentation. Do note that:
     - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
-    - if you have any precompiled header (e.g. `stdc++.h`), use the exact argument set you compiled it with to save time.
+    - if you have precompiled headers (e.g. `stdc++.h`), use the exact set of arguments you compiled them with to save time.
 """

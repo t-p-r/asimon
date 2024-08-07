@@ -2,10 +2,8 @@
 
 from pathlib import Path
 from shutil import rmtree
-from enum import Enum
 import os
-from lib.exceptions import RedException
-from lib.utils.formatting import send_message, text_colors
+from lib.utils import wrap_message, text_colors
 
 
 def get_dir(p: Path) -> Path:
@@ -32,20 +30,21 @@ def delete_folder(p: Path):
 
 def find_file_with_name(name: str, p: Path):
     """Find a file with name `name`.* in the directory `p`."""
-
-    for ext in [".cpp", ".c"]:
-        p = Path(p / f"{name}{ext}")
-        if p.exists():
-            return p
-
-    terminate(
-        f'No source file with name "{name}.cpp" or "{name}.c" is found in the /workspace folder.'
+    path, dirnames, filenames = list(p.walk())[0]  # we just care about p
+    for filename in filenames:
+        if (
+            len(filename) > len(name)
+            and filename.startswith(name)
+            and filename[len(name)] == "."
+        ):
+            return filename
+    raise Exception(
+        wrap_message(
+            'No source file with name "%s.cpp" or "%s.c" is found in the /workspace folder.',
+            text_colors.RED,
+        )
+        % (name, name)
     )
-
-
-def terminate(message: str):
-    send_message(message, text_colors.RED)
-    exit(0)
 
 
 def is_windows():
@@ -55,3 +54,6 @@ def is_windows():
         return False
     else:
         return True
+
+
+PATH_DELIMITER = "\\" if is_windows() else "/"
