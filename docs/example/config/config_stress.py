@@ -43,7 +43,6 @@ time_limit = 1
 In seconds, can be decimal (e.g. 0.25).
 """
 
-
 test_count = 32
 
 failed_test_data = True
@@ -59,9 +58,20 @@ For the best balance between various CPU and IO factors (see documentation for m
 this number should be HALF your CPU's physical core count.
 """
 
-compilation_command = "g++ -pipe -O2 -Wall -Wexceptions -std=c++20"
+compilation_command = "$default"
 """
-For compiler arguments, see your C++ compiler for documentation. Do note that:
-    - some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
-    - if you have any precompiled header (e.g. `stdc++.h`), use the exact argument set you compiled it with to save time.
+This argument can be either:
+- `"$default"`: ASIMON will automatically detect the compiler 
+and appends its default compilation args.
+- `"g++ $default"`: ASIMON will attempts to use the G++ compiler and appends its
+default compilation args.
+- `"clang++ $default"`, `"cl $default`: same as above but for the Clang and MSVC++
+compilers.
+- Any other string: ASIMON will interpret the first token as the compiler
+and the rest as arguments.
+
+For compiler arguments, see your C++ compiler's documentation. Do note that:
+- some arguments are platform-specific (e.g. `-Wl,--stack=<windows_stack_size>`)
+- if you have any precompiled header (e.g. `stdc++.h.gch`), use the exact set of arguments 
+you compiled it with to save time.
 """
