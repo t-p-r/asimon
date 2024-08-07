@@ -75,7 +75,7 @@ class Compiler:
                 if self.probe(compiler):
                     self.compiler = compiler
                     self.compiler_args = DEFAULT_COMPILER_ARGS[compiler]
-                    send_message(f"Compiler detected: {compiler}.", text_colors.YELLOW)
+                    send_message(f"Autodetected compiler: {compiler}.", text_colors.YELLOW)
                     return
             terminate(
                 "Fatal error: No C++ compiler found. "
