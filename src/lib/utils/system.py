@@ -51,6 +51,7 @@ def terminate(message: str):
 def is_windows():
     try:
         import msvcrt
+        del msvcrt
     except ModuleNotFoundError:
         return False
     else:
