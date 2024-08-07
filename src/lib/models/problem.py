@@ -50,9 +50,7 @@ class Problem:
         files = list(self.solution_dir.walk())[0][2]
 
         if len(files) == 0:
-            terminate(
-                "No main correct solution found. The file may have been manually deleted."
-            )
+            terminate("No main correct solution found. The file may have been manually deleted.")
         else:
             if len(files) > 1:
                 raise YellowWarning(

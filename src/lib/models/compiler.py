@@ -93,7 +93,6 @@ class Compiler:
                 "Compiler not supported (though ASIMON will try to run it the G++ way).\
                 You're on your own now. Good luck."
             )
-        
 
     def __call__(self, source_output: list[tuple[Path, Path]]):
         """
@@ -109,7 +108,7 @@ class Compiler:
             text_colors.GREEN,
         )
 
-        procs: list[Popen] = []
+        procs: list[tuple[Path, Popen]] = []
         for source_path, output_path in source_output:
             COMPILATION_SYNTAX = {
                 "g++": f"g++ {self.compiler_args} {source_path} -o {output_path}",
@@ -117,11 +116,11 @@ class Compiler:
                 "cl": f"cl {self.compiler_args} {source_path} /Fe {output_path}",
             }
 
-            procs.append(Popen(COMPILATION_SYNTAX[self.compiler].split()))
+            procs.append((source_path, Popen(COMPILATION_SYNTAX[self.compiler].split())))
             # e.g. g++ -O2 hello.cpp -o /bin/hello
 
         for proc in procs:
-            if proc.wait() != 0:
+            if proc[1].wait() != 0:
                 terminate(
-                    f"C++ source file {source_path} cannot be compiled, or doesn't exist.",
+                    f"C++ source file {proc[0]} cannot be compiled, or doesn't exist.",
                 )
