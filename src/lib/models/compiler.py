@@ -74,8 +74,8 @@ class Compiler:
                     self.compiler_args = DEFAULT_COMPILER_ARGS[compiler]
                     return
             terminate(
-                "No C++ compiler found. Installation is the user's \
-                responsibility (see install.md for a start)."
+                "Fatal error: No C++ compiler found. "
+                + "Installation is the user's responsibility (see install.md for a start)."
             )
 
         tokens = compilation_command.split()
@@ -122,5 +122,5 @@ class Compiler:
         for proc in procs:
             if proc[1].wait() != 0:
                 terminate(
-                    f"C++ source file {proc[0]} cannot be compiled, or doesn't exist.",
+                    f"Fatal error: C++ source file {proc[0]} cannot be compiled, or doesn't exist.",
                 )

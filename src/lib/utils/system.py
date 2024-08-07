@@ -39,7 +39,8 @@ def find_file_with_name(name: str, p: Path):
             return p
 
     terminate(
-        f'No source file with name "{name}.cpp" or "{name}.c" is found in the /workspace folder.'
+        f'Fatal error: No source file with name "{name}.cpp" or "{name}.c" '
+        + 'is found in the /workspace folder.'
     )
 
 
@@ -51,6 +52,7 @@ def terminate(message: str):
 def is_windows():
     try:
         import msvcrt
+
         del msvcrt
     except ModuleNotFoundError:
         return False

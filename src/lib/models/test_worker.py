@@ -95,7 +95,7 @@ class TestWorker:
         elif checker == "custom":
             self.checker = CustomChecker(custom_checker_path)
         else:
-            terminate("Invalid checker name.")
+            terminate("Fatal error: Invalid checker name.")
 
         self.time_limit = time_limit
         self.judge = judge
