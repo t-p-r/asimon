@@ -4,56 +4,51 @@ Umbrella class for running tests.
 
 from subprocess import run, PIPE, TimeoutExpired, CalledProcessError
 from pathlib import Path
-from enum import Enum
 from lib.models.checkers import *
-from lib.utils import text_colors, send_message, wrap_message
+from lib.models.ces import ContestantExecutionStatus
+from lib.utils.system import terminate
+from lib.utils.formatting import send_message, text_colors
+from dataclasses import dataclass
 import time
 
 __all__ = [
-    "ContestantResultStatus",
     "ContestantExecutionResult",
     "WorkerResult",
-    "Worker",
+    "TestWorker",
 ]
 
 
+@dataclass
 class _ProcessResult:
     """
     Represents a completed process, returned by `Worker.anal_process()`.
     Do note that `exec_time` is in miliseconds.
     """
 
-    def __init__(self, returncode, exec_time, stdout):
-        self.returncode = returncode
-        self.exec_time = exec_time
-        self.stdout = stdout
+    returncode: int
+    exec_time: float
+    stdout: str
 
 
+@dataclass
 class ContestantExecutionResult:
     """
     Result of contestant running the test. Fields are:
-        - `path` : Path to the contestant's solution' executable.
-        - `status`: Status of the process.
+        - `path`: Path to the contestant's solution' executable.
+        - `status`: Status of the run (AC, WA, TLE, RTE, ...)
         - `exec_time`: Execution time of contestant's solution (à la executable) in miliseconds.
         - `comment`: Comment on contestant's output from checker.
         - `output`: Contestant's output.
     """
 
-    def __init__(
-        self,
-        path: Path,
-        status: ContestantResultStatus,
-        exec_time: int | None,
-        comment: str,
-        output: bytes = None,
-    ):
-        self.path = path
-        self.status = status
-        self.exec_time = exec_time
-        self.comment = comment
-        self.output = output
+    path: Path
+    status: ContestantExecutionStatus
+    exec_time: int | None
+    comment: str
+    output: bytes = None
 
 
+@dataclass
 class WorkerResult:
     """
     Result of the Worker class, returned by `perform_test()`. Fields are:
@@ -62,18 +57,12 @@ class WorkerResult:
     - `contestant_results`: a list of `ContestantExecutionResult`.
     """
 
-    def __init__(
-        self,
-        input: str,
-        answer: bytes,
-        contestant_results: list[ContestantExecutionResult],
-    ) -> None:
-        self.input = input
-        self.answer = answer
-        self.contestant_results = contestant_results
+    input: str
+    answer: bytes
+    contestant_results: list[ContestantExecutionResult]
 
 
-class Worker:
+class TestWorker:
     """
     Umbrella class for executing test cases. The process is usually:
         - generating test data (i.e. `input`) from a command;
@@ -96,7 +85,7 @@ class Worker:
         contestants: list[Path],
         time_limit=5,
         checker="dummy",
-        custom_checker_path=None,
+        custom_checker_path: Path | None = None,
     ):
         """Create a worker."""
         if checker == "token":
@@ -106,7 +95,7 @@ class Worker:
         elif checker == "custom":
             self.checker = CustomChecker(custom_checker_path)
         else:
-            raise Exception("Invalid checker name.")
+            terminate("Invalid checker name.")
 
         self.time_limit = time_limit
         self.judge = judge
@@ -115,18 +104,21 @@ class Worker:
     def anal_process(
         self,
         command: str | list[str],
-        timeout_message: str | None = None,
-        kill_message: str | None = None,
+        identity: str = "program",
+        raise_error: bool = False,
         stdout=PIPE,
+        stderr=PIPE,
         check: bool = True,
         encoding: str | None = "UTF-8",
         input: str | None = None,
     ) -> _ProcessResult:
         """
         Run a subprocess and returns a ProcessResult representing its result.
-        If `kill_message` and the process exited with an error code,
-        or if `timeout_message` is set and the process timed out, raise an Exception with those messages.
-        Some `subprocess.run()`/`Popen()` arguments are set by default: `stdout`, `check`, `encoding` and `input`.
+
+        `id_string` is the user-friendly identifier of the process (e.g. "test generator", "user's solution", ...).
+
+        If the process timed out or exited with an error code, raise an Exception with messages.
+        Some `subprocess.run()`/`Popen()` arguments are set by default: `stdout`, `stderr`, `check`, `encoding` and `input`.
         """
 
         try:
@@ -134,6 +126,7 @@ class Worker:
             proc = run(
                 command,
                 stdout=stdout,
+                stderr=stderr,
                 check=check,
                 encoding=encoding,
                 input=input,
@@ -141,15 +134,24 @@ class Worker:
             )
             end = time.perf_counter()
         except TimeoutExpired as timeout:
-            if timeout_message != None:
-                raise Exception(wrap_message(timeout_message, text_colors.RED))
-            else:
+            if raise_error:
                 raise timeout
-        except CalledProcessError as proc_error:
-            if kill_message != None:
-                raise Exception(wrap_message(kill_message, text_colors.RED))
             else:
+                terminate(
+                    f"Fatal error: {identity} timed out after {timeout.timeout} seconds.",
+                    text_colors.RED,
+                )
+        except CalledProcessError as proc_error:
+            if raise_error:
+                end = time.perf_counter()  # the `end`` above will never be reached
+                proc_error.cmd = str((end - start) * 1000)
+                # little cheat here: exec_time is smuggled out through error message
                 raise proc_error
+            else:
+                terminate(
+                    f"Fatal error: {identity} exited with code {proc_error.returncode}.",
+                    text_colors.RED,
+                )
 
         return _ProcessResult(
             returncode=proc.returncode,
@@ -157,45 +159,35 @@ class Worker:
             stdout=proc.stdout,
         )
 
-    def perform_test(self, testgen_command: str | list[str]) -> WorkerResult:
+    def __call__(self, testgen_command: str | list[str]) -> WorkerResult:
         """
         Perform a test case.
         """
 
-        input = self.anal_process(
-            testgen_command,
-            timeout_message="Fatal error: test generator timed out.",
-            kill_message="Fatal error: test generator exited with an error code.",
-        ).stdout
-
-        answer = self.anal_process(
-            self.judge,
-            timeout_message="Fatal error: judge's solution timed out.",
-            kill_message="Fatal error: judge's solution exited with an error code.",
-            input=input,
-        ).stdout
+        input = self.anal_process(testgen_command, identity="test generator").stdout
+        answer = self.anal_process(self.judge, identity="main correct solution", input=input).stdout
 
         worker_result = WorkerResult(input, answer, [])
         contestant_results = worker_result.contestant_results
 
         for contestant in self.contestants:
             try:
-                contestant_proc = self.anal_process(contestant, input=input)
+                contestant_proc = self.anal_process(contestant, raise_error=True, input=input)
             except CalledProcessError as proc_error:  # RTE
                 contestant_results.append(
                     ContestantExecutionResult(
                         contestant,
-                        ContestantResultStatus.RTE,
-                        contestant_proc.exec_time,
+                        ContestantExecutionStatus.RTE,
+                        float(proc_error.cmd),
                         "The solution terminated with code %d" % proc_error.returncode,
                     )
                 )
                 continue
-            except TimeoutExpired as timeout:  # TLE
+            except TimeoutExpired:  # TLE
                 contestant_results.append(
                     ContestantExecutionResult(
                         contestant,
-                        ContestantResultStatus.TLE,
+                        ContestantExecutionStatus.TLE,
                         self.time_limit * 1000,
                         "Time limit exceeded.",
                     )
