@@ -12,7 +12,7 @@ A set of tools (in Python) and libraries (in C++) to help you create and manage 
 - *Using your C++ source files*, ASIMON can:
     - create multi-subtask test suites from your scripts.
     - archive said tests in a format compatible to online judges (currently only DMOJ and its derivatives are supported).
-    - stress-test and judge your solutions.
+    - stress-test ~~and judge~~ your solutions.
     - store all those resources in a foolproof format.
 - *To help you write the C++ source files*, ASIMON includes these submodules:
     - a [version](https://github.com/t-p-r/testlib-asimon) of [testlib.h](https://github.com/MikeMirzayanov/testlib/) which completely bypasses file I/O.
