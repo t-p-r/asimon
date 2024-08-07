@@ -137,13 +137,13 @@ class ProblemCreator:
                 if source_path.name == config.main_correct_solution
                 else self.current_problem.testgen_dir
             )
-            shutil.copy(workspace / source_path, destination)
-            copied.add(source_path)
+            shutil.copy(source_path, destination)
+            copied.add(source_path.name)
 
         # other solutions
-        for source_path in config.other_solutions:
-            shutil.copy(workspace / source_path, self.current_problem.solution_other_dir)
-            copied.add(source_path)
+        for other_solution in config.other_solutions:
+            shutil.copy(workspace / other_solution, self.current_problem.solution_other_dir)
+            copied.add(other_solution)
 
         # checker
         if config.custom_checker:
@@ -179,12 +179,12 @@ class ProblemCreator:
     def generate_test(self, worker_pool: ProcessPoolExecutor, test_index: int, subtask: int):
         """Submit a test task to a worker pool."""
         testdir = self.get_testcase_dir(test_index, subtask)
-        testgen_exec, testgen_args = script_split(self.subtasks[subtask][test_index])
-        testgen_exec = find_file_with_name(testgen_exec, workspace)
+        testgen, testgen_args = script_split(self.subtasks[subtask][test_index])
+        testgen = find_file_with_name(testgen, workspace)
 
         worker_pool.submit(
             self.workers[(test_index - 1) % config.cpu_workers],
-            testgen_command=[bindir / testgen_exec] + testgen_args,
+            testgen_command=[bindir / testgen.name] + testgen_args,
             judge_command=bindir / config.main_correct_solution,
             export_input_to=testdir / f"{config.problem_name}.inp",
             export_answer_to=testdir / f"{config.problem_name}.out",
