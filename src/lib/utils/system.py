@@ -2,9 +2,7 @@
 
 from pathlib import Path
 from shutil import rmtree
-from enum import Enum
 import os
-from lib.exceptions import RedException
 from lib.utils.formatting import send_message, text_colors
 
 
@@ -53,7 +51,7 @@ def is_windows():
     try:
         import msvcrt
 
-        del msvcrt
+        del msvcrt  # black format fuckery
     except ModuleNotFoundError:
         return False
     else:
