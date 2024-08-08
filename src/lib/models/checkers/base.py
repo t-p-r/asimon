@@ -1,5 +1,5 @@
 """ 
-Checker abstract class and checkerResult.
+Checker abstract class and CheckerResult.
 """
 
 from abc import ABC, abstractmethod

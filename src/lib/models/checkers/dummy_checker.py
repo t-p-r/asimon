@@ -11,7 +11,4 @@ class DummyChecker(Checker):
         return CheckerResult(
             status=ContestantExecutionStatus.AC,
             comment="All seems well.",
-            # input=input,
-            # answer=answer,
-            # output=output,
         )
