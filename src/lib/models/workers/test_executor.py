@@ -2,32 +2,20 @@
 Umbrella class for running tests.
 """
 
-from subprocess import run, PIPE, TimeoutExpired, CalledProcessError
+from subprocess import TimeoutExpired, CalledProcessError
 from pathlib import Path
 from lib.models.checkers import *
 from lib.models.ces import ContestantExecutionStatus
 from lib.utils.system import terminate
-from lib.utils.formatting import send_message, text_colors
 from dataclasses import dataclass
-import time
+
+from .proc import ProcessResult, anal_process
 
 __all__ = [
     "ContestantExecutionResult",
     "WorkerResult",
-    "TestWorker",
+    "TestExecutor",
 ]
-
-
-@dataclass
-class _ProcessResult:
-    """
-    Represents a completed process, returned by `Worker.anal_process()`.
-    Do note that `exec_time` is in miliseconds.
-    """
-
-    returncode: int
-    exec_time: float
-    stdout: str
 
 
 @dataclass
@@ -43,9 +31,9 @@ class ContestantExecutionResult:
 
     path: Path
     status: ContestantExecutionStatus
-    exec_time: int | None
+    exec_time: int
     comment: str
-    output: bytes = None
+    output: bytes
 
 
 @dataclass
@@ -62,13 +50,13 @@ class WorkerResult:
     contestant_results: list[ContestantExecutionResult]
 
 
-class TestWorker:
+class TestExecutor:
     """
     Umbrella class for executing test cases. The process is usually:
-        - generating test data (i.e. `input`) from a command;
-        - run judge's solution using `input` as `stdin` to get `answer`, and:
-        - run each contestant's solution using `input` as stdin, then comparing the `output`
-        with the judge's `answer` to determine its correctness.
+    - generating test data (i.e. `input`) from a command;
+    - run judge's solution using `input` as `stdin` to get `answer`, and:
+    - run each contestant's solution using `input` as `stdin`, then determine the
+    correctness of its `output`.
 
     In all cases the judge and contestants' solution are constant, and run without arguments; therefore
     their execution path can be retrieved and stored at the Worker's instantiation. The command used to
@@ -101,78 +89,26 @@ class TestWorker:
         self.judge = judge
         self.contestants = contestants
 
-    def anal_process(
-        self,
-        command: str | list[str],
-        identity: str = "program",
-        raise_error: bool = False,
-        stdout=PIPE,
-        stderr=PIPE,
-        check: bool = True,
-        encoding: str | None = "UTF-8",
-        input: str | None = None,
-    ) -> _ProcessResult:
+    def execute(self, testgen_command: str | list[str]) -> WorkerResult:
         """
-        Run a subprocess and returns a ProcessResult representing its result.
-
-        `id_string` is the user-friendly identifier of the process (e.g. "test generator", "user's solution", ...).
-
-        If the process timed out or exited with an error code, raise an Exception with messages.
-        Some `subprocess.run()`/`Popen()` arguments are set by default: `stdout`, `stderr`, `check`, `encoding` and `input`.
+        Execute a test case.
         """
 
-        try:
-            start = time.perf_counter()
-            proc = run(
-                command,
-                stdout=stdout,
-                stderr=stderr,
-                check=check,
-                encoding=encoding,
-                input=input,
-                timeout=self.time_limit,
-            )
-            end = time.perf_counter()
-        except TimeoutExpired as timeout:
-            if raise_error:
-                raise timeout
-            else:
-                terminate(
-                    f"Fatal error: {identity} timed out after {timeout.timeout} seconds.",
-                    text_colors.RED,
-                )
-        except CalledProcessError as proc_error:
-            if raise_error:
-                end = time.perf_counter()  # the `end`` above will never be reached
-                proc_error.cmd = str((end - start) * 1000)
-                # little cheat here: exec_time is smuggled out through error message
-                raise proc_error
-            else:
-                terminate(
-                    f"Fatal error: {identity} exited with code {proc_error.returncode}.",
-                    text_colors.RED,
-                )
-
-        return _ProcessResult(
-            returncode=proc.returncode,
-            exec_time=(end - start) * 1000,
-            stdout=proc.stdout,
-        )
-
-    def __call__(self, testgen_command: str | list[str]) -> WorkerResult:
-        """
-        Perform a test case.
-        """
-
-        input = self.anal_process(testgen_command, identity="test generator").stdout
-        answer = self.anal_process(self.judge, identity="main correct solution", input=input).stdout
+        input = anal_process(
+            testgen_command, identity="test generator", timeout=self.time_limit
+        ).stdout
+        answer = anal_process(
+            self.judge, identity="main correct solution", input=input, timeout=self.time_limit
+        ).stdout
 
         worker_result = WorkerResult(input, answer, [])
         contestant_results = worker_result.contestant_results
 
         for contestant in self.contestants:
             try:
-                contestant_proc = self.anal_process(contestant, raise_error=True, input=input)
+                contestant_proc = anal_process(
+                    contestant, terminate_on_fault=False, input=input, timeout=self.time_limit
+                )
             except CalledProcessError as proc_error:  # RTE
                 contestant_results.append(
                     ContestantExecutionResult(
