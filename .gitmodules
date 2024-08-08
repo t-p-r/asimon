@@ -1,0 +1,3 @@
+[submodule "src/workspace/lib/cpdsa"]
+	path = src/workspace/lib/cpdsa
+	url = https://github.com/t-p-r/cpdsa

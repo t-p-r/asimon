@@ -2,6 +2,7 @@
 *.zip
 *.gch
 src/workspace/*.*
+!src/workspace/testlib.h
 src/config_*
 bin/
 log/
