@@ -18,7 +18,7 @@ import json
 from lib.exceptions import InvalidConfig
 
 from lib.models.compiler import Compiler
-from lib.models.test_generator import TestGenerator
+from lib.models.workers.test_generator import TestGenerator
 from lib.models.problem import Problem
 
 from lib.utils.formatting import (
@@ -36,7 +36,7 @@ import config_create_problem as config
 class ProblemCreator:
     def __init__(self):
         self.source_paths: list[Path] = [workspace / config.main_correct_solution]
-        self.workers: list[TestGenerator] = []
+        self.generators: list[TestGenerator] = []
         self.total_test_count = 0
         self.subtask_count = 0
         self.current_problem = Problem(problems_dir / config.problem_name)
@@ -45,7 +45,7 @@ class ProblemCreator:
         self.compiler = Compiler(config.compilation_command)
 
         for _ in range(config.cpu_workers):
-            self.workers.append(TestGenerator(timeout=config.time_limit))
+            self.generators.append(TestGenerator(timeout=config.time_limit))
 
     def format_subtasks(self):
         """Format subtasks into [list of commands]"""
@@ -181,7 +181,7 @@ class ProblemCreator:
         testgen = find_file_with_name(testgen, workspace)
 
         worker_pool.submit(
-            self.workers[(test_index - 1) % config.cpu_workers],
+            self.generators[(test_index - 1) % config.cpu_workers].generate,
             testgen_command=[bindir / testgen.name] + testgen_args,
             judge_command=bindir / config.main_correct_solution,
             export_input_to=testdir / f"{config.problem_name}.inp",

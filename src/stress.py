@@ -11,8 +11,8 @@ from concurrent.futures import ProcessPoolExecutor, Future
 from tabulate import tabulate
 from pathlib import Path
 
-from lib.models.test_worker import (
-    TestWorker,
+from lib.models.workers.test_executor import (
+    TestExecutor,
     WorkerResult,
     ContestantExecutionResult,
 )
@@ -37,12 +37,12 @@ class Stresser:
     def __init__(self):
         # pair of C++ source files and its executable's location
         self.source_output: list[tuple[Path, Path]] = []
-        self.workers: list[TestWorker] = []
+        self.workers: list[TestExecutor] = []
         self.batch_count: int = config.test_count // config.cpu_workers
         self.processed_tests: int = 0
         self.general_status = []
         self.exec_times = {}
-        self.testgen_path, self.testgen_args = script_split(config.testgen_script)
+        self.testgen_name, self.testgen_args = script_split(config.testgen_script)
 
         if config.problem_name != "$workspace":
             current_problem = Problem(problems_dir / config.problem_name)
@@ -51,7 +51,7 @@ class Stresser:
 
             self.mcs_path = current_problem.main_correct_solution()
             self.others_path = current_problem.other_solutions()
-            self.testgen_path = find_file_with_name(self.testgen_path, current_problem.testgen_dir)
+            self.testgen_path = find_file_with_name(self.testgen_name, current_problem.testgen_dir)
 
             # TODO: dynamic import for these:
             self.checker_pol = "token"  # stub
@@ -61,7 +61,7 @@ class Stresser:
         else:
             self.mcs_path = workspace / config.main_correct_solution
             self.others_path = [workspace / solution for solution in config.other_solutions]
-            self.testgen_path = find_file_with_name(self.testgen_path, workspace)
+            self.testgen_path = find_file_with_name(self.testgen_name, workspace)
             self.checker_pol = config.checker
 
             if config.checker == "custom":
@@ -85,7 +85,7 @@ class Stresser:
     def init_workers(self):
         for _ in range(config.cpu_workers):
             self.workers.append(
-                TestWorker(
+                TestExecutor(
                     judge=bindir / self.mcs_path.name,
                     contestants=[bindir / contestant.name for contestant in self.all_source_paths],
                     time_limit=config.time_limit,
@@ -128,7 +128,7 @@ class Stresser:
                 test_seed = random.getrandbits(31)
                 procs.append(
                     worker_pool.submit(
-                        self.workers[i],
+                        self.workers[i].execute,
                         [bindir / self.testgen_path.name]
                         + self.testgen_args
                         + [f"--seed {test_seed}"],
