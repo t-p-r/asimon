@@ -67,6 +67,7 @@ Whether to also include test generators, solutions, checkers ...
 time_limit = 1
 """
 In seconds, can be decimal (e.g. 0.25).
+If the test generator of the main correct solution runs past this duration, the entire program will terminate.
 """
 
 cpu_workers = 4

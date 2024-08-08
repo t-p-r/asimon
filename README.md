@@ -14,9 +14,6 @@ A set of tools (in Python) and libraries (in C++) to help you create and manage 
     - archive said tests in a format compatible to online judges (currently only DMOJ and its derivatives are supported).
     - stress-test ~~and judge~~ your solutions.
     - store all these resources in a foolproof format.
-- *To help you write the C++ source files*, ASIMON includes these submodules:
-    - a [version](https://github.com/t-p-r/testlib-asimon) of [testlib.h](https://github.com/MikeMirzayanov/testlib/) which completely bypasses file I/O.
-    - [CPDSA](https://github.com/t-p-r/cpdsa) - a library containing some data structures and algorithms not included in the C++ STL.
   
 ### Other goodies
 - Parallel compilation and test execution (especially useful for problems with great time complexity e.g. $O(n^3)$ where $n=420$).
