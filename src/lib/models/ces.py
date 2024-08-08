@@ -9,7 +9,7 @@ class ContestantExecutionStatus(Enum):
     and thus the Worker doesn't need to invoke the checker.
     """
 
-    # These are adopted from: https://github.com/MikeMirzayanov/testlib/blob/master/testlib.h.
+    # Adopted from testlib:
     AC = 0  # The output is correct, follows the output format and represents an optimal answer (if applicable in this problem).
     WA = 1  # The output is wrong or incorrect.
     PE = 2  # The output doesn't follow output format specification of the task. Possible deprecation in the future.
@@ -19,7 +19,7 @@ class ContestantExecutionStatus(Enum):
     UNEXPECTED_EOF = 8
     PARTIALLY = 16
 
-    # These are special cases, where:
+    # Special cases, where:
     TLE = 400  # Contestant's solution timed out ...
     MLE = 401  # ... or used too much memory (not yet supported) ...
     RTE = 402  # ... or exited with an error code.
