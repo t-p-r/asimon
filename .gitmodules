@@ -1,6 +1,0 @@
-[submodule "src/workspace/lib/cpdsa"]
-	path = src/workspace/lib/cpdsa
-	url = https://github.com/t-p-r/cpdsa
-[submodule "src/workspace/lib/testlib-asimon"]
-	path = src/workspace/lib/testlib-asimon
-	url = https://github.com/t-p-r/testlib-asimon
