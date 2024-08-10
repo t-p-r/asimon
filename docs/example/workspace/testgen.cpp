@@ -9,7 +9,7 @@
  * two randomly generated numbers (RNG) in the range [number1, number2]
  */
 
-#include "lib/testlib/testlib.h"
+#include "lib/testlib.h"
 using namespace std;
 
 int32_t main(int argc, char* argv[]) {
