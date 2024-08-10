@@ -28,7 +28,7 @@ A Linux or Windows-running machine with the following resources installed:
 - Python package(s): `tabulate`. 
     - On Windows this can be installed using `pip install <package-name>`. On Arch-based Linux distros this can be done using `pacman -S python-<package-name>`. On any other platforms, good luck.
 - A C++ compiler. Strongly recommend:
-  - GNU GCC (basically everyone use this)
+  - GNU GCC (basically everyone uses this)
   - Clang (its error messages are *much* more readable than GCC)
 
 ## Installation
