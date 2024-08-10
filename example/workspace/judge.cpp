@@ -1,7 +1,7 @@
 /**
  * Judge's solution (example).
  *
- * @file docs/example/workspace/judge.cpp
+ * @file example/workspace/judge.cpp
  *
  * This file is supposed to be the correct answer. This
  * example takes two numbers as input, then prints out their sum,

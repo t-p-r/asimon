@@ -1,7 +1,7 @@
 /**
  * Test generator (example).
  *
- * @file docs/example/workspace/testgen.cpp
+ * @file example/workspace/testgen.cpp
  *
  * The output of this file is then taken as input for @b judge.cpp and
  * @b contestant.cpp. Arguments MUST be "--lo number1 --hi number2" where

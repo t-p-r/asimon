@@ -1,7 +1,7 @@
 /**
  * Contestant's solution (example).
  *
- * @file docs/example/workspace/contestant.cpp
+ * @file example/workspace/contestant.cpp
  *
  * This file is supposed to be evaluated AGAINST the correct answer (i.e. the
  * judge). This example takes two numbers as input using the
