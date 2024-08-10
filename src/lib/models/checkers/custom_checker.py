@@ -71,7 +71,6 @@ class CustomChecker(Checker):
             stderr=PIPE,
         )
 
-        # status = ContestantExecutionStatus(proc.wait())
         status = ContestantExecutionStatus(proc.returncode)
         if status == ContestantExecutionStatus.FAIL:
             terminate_proc(proc.stderr.decode())
