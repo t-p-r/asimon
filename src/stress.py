@@ -257,11 +257,7 @@ class Stresser:
         get_dir(logdir)
         self.compiler.compile(self.source_output)
         self.init_workers()
-        import time
-
-        a = time.perf_counter()
         self.run_tests()
-        print(time.perf_counter() - a)
         self.print_final_verdict()
 
 
