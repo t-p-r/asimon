@@ -8,7 +8,7 @@ import sys
 
 sys.dont_write_bytecode = True  # disables the creation of __pycache__ folders
 
-from concurrent.futures import ProcessPoolExecutor, Future, CancelledError
+from concurrent.futures import ProcessPoolExecutor
 import os
 import shutil
 import random
@@ -24,10 +24,10 @@ from lib.models.problem import Problem
 from lib.utils.formatting import (
     send_message,
     script_split,
-    wrap_message,
     text_colors,
+    wrap_message,
 )
-from lib.utils.system import find_file_with_name, get_dir, terminate_proc
+from lib.utils.system import find_file_with_name, get_dir, terminate
 
 from lib.config.paths import *
 import config_create_problem as config
@@ -42,7 +42,7 @@ class ProblemCreator:
         self.current_problem = Problem(problems_dir / config.problem_name)
         self.subtasks = []
         self.cumulative = 0
-        self.compiler = Compiler(config.compilation_command, config.cpu_workers)
+        self.compiler = Compiler(config.compilation_command)
 
         for _ in range(config.cpu_workers):
             self.generators.append(TestGenerator(timeout=config.time_limit))
@@ -120,9 +120,9 @@ class ProblemCreator:
                     config.problem_name = input()
                     self.current_problem = Problem(problems_dir / config.problem_name)
                     if self.current_problem.exists():
-                        terminate_proc("Fatal error: Problem already existed.")
+                        terminate("Fatal error: Problem already existed.")
                 else:
-                    terminate_proc("Fatal error: Invalid choice, aborting...")
+                    terminate("Fatal error: Invalid choice, aborting...")
 
         check_existence()
         self.current_problem.create()
@@ -166,7 +166,6 @@ class ProblemCreator:
             json_script.write(json.dumps(self.subtasks, indent=4))
 
     def get_testcase_dir(self, test_index: int, subtask: int) -> Path:
-        """Get testcase directory per the user's format."""
         testdir = config.testdir_format
         testdir = re.sub("%C", str(self.cumulative + test_index + 1), testdir)
         testdir = re.sub("%S", str(subtask + 1), testdir)
@@ -174,6 +173,20 @@ class ProblemCreator:
         testcase_dir = self.current_problem.test_dir / testdir
         testcase_dir.mkdir()
         return testcase_dir
+
+    def generate_test(self, worker_pool: ProcessPoolExecutor, test_index: int, subtask: int):
+        """Submit a test task to a worker pool."""
+        testdir = self.get_testcase_dir(test_index, subtask)
+        testgen, testgen_args = script_split(self.subtasks[subtask][test_index])
+        testgen = find_file_with_name(testgen, workspace)
+
+        worker_pool.submit(
+            self.generators[(test_index - 1) % config.cpu_workers].generate,
+            testgen_command=[bindir / testgen.name] + testgen_args,
+            judge_command=bindir / config.main_correct_solution,
+            export_input_to=testdir / f"{config.problem_name}.inp",
+            export_answer_to=testdir / f"{config.problem_name}.out",
+        )
 
     def generate_subtask(self, subtask: int):
         print(f"Generating subtask {wrap_message(str(subtask + 1), text_colors.GREEN)}:")
@@ -183,35 +196,16 @@ class ProblemCreator:
             batch_count += 1
 
         with ProcessPoolExecutor(max_workers=config.cpu_workers) as worker_pool:
-            batch = 0
-            for batch_first in range(0, test_count, config.cpu_workers):
-                batch_last = min(batch_first + config.cpu_workers, test_count) - 1
+            for batch in range(batch_count):
+                first_test_of_batch = batch * config.cpu_workers
+                last_test_of_batch = min(first_test_of_batch + config.cpu_workers, test_count) - 1
                 send_message(
-                    f"Executing batch {batch + 1} (test {batch_first + 1} - {batch_last + 1})",
+                    f"Executing batch {batch + 1} (test {first_test_of_batch + 1} - {last_test_of_batch + 1})",
                     text_colors.BOLD,
                 )
 
-                procs: list[Future] = []
-                for test_index in range(batch_first, batch_last + 1):
-                    testdir = self.get_testcase_dir(test_index, subtask)
-                    testgen, testgen_args = script_split(self.subtasks[subtask][test_index])
-                    testgen = find_file_with_name(testgen, workspace)
-
-                    procs.append(
-                        worker_pool.submit(
-                            self.generators[(test_index - 1) % config.cpu_workers].generate,
-                            testgen_command=[bindir / testgen.name] + testgen_args,
-                            judge_command=bindir / config.main_correct_solution,
-                            export_input_to=testdir / f"{config.problem_name}.inp",
-                            export_answer_to=testdir / f"{config.problem_name}.out",
-                        )
-                    )
-
-                for proc in procs:
-                    # calling result() propagates the child process's terminate_proc() call, if any
-                    proc.result()
-
-                batch += 1
+                for test_index in range(first_test_of_batch, last_test_of_batch + 1):
+                    self.generate_test(worker_pool, test_index, subtask)
 
     def generate_tests(self):
         print(
@@ -258,7 +252,7 @@ class ProblemCreator:
         self.detect_generators()
         self.append_testlib_seeds()
         self.create_problem()
-        self.compiler.compile([(source, (bindir / source.name)) for source in self.source_paths])
+        self.compiler([(source, (bindir / source.name)) for source in self.source_paths])
         self.generate_tests()
         self.organize_test_folder()
         send_message(
