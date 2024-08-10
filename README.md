@@ -17,7 +17,9 @@ A *user-centric* platform written in Python and C++ to help you create and manag
   
 ### Other goodies:
 - Multiprocessor support (especially useful for problems with great time complexity e.g. $O(n^3)$ where $n=420$).
-- Reusable custom checker support via the plugin system.
+- Custom checker support via:
+  - [testlib](https://github.com/MikeMirzayanov/testlib/) (as one of your C++ source files);
+  - [the Python checker plugin system]().
 
 ## Requirement
 
@@ -25,7 +27,9 @@ A Linux or Windows-running machine with the following resources installed:
 - Python 3.10+.
 - Python package(s): `tabulate`. 
     - On Windows this can be installed using `pip install <package-name>`. On Arch-based Linux distros this can be done using `pacman -S python-<package-name>`. On any other platforms, good luck.
-- A C++ compiler. GNU GCC and Clang are strongly recommended.
+- A C++ compiler. Strongly recommend:
+  - GNU GCC (basically everyone use this)
+  - Clang (its error messages are *much* more readable than GCC)
 
 ## Installation
 
@@ -58,11 +62,12 @@ See [the tutorial](/docs/tutorial.md).
 
 **A:** ASIMON offers a subset of the [Polygon](https://polygon.codeforces.com/) problem preparation system. Many features of the latter are not supported, including:
 - a GUI
-- validator support
-- 
+- support for validators
+- support for writing statements and solutions
+- and then some ...
 
 
-However, there are reasons you may want to ASIMON:
+However, there are reasons you may want to use ASIMON:
 - Local hosting.
 - Very gentle learning curve.
 - Full control (and responsibility!) over what you do.
