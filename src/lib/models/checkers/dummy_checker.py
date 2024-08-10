@@ -7,10 +7,10 @@ class DummyChecker(Checker):
     This class serves as a template for user-created checkers.
     """
 
-    def __init__(self) -> None:
-        pass
+    def __str__():
+        return "dummy"
 
-    def check(self, input: str, answer: str, output: str) -> CheckerResult:
+    def check(self, input: bytes, answer: bytes, output: bytes) -> CheckerResult:
         return CheckerResult(
             status=ContestantExecutionStatus.AC,
             comment="All seems well.",

@@ -17,7 +17,7 @@ class CheckerResult:
 
 class Checker(ABC):
     @abstractmethod
-    def check(self, input: str, answer: str, output: str) -> CheckerResult:
+    def check(self, input: bytes, answer: bytes, output: bytes) -> CheckerResult:
         """Evaluate the test result and return a `CheckerResult`.
         See concrete `checker` classes for the specific comments.
         """

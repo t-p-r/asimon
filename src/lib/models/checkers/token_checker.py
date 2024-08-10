@@ -4,6 +4,9 @@ from .base import *
 class TokenChecker(Checker):
     """Test whether the token list of `answer` and `output` is the same."""
 
+    def __str__():
+        return "token"
+
     @staticmethod
     def ordinal(n: int) -> str:
         """
@@ -16,8 +19,8 @@ class TokenChecker(Checker):
             suffix = ["th", "st", "nd", "rd", "th"][min(n % 10, 4)]
         return str(n) + suffix
 
-    def check(self, input: str, answer: str, output: str) -> CheckerResult:
-        answer_tokens = answer.split()
+    def check(self, input: bytes, answer: bytes, output: bytes) -> CheckerResult:
+        answer_tokens = answer.split()  # not much perf overhead somehow?
         output_tokens = output.split()
 
         if len(answer_tokens) != len(output_tokens):

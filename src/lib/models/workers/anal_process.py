@@ -2,12 +2,12 @@
 Internal wrapper around subprocess's run() method.
 """
 
-from subprocess import run, PIPE, TimeoutExpired, CalledProcessError
+from subprocess import run, PIPE, TimeoutExpired, CompletedProcess
 from dataclasses import dataclass
 
 import time
 
-from lib.utils.system import terminate
+from lib.utils.system import terminate_proc
 
 
 @dataclass
@@ -19,7 +19,7 @@ class ProcessResult:
 
     returncode: int
     exec_time: float
-    stdout: str | None
+    stdout: bytes | None
 
 
 def anal_process(
@@ -28,41 +28,42 @@ def anal_process(
     terminate_on_fault: bool = True,
     stdout=PIPE,
     stderr=PIPE,
-    encoding: str | None = "UTF-8",
-    input: str | None = None,
     timeout=None,
+    **other_subprocess_args,
 ) -> ProcessResult:
     """
     Run a subprocess and returns a ProcessResult representing its result.
 
     `id_string` is the user-friendly identifier of the process (e.g. "test generator", "user's solution", ...).
 
-    If the process timed out or exited with an error code and if `terminate_on_fault` is True, attempts to terminate the entire program.
+    If the process timed out or exited with an error code and if `terminate_on_fault` is True,
+    attempts to terminate the entire Python interpreter.
 
-    Especially, if the process timed out and if `terminate_on_fault` is False, raise the pending TimeoutExpired error.
+    Especially, if the process timed out and if `terminate_on_fault` is False, raise the pending `TimeoutExpired` error.
 
-    Some `subprocess.run()`/`Popen()` arguments are set by default: `stdout`, `stderr`, `check`, `encoding` and `input`.
+    Some `subprocess.run()`/`Popen()` arguments are set by default: `stdout`, `stderr`, `encoding`.
     """
 
     try:
         start = time.perf_counter()
-        proc = run(
+        proc: CompletedProcess = run(
             command,
             stdout=stdout,
             stderr=stderr,
-            encoding=encoding,
-            input=input,
             timeout=timeout,
+            **other_subprocess_args,
         )
         end = time.perf_counter()
-    except TimeoutExpired as timeout:
+    except TimeoutExpired as timeout_error:
         if terminate_on_fault:
-            terminate(f"Fatal error: {identity} timed out after {timeout.timeout} seconds.")
+            terminate_proc(f"Fatal error: {identity} timed out after {timeout} seconds.")
         else:
-            raise timeout
+            raise timeout_error
 
     if proc.returncode != 0 and terminate_on_fault:
-        terminate(f"Fatal error: {identity} exited with code {proc.returncode}.")
+        terminate_proc(
+            f"Fatal error: {identity} exited with code {proc.returncode}.\nError: {proc.stderr.decode()}"
+        )
 
     return ProcessResult(
         returncode=proc.returncode,

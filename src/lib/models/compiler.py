@@ -7,7 +7,7 @@ C++ compiler wrapper.
 from lib.utils.system import is_windows
 from lib.utils.formatting import send_message
 from lib.utils.formatting import text_colors
-from lib.utils.system import terminate
+from lib.utils.system import terminate_proc
 
 from lib.config.paths import cache_dir, workspace
 from subprocess import run, Popen
@@ -51,14 +51,11 @@ class Compiler:
 
         return False
 
-    def __init__(
-        self,
-        compilation_command: str | None = None,
-    ):
+    def __init__(self, compilation_command: str | None = None, cpu_workers: int = 1):
         """
         Initialize the compiler.
 
-        Up to one argument is accepted. This argument must be a string,
+        `compilation_command` must be a string,
         being either:
         - `"$default"` or an empty string: ASIMON will find the compiler and appends its
         default compilation args.
@@ -68,7 +65,11 @@ class Compiler:
         compilers.
         - Any other string: ASIMON will interpret the first token as the compiler
         and the rest as arguments.
+
+        `cpu_workers` is the number of concurrent compilation process. If it is too large
+        the compilers will eat up all your CPU (though this is often the desired behaviour).
         """
+        self.cpu_workers = max(4, cpu_workers)
 
         def autodetect_compiler():
             for compiler in SUPPORTED_COMPILERS:
@@ -77,7 +78,7 @@ class Compiler:
                     self.compiler_args = DEFAULT_COMPILER_ARGS[compiler]
                     send_message(f"Autodetected compiler: {compiler}.", text_colors.YELLOW)
                     return
-            terminate(
+            terminate_proc(
                 "Fatal error: No C++ compiler found. "
                 + "Installation is the user's responsibility (see install.md for a start)."
             )
@@ -106,13 +107,16 @@ class Compiler:
         if self.compiler_args == "$default" and self.compiler in SUPPORTED_COMPILERS:
             self.compiler_args = DEFAULT_COMPILER_ARGS[self.compiler]
 
-    def __call__(self, source_output: list[tuple[Path, Path]]):
+    def compile(self, source_output: list[tuple[Path, Path]]):
         """
         Call the compiler.
 
         `source_output` must be a list where each item is `(source, output)`,
         corresponding to the locations of the C++ source file
         and its executable, respectively.
+
+        Note that this function will open a number of subprocesses equals to the
+        number of items in `source_output`. **You have been warned**.
         """
 
         send_message(
@@ -120,25 +124,27 @@ class Compiler:
             text_colors.GREEN,
         )
 
-        procs: list[tuple[Path, Popen]] = []
-        for source_path, output_path in source_output:
-            COMPILATION_SYNTAX = {
-                "g++": f"g++ {self.compiler_args} {source_path} -o {output_path}",
-                "clang++": f"clang++ {self.compiler_args} {source_path} -o {output_path}",
-                "cl": f"cl {self.compiler_args} {source_path} /Fe {output_path}",
-            }
-            procs.append(
-                (
-                    source_path,
-                    Popen(
-                        COMPILATION_SYNTAX[
-                            self.compiler if self.compiler in SUPPORTED_COMPILERS else "g++"
-                        ].split()
-                    ),
+        for i in range(0, len(source_output), self.cpu_workers):
+            batch = source_output[i : i + self.cpu_workers]
+            procs: list[tuple[Path, Popen]] = []
+            for source_path, output_path in batch:
+                COMPILATION_SYNTAX = {
+                    "g++": f"g++ {self.compiler_args} {source_path} -o {output_path}",
+                    "clang++": f"clang++ {self.compiler_args} {source_path} -o {output_path}",
+                    "cl": f"cl {self.compiler_args} {source_path} /Fe {output_path}",
+                }
+                procs.append(
+                    (
+                        source_path,
+                        Popen(
+                            COMPILATION_SYNTAX[
+                                self.compiler if self.compiler in SUPPORTED_COMPILERS else "g++"
+                            ].split()
+                        ),
+                    )
                 )
-            )
-        for source_path, popen_obj in procs:
-            if popen_obj.wait() != 0:  # à la returncode
-                terminate(
-                    f"Fatal error: C++ source file {source_path} cannot be compiled, or doesn't exist.",
-                )
+            for source_path, popen_obj in procs:
+                if popen_obj.wait() != 0:  # à la returncode
+                    terminate_proc(
+                        f"Fatal error: C++ source file {source_path} cannot be compiled, or doesn't exist.",
+                    )

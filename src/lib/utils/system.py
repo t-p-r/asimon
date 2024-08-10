@@ -36,15 +36,20 @@ def find_file_with_name(name: str, p: Path):
         if p.exists():
             return p
 
-    terminate(
+    terminate_proc(
         f'Fatal error: No source file with name "{name}.cpp" or "{name}.c" '
         + 'is found in the /workspace folder.'
     )
 
 
-def terminate(message: str):
-    send_message(message, text_colors.RED)
-    exit(0)
+def terminate_proc(message: str, returncode=1):
+    """
+    Sending `message` before terminate the process with `returncode`.
+    If the process is a child of some parent process, the effect on
+    the parent is undefined.
+    """
+    send_message(f"{message}\nAttempting termination...\n", text_colors.RED)
+    exit(returncode)
 
 
 def is_windows():

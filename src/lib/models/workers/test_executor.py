@@ -4,13 +4,12 @@ Umbrella class for running tests.
 
 from subprocess import TimeoutExpired, CalledProcessError
 from pathlib import Path
-from lib.models.checkers import *
+from lib.models.checkers import CheckerResult, Checker, DISCOVERED_CHECKERS
 from lib.models.ces import ContestantExecutionStatus
-from lib.utils.system import terminate
+from lib.utils.system import terminate_proc
 from dataclasses import dataclass
 
-from .proc import ProcessResult, anal_process
-
+from .anal_process import anal_process
 
 
 @dataclass
@@ -40,7 +39,7 @@ class WorkerResult:
     - `contestant_results`: a list of `ContestantExecutionResult`.
     """
 
-    input: str
+    input: bytes
     answer: bytes
     contestant_results: list[ContestantExecutionResult]
 
@@ -61,24 +60,25 @@ class TestExecutor:
     time_limit: int
     judge: Path
     contestants: list[Path]
+    checker: type[Checker]  # Checker & its subclasses
 
     def __init__(
         self,
         judge: Path,
         contestants: list[Path],
         time_limit=5,
-        checker="dummy",
+        checker_pol="dummy",
         custom_checker_path: Path | None = None,
     ):
         """Create a worker."""
-        if checker == "token":
-            self.checker = TokenChecker()
-        elif checker == "dummy":
-            self.checker = DummyChecker()
-        elif checker == "custom":
-            self.checker = CustomChecker(custom_checker_path)
+        if checker_pol not in DISCOVERED_CHECKERS:
+            terminate_proc("Fatal error: Invalid checker name.")
+        elif checker_pol == "custom":
+            # only custom checker requires an argument
+            self.checker = DISCOVERED_CHECKERS[checker_pol](custom_checker_path)
         else:
-            terminate("Fatal error: Invalid checker name.")
+            # other checkers (even user-created ones) have no argument mandatorily
+            self.checker = DISCOVERED_CHECKERS[checker_pol]()
 
         self.time_limit = time_limit
         self.judge = judge
@@ -125,15 +125,14 @@ class TestExecutor:
                 )
                 continue
 
-            output = contestant_proc.stdout
-            eval = self.checker.check(input, answer, output)
+            eval: CheckerResult = self.checker.check(input, answer, output=contestant_proc.stdout)
             contestant_results.append(
                 ContestantExecutionResult(
                     contestant,
                     eval.status,
                     contestant_proc.exec_time,
                     eval.comment,
-                    output,
+                    output=contestant_proc.stdout,
                 )
             )
 

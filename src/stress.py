@@ -10,6 +10,7 @@ import random
 from concurrent.futures import ProcessPoolExecutor, Future
 from tabulate import tabulate
 from pathlib import Path
+from io import TextIOWrapper
 
 from lib.models.workers.test_executor import (
     TestExecutor,
@@ -21,7 +22,7 @@ from lib.models.problem import Problem
 from lib.models.compiler import Compiler
 
 from lib.utils.formatting import send_message, script_split, write_prefix
-from lib.utils.system import find_file_with_name, get_dir, delete_folder, terminate
+from lib.utils.system import find_file_with_name, get_dir, delete_folder, terminate_proc
 from lib.utils.numeric_aggregator import aggregate
 from lib.utils.formatting import text_colors
 
@@ -39,109 +40,116 @@ class Stresser:
         self.source_output: list[tuple[Path, Path]] = []
         self.workers: list[TestExecutor] = []
         self.batch_count: int = config.test_count // config.cpu_workers
-        self.processed_tests: int = 0
         self.general_status = []
         self.exec_times = {}
-        self.testgen_name, self.testgen_args = script_split(config.testgen_script)
+        self.testgen_name_noext, self.testgen_args = script_split(config.testgen_script)
 
         if config.problem_name != "$workspace":
             current_problem = Problem(problems_dir / config.problem_name)
             if not current_problem.exists():
-                terminate(f"Fatal error: There is no problem with name {config.problem_name}.")
-
-            self.mcs_path = current_problem.main_correct_solution()
-            self.others_path = current_problem.other_solutions()
-            self.testgen_path = find_file_with_name(self.testgen_name, current_problem.testgen_dir)
+                terminate_proc(f"Fatal error: There is no problem with name {config.problem_name}.")
 
             # TODO: dynamic import for these:
             self.checker_pol = "token"  # stub
-            self.custom_checker_path = None  # Path, stub
             self.compiler = Compiler("$default")
 
+            # Internal (within __init__ only), temporary variables
+            self._judge_path = current_problem.main_correct_solution()
+            self._contestant_paths = current_problem.other_solutions()
+            self._testgen_path = find_file_with_name(
+                self.testgen_name_noext, current_problem.testgen_dir
+            )
+            if config.checker == "custom":
+                self._custom_checker_path = None  # Path, stub
         else:
-            self.mcs_path = workspace / config.main_correct_solution
-            self.others_path = [workspace / solution for solution in config.other_solutions]
-            self.testgen_path = find_file_with_name(self.testgen_name, workspace)
             self.checker_pol = config.checker
 
+            self._judge_path = workspace / config.main_correct_solution
+            self._contestant_paths = [workspace / solution for solution in config.other_solutions]
+            self._testgen_path = find_file_with_name(self.testgen_name_noext, workspace)
             if config.checker == "custom":
-                self.custom_checker_path = workspace / config.custom_checker
-            self.compiler = Compiler(config.compilation_command)
+                self._custom_checker_path = workspace / config.custom_checker
+
+            self.compiler = Compiler(config.compilation_command, config.cpu_workers)
 
         def _queue_compilation(p: Path):
             self.source_output.append((p, bindir / p.name))
             # .../solution.cpp -> /bin/solution.cpp.exe
 
-        _queue_compilation(self.testgen_path)
-        _queue_compilation(self.mcs_path)
-        for solution in self.others_path:
+        _queue_compilation(self._testgen_path)
+        _queue_compilation(self._judge_path)
+        for solution in self._contestant_paths:
             _queue_compilation(solution)
         if self.checker_pol == "custom":
-            _queue_compilation(self.custom_checker_path)
+            _queue_compilation(self._custom_checker_path)
 
-        self.all_source_paths = self.others_path + [self.mcs_path]
+        # add some more variables
+        self.judge_name = self._judge_path.name
+        self.testgen_name = self._testgen_path.name
+        self.custom_checker_name = self._custom_checker_path.name
+        self.all_source_paths = self._contestant_paths + [self._judge_path]
         self.exec_times = {contestant.name: [] for contestant in self.all_source_paths}
 
     def init_workers(self):
         for _ in range(config.cpu_workers):
             self.workers.append(
                 TestExecutor(
-                    judge=bindir / self.mcs_path.name,
+                    judge=bindir / self.judge_name,
                     contestants=[bindir / contestant.name for contestant in self.all_source_paths],
                     time_limit=config.time_limit,
-                    checker=self.checker_pol,
+                    checker_pol=self.checker_pol,
                     custom_checker_path=(
-                        bindir / self.custom_checker_path if self.checker_pol == "custom" else None
+                        bindir / self.custom_checker_name if self.checker_pol == "custom" else None
                     ),
                 )
             )
 
     def run_tests(self):
         """Run the number of tests specified by dividing them into batches \
-        the size of at most `worker_count`."""
+        the size of at most `cpu_workers`."""
         if config.test_count % config.cpu_workers != 0:
             self.batch_count += 1
 
-        worker_pool = ProcessPoolExecutor(max_workers=config.cpu_workers)
-
-        for batch in range(self.batch_count):
-            if not self.workers[0].contestants or (
-                len(self.workers[0].contestants) == 1
-                and self.workers[0].contestants[0].name == config.main_correct_solution
-            ):
-                send_message(
-                    "All solutions have failed, aborting execution...",
-                    text_colors.YELLOW,
-                )
-                break
-
-            first_test_of_batch = self.processed_tests + 1
-            last_test_of_batch = min(self.processed_tests + config.cpu_workers, config.test_count)
-            batch_size = last_test_of_batch - first_test_of_batch + 1
-            send_message(
-                f"Executing batch {batch+1} (test {first_test_of_batch} - {last_test_of_batch})",
-                text_colors.BOLD,
-            )
-
-            procs: list[Future[WorkerResult]] = []
-            for i in range(batch_size):
-                test_seed = random.getrandbits(31)
-                procs.append(
-                    worker_pool.submit(
-                        self.workers[i].execute,
-                        [bindir / self.testgen_path.name]
-                        + self.testgen_args
-                        + [f"--seed {test_seed}"],
+        with ProcessPoolExecutor(max_workers=config.cpu_workers) as worker_pool:
+            batch = 0
+            processed_tests = 0
+            for batch_first in range(0, config.test_count, config.cpu_workers):
+                if not self.workers[0].contestants or (
+                    len(self.workers[0].contestants) == 1
+                    and self.workers[0].contestants[0].name == config.main_correct_solution
+                ):
+                    send_message(
+                        "All solutions have failed, aborting execution...",
+                        text_colors.YELLOW,
                     )
+                    break
+
+                batch_last = min(batch_first + config.cpu_workers, config.test_count) - 1
+                batch_size = batch_last - batch_first + 1
+                send_message(
+                    f"Executing batch {batch+1} (test {batch_first+1} - {batch_last+1})",
+                    text_colors.BOLD,
                 )
 
-            for proc in procs:
-                test_result = proc.result()
-                test_index = self.processed_tests + 1
-                self.handle_test_result(test_result, test_index)
-                self.processed_tests += 1
+                procs: list[Future[WorkerResult]] = []
+                for i in range(batch_size):
+                    test_seed = random.getrandbits(31)
+                    procs.append(
+                        worker_pool.submit(
+                            self.workers[i].execute,
+                            [bindir / self.testgen_name]
+                            + self.testgen_args
+                            + [f"--seed {test_seed}"],
+                        )
+                    )
 
-        worker_pool.shutdown()
+                for proc in procs:
+                    # calling result() propagates the child process's terminate_proc() call, if any
+                    test_result = proc.result()
+                    processed_tests += 1
+                    self.handle_test_result(test_result, test_index=processed_tests)
+
+                batch += 1
 
     def handle_test_result(self, test_result: WorkerResult, test_index: int):
         for contestant_result in test_result.contestant_results:
@@ -182,11 +190,11 @@ class Stresser:
             contestant_logdir / "output.txt", "w"
         ) as output:
 
-            def write_to_log(ostream, headline, content, limit=256):
-                content = content or ""  # e.g. when the solution TLE
+            def write_to_log(ostream: TextIOWrapper, headline: str, content: bytes, limit=256):
+                # Note: bytes are decoded back to string using UTF-8.
                 status.write(headline)
-                write_prefix(status, content, limit, "\n\n")
-                ostream.write(content)
+                write_prefix(status, content.decode(), limit, "\n\n")
+                ostream.write(content.decode())
 
             write_to_log(input_file, "Input:\n", test_result.input)
             write_to_log(answer, "Answer:\n", test_result.answer)
@@ -245,7 +253,7 @@ class Stresser:
     def __call__(self):
         delete_folder(logdir)
         get_dir(logdir)
-        self.compiler(self.source_output)
+        self.compiler.compile(self.source_output)
         self.init_workers()
         self.run_tests()
         self.print_final_verdict()

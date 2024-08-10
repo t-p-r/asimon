@@ -3,7 +3,7 @@
 from pathlib import Path
 import json
 from lib.exceptions import *
-from lib.utils.system import terminate
+from lib.utils.system import terminate_proc
 
 
 class Problem:
@@ -19,7 +19,7 @@ class Problem:
     def create(self):
         """This will actually initialize the problem directories on disk."""
         if self.problem_dir.exists():
-            terminate("Fatal error: Problem already existed.")
+            terminate_proc("Fatal error: Problem already existed.")
         Path.mkdir(self.problem_dir, parents=True)
         for p in [
             self.test_dir,
@@ -41,7 +41,7 @@ class Problem:
     def rename(self, new_name: str):
         new_problem_dir = Path(self.problem_dir.parent / new_name)
         if new_problem_dir.exists():
-            terminate("Fatal error: A problem with this name already exists.")
+            terminate_proc("Fatal error: A problem with this name already exists.")
 
         self.problem_dir.rename(new_problem_dir)
         self.__init__(new_problem_dir)
@@ -50,7 +50,7 @@ class Problem:
         files = list(self.solution_dir.walk())[0][2]
 
         if len(files) == 0:
-            terminate(
+            terminate_proc(
                 "Fatal error: No main correct solution found. "
                 + "The file may have been manually deleted."
             )
