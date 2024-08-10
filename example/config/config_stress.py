@@ -43,7 +43,7 @@ time_limit = 1
 In seconds, can be decimal (e.g. 0.25).
 """
 
-test_count = 32
+test_count = 1024
 
 failed_test_data = True
 """
