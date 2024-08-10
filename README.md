@@ -12,7 +12,7 @@ A *user-centric* platform written in Python and C++ to help you create and manag
 *Using your C++ source files*, ASIMON can:
 - create multi-subtask test suites from your scripts.
 - archive said tests in a format compatible to online judges (currently only DMOJ and its derivatives are supported).
-- stress-test ~~and judge~~ your solutions, ~~custom checker supported~~.
+- stress-test ~~and judge~~ your solutions, custom checker supported.
 - store all these resources in a foolproof format.
   
 ### Other goodies:
