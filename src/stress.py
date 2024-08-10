@@ -86,9 +86,11 @@ class Stresser:
         # add some more variables
         self.judge_name = self._judge_path.name
         self.testgen_name = self._testgen_path.name
-        self.custom_checker_name = self._custom_checker_path.name
         self.all_source_paths = self._contestant_paths + [self._judge_path]
         self.exec_times = {contestant.name: [] for contestant in self.all_source_paths}
+
+        if self.checker_pol == "custom":
+            self.custom_checker_name = self._custom_checker_path.name
 
     def init_workers(self):
         for _ in range(config.cpu_workers):
@@ -255,7 +257,11 @@ class Stresser:
         get_dir(logdir)
         self.compiler.compile(self.source_output)
         self.init_workers()
+        import time
+
+        a = time.perf_counter()
         self.run_tests()
+        print(time.perf_counter() - a)
         self.print_final_verdict()
 
 
