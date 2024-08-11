@@ -7,7 +7,7 @@ exclude = '''
   | \.mypy_cache
   | \.tox
   | \.venv
-  | (.*interactive_runner.py)
+  | testlib
   | _build
   | buck-out
   | build
