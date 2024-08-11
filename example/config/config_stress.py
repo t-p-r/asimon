@@ -16,17 +16,17 @@ if problem_name == "$workspace":
 
     checker_type = "external"
     """Result checker. Must be one of:
-        - "token"   : Check if the outputs' token sequences match.
-        - "line"    : Check if every line of the outputs match (whitespace ignored).
-        - "double4" : Like "token", but corresponding number tokens must be within 1E-4 of each other.
-        - "double6" : Like double4, but the epsilon is 1E-6.
-        - "double9" : Like double4, but the epsilon is 1E-9.
-        - "external"  : External checker.
-        - "dummy"   : Always returns True.
+        - "token"       : Check if every tokens of the output matches the answer. Recommended for most use cases.
+        - "double4"     : Like "token", but every number the output has must be within 10^(-4) of the answer.
+        - "double6"     : Like double4, but the epsilon is 10^(-6).
+        - "double9"     : Like double4, but the epsilon is 10^(-9).
+        - "byte"        : Check if the output is exactly the same (down to single bytes) as the answer.
+        - "line"        : Check if every line of the output match. Lines with no content or just whitespaces are ignored.
+        - "external"    : External checker using a C++ file from the `workspace` folder.
     """
 
     external_checker = "checker.cpp"
-    """If `checker` is `external`, this is the name of the C++ checker."""
+    """If `checker` is `external`, this is the name of the C++ file."""
 
 testgen_script = "testgen --lo 0 --hi 1000"
 """
