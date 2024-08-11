@@ -257,7 +257,7 @@ class Stresser:
     def __call__(self):
         delete_folder(logdir)
         get_dir(logdir)
-        self.compiler.compile(self.source_output)
+        self.compiler(self.source_output)
         self.init_workers()
         self.run_tests()
         self.print_final_verdict()

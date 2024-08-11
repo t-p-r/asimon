@@ -258,7 +258,7 @@ class ProblemCreator:
         self.detect_generators()
         self.append_testlib_seeds()
         self.create_problem()
-        self.compiler.compile([(source, (bindir / source.name)) for source in self.source_paths])
+        self.compiler([(source, (bindir / source.name)) for source in self.source_paths])
         self.generate_tests()
         self.organize_test_folder()
         send_message(
