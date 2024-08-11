@@ -7,7 +7,9 @@ external_checker = "checker.cpp"
 subtasks = [
     "testgen --lo -100 --hi 100",
     (8, f"testgen --lo 0 --hi {10**9}"),  # Python 3 string formatting
-    [f"testgen --lo {i} --hi {j}" for i in range(10, 15) for j in range(i, 15)],  # template trick
+    [
+        f"testgen --lo {i} --hi {j}" for i in range(10, 15) for j in range(i, 15)
+    ],  # template trick
 ]
 """
 Each item in this list contains information about one subtask. They can be

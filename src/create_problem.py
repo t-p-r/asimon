@@ -107,7 +107,7 @@ class ProblemCreator:
             if self.current_problem.exists():
                 print(
                     f'A problem with the current name "{config.problem_name}" already existed.\n'
-                    + 'Enter a selection:'
+                    + "Enter a selection:"
                 )
                 print("    1: Override the existing problem.")
                 print("    2: Rename the current problem.")
@@ -140,7 +140,9 @@ class ProblemCreator:
 
         # other solutions
         for other_solution in config.other_solutions:
-            shutil.copy(workspace / other_solution, self.current_problem.solution_other_dir)
+            shutil.copy(
+                workspace / other_solution, self.current_problem.solution_other_dir
+            )
             copied.add(other_solution)
 
         # checker
@@ -176,7 +178,9 @@ class ProblemCreator:
         return testcase_dir
 
     def generate_subtask(self, subtask: int):
-        print(f"Generating subtask {wrap_message(str(subtask + 1), text_colors.GREEN)}:")
+        print(
+            f"Generating subtask {wrap_message(str(subtask + 1), text_colors.GREEN)}:"
+        )
         test_count = len(self.subtasks[subtask])
         batch_count = test_count // config.cpu_workers
         if test_count % config.cpu_workers != 0:
@@ -194,12 +198,16 @@ class ProblemCreator:
                 procs: list[Future] = []
                 for test_index in range(batch_first, batch_last + 1):
                     testdir = self.get_testcase_dir(test_index, subtask)
-                    testgen, testgen_args = script_split(self.subtasks[subtask][test_index])
+                    testgen, testgen_args = script_split(
+                        self.subtasks[subtask][test_index]
+                    )
                     testgen = find_file_with_name(testgen, workspace)
 
                     procs.append(
                         worker_pool.submit(
-                            self.generators[(test_index - 1) % config.cpu_workers].generate,
+                            self.generators[
+                                (test_index - 1) % config.cpu_workers
+                            ].generate,
                             testgen_command=[bindir / testgen.name] + testgen_args,
                             judge_command=bindir / config.main_correct_solution,
                             export_input_to=testdir / f"{config.problem_name}.inp",
@@ -232,7 +240,9 @@ class ProblemCreator:
             folders = list(self.current_problem.problem_dir.walk())[0][1]
             # testgen, solution, checker, misc
             for folder in folders:
-                if folder != self.current_problem.test_dir.name:  # prevents infinite recursion
+                if (
+                    folder != self.current_problem.test_dir.name
+                ):  # prevents infinite recursion
                     shutil.copytree(
                         self.current_problem.problem_dir / folder,
                         source_dir / folder,
@@ -258,7 +268,9 @@ class ProblemCreator:
         self.detect_generators()
         self.append_testlib_seeds()
         self.create_problem()
-        self.compiler.compile([(source, (bindir / source.name)) for source in self.source_paths])
+        self.compiler.compile(
+            [(source, (bindir / source.name)) for source in self.source_paths]
+        )
         self.generate_tests()
         self.organize_test_folder()
         send_message(

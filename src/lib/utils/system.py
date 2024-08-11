@@ -38,7 +38,7 @@ def find_file_with_name(name: str, p: Path):
 
     terminate_proc(
         f'Fatal error: No source file with name "{name}.cpp" or "{name}.c" '
-        + 'is found in the /workspace folder.'
+        + "is found in the /workspace folder."
     )
 
 

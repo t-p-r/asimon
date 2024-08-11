@@ -56,7 +56,9 @@ def anal_process(
         end = time.perf_counter()
     except TimeoutExpired as timeout_error:
         if terminate_on_fault:
-            terminate_proc(f"Fatal error: {identity} timed out after {timeout} seconds.")
+            terminate_proc(
+                f"Fatal error: {identity} timed out after {timeout} seconds."
+            )
         else:
             raise timeout_error
 

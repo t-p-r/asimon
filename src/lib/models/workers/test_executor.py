@@ -93,7 +93,10 @@ class TestExecutor:
             testgen_command, identity="test generator", timeout=self.time_limit
         ).stdout
         answer = anal_process(
-            self.judge, identity="main correct solution", input=input, timeout=self.time_limit
+            self.judge,
+            identity="main correct solution",
+            input=input,
+            timeout=self.time_limit,
         ).stdout
 
         worker_result = WorkerResult(input, answer, [])
@@ -102,7 +105,10 @@ class TestExecutor:
         for contestant in self.contestants:
             try:
                 contestant_proc = anal_process(
-                    contestant, terminate_on_fault=False, input=input, timeout=self.time_limit
+                    contestant,
+                    terminate_on_fault=False,
+                    input=input,
+                    timeout=self.time_limit,
                 )
             except CalledProcessError as proc_error:  # RTE
                 contestant_results.append(
@@ -125,7 +131,9 @@ class TestExecutor:
                 )
                 continue
 
-            eval: CheckerResult = self.checker.check(input, answer, output=contestant_proc.stdout)
+            eval: CheckerResult = self.checker.check(
+                input, answer, output=contestant_proc.stdout
+            )
             contestant_results.append(
                 ContestantExecutionResult(
                     contestant,

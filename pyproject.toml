@@ -1,6 +1,4 @@
 [tool.black] # Black Formatter for .py files
-line-length = 100
-skip-string-normalization = true
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -9,6 +7,7 @@ exclude = '''
   | \.mypy_cache
   | \.tox
   | \.venv
+  | (.*interactive_runner.py)
   | _build
   | buck-out
   | build

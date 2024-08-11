@@ -27,7 +27,9 @@ class ExternalChecker(Checker):
         self.timeout = timeout
 
         if not access(self.path, X_OK):
-            terminate_proc(f"Fatal error: external checker {self.path} is not an executable file.")
+            terminate_proc(
+                f"Fatal error: external checker {self.path} is not an executable file."
+            )
 
     def check(self, input: bytes, answer: bytes, output: bytes) -> CheckerResult:
         """Check result using external checker in `checker_path`.
@@ -54,8 +56,14 @@ class ExternalChecker(Checker):
         uuid1 = str(uuid4())
         uuid2 = str(uuid4())
 
-        input_buffer = b''.join(
-            [input, bytearray(uuid1, "utf-8"), answer, bytearray(uuid2, "utf-8"), output]
+        input_buffer = b"".join(
+            [
+                input,
+                bytearray(uuid1, "utf-8"),
+                answer,
+                bytearray(uuid2, "utf-8"),
+                output,
+            ]
         )
 
         proc: CompletedProcess = run(

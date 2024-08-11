@@ -19,10 +19,15 @@ class TestGenerator:
         """Generate a test case. Returns True if nothing critically awry happens."""
         with open(export_input_to, "w") as input_file:
             anal_process(
-                testgen_command, identity="test generator", stdout=input_file, timeout=self.timeout
+                testgen_command,
+                identity="test generator",
+                stdout=input_file,
+                timeout=self.timeout,
             )
 
-        with open(export_input_to, "r") as input_file, open(export_answer_to, "w") as output_file:
+        with open(export_input_to, "r") as input_file, open(
+            export_answer_to, "w"
+        ) as output_file:
             anal_process(
                 judge_command,
                 identity="main correct solution",
