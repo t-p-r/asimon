@@ -39,7 +39,7 @@ class Stresser:
         # pair of C++ source files and its executable's location
         self.source_output: list[tuple[Path, Path]] = []
         self.workers: list[TestExecutor] = []
-        self.batch_count: int = config.test_count // config.cpu_workers
+        self.batch_count = config.test_count // config.cpu_workers
         self.general_status = []
         self.exec_times = {}
         self.testgen_name_noext, self.testgen_args = script_split(config.testgen_script)
