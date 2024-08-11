@@ -131,9 +131,7 @@ class TestExecutor:
                 )
                 continue
 
-            eval: CheckerResult = self.checker.check(
-                input, answer, output=contestant_proc.stdout
-            )
+            eval: CheckerResult = self.checker.check(input, answer, output=contestant_proc.stdout)
             contestant_results.append(
                 ContestantExecutionResult(
                     contestant,

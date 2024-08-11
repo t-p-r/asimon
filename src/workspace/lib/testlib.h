@@ -50,6 +50,8 @@ char _uuid[3][UUID_LENGTH];
  * is empty.
  *
  * @note Use @c fread() to perform efficient bulk reading.
+ *
+ * @note This is part of the CPDSA library.
  */
 uint8_t __getc() noexcept {
     static const size_t BUFSIZE = 1 << 16;  // 64 KB
@@ -176,23 +178,21 @@ void registerTestlibCmd(int argc, char* argv[]) {
             if (i + 1 < argc) {
                 strncpy(_uuid[_input], argv[++i], UUID_LENGTH);
             } else
-                quit(_fail, std::string("Expected a version 4 UUID after "
-                                        "--_uuid1 command line parameter"));
+                quit(_fail, std::string("Internal critical error: Expected a version 4 UUID after --asimon_uuid1 "
+                                        "command line parameter"));
         } else if (!strcmp("--asimon_uuid2", argv[i])) {
             uuid_args++;
             if (i + 1 < argc) {
                 strncpy(_uuid[_answer], argv[++i], UUID_LENGTH);
             } else
-                quit(_fail, std::string("Expected a version 4 UUID after "
-                                        "--_uuid2 command line parameter"));
+                quit(_fail, std::string("Internal critical error: Expected a version 4 UUID after --asimon_uuid2 "
+                                        "command line parameter"));
         } else
             args.push_back(argv[i]);
     }
 
     if (uuid_args != 2) {
-        quitf(_fail,
-              "Internal critical error: 2 UUID arguments expected, %d found.",
-              uuid_args);
+        quitf(_fail, "Internal critical error: 2 UUID arguments expected, %d found.", uuid_args);
     }
 
     argc = int(args.size());

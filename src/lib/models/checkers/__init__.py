@@ -32,10 +32,7 @@ def _init_checkers():
     for checker_module in checker_modules:
         # crawl through all objects observable from checker source files
         for checker_class_name, __ in getmembers(checker_module):
-            if (
-                checker_class_name.endswith("Checker")
-                and checker_class_name != "Checker"
-            ):
+            if checker_class_name.endswith("Checker") and checker_class_name != "Checker":
                 checker_class_obj = getattr(checker_module, checker_class_name)
                 checker_alias = checker_class_obj.__str__()
                 DISCOVERED_CHECKERS[checker_alias] = checker_class_obj  # magic

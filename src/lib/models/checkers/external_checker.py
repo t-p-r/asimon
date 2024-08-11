@@ -27,9 +27,7 @@ class ExternalChecker(Checker):
         self.timeout = timeout
 
         if not access(self.path, X_OK):
-            terminate_proc(
-                f"Fatal error: external checker {self.path} is not an executable file."
-            )
+            terminate_proc(f"Fatal error: external checker {self.path} is not an executable file.")
 
     def check(self, input: bytes, answer: bytes, output: bytes) -> CheckerResult:
         """Check result using external checker in `checker_path`.

@@ -47,9 +47,7 @@ class Stresser:
         if config.problem_name != "$workspace":
             current_problem = Problem(problems_dir / config.problem_name)
             if not current_problem.exists():
-                terminate_proc(
-                    f"Fatal error: There is no problem with name {config.problem_name}."
-                )
+                terminate_proc(f"Fatal error: There is no problem with name {config.problem_name}.")
 
             # TODO: dynamic import for these:
             self.checker_pol = "token"  # stub
@@ -67,9 +65,7 @@ class Stresser:
             self.checker_pol = config.checker_type
 
             self._judge_path = workspace / config.main_correct_solution
-            self._contestant_paths = [
-                workspace / solution for solution in config.other_solutions
-            ]
+            self._contestant_paths = [workspace / solution for solution in config.other_solutions]
             self._testgen_path = find_file_with_name(self.testgen_name_noext, workspace)
             if config.checker_type == "external":
                 self._external_checker_path = workspace / config.external_checker
@@ -101,9 +97,7 @@ class Stresser:
             self.workers.append(
                 TestExecutor(
                     judge=bindir / self.judge_name,
-                    contestants=[
-                        bindir / contestant.name for contestant in self.all_source_paths
-                    ],
+                    contestants=[bindir / contestant.name for contestant in self.all_source_paths],
                     time_limit=config.time_limit,
                     checker_pol=self.checker_pol,
                     external_checker_path=(
@@ -126,8 +120,7 @@ class Stresser:
             for batch_first in range(0, config.test_count, config.cpu_workers):
                 if not self.workers[0].contestants or (
                     len(self.workers[0].contestants) == 1
-                    and self.workers[0].contestants[0].name
-                    == config.main_correct_solution
+                    and self.workers[0].contestants[0].name == config.main_correct_solution
                 ):
                     send_message(
                         "All solutions have failed, aborting execution...",
@@ -135,9 +128,7 @@ class Stresser:
                     )
                     break
 
-                batch_last = (
-                    min(batch_first + config.cpu_workers, config.test_count) - 1
-                )
+                batch_last = min(batch_first + config.cpu_workers, config.test_count) - 1
                 batch_size = batch_last - batch_first + 1
                 send_message(
                     f"Executing batch {batch+1} (test {batch_first+1} - {batch_last+1})",
@@ -188,9 +179,7 @@ class Stresser:
                 )
 
                 if config.failed_test_data:
-                    self.log_failed_test_data(
-                        contestant, test_result, contestant_result
-                    )
+                    self.log_failed_test_data(contestant, test_result, contestant_result)
 
     def log_failed_test_data(
         self,
@@ -205,9 +194,7 @@ class Stresser:
             contestant_logdir / "output.txt", "w"
         ) as output:
 
-            def write_to_log(
-                ostream: TextIOWrapper, headline: str, content: bytes, limit=256
-            ):
+            def write_to_log(ostream: TextIOWrapper, headline: str, content: bytes, limit=256):
                 # Note: bytes are decoded back to string using UTF-8.
                 status.write(headline)
                 write_prefix(status, content.decode(), limit, "\n\n")
@@ -232,9 +219,7 @@ class Stresser:
         exec_time_stats = []
         for contestant, times in self.exec_times.items():
             min_time, max_time, avg_time, median_time = aggregate(times)
-            exec_time_stats.append(
-                [contestant, min_time, max_time, avg_time, median_time]
-            )
+            exec_time_stats.append([contestant, min_time, max_time, avg_time, median_time])
         exec_time_stats.sort()
 
         with open(result_file_location, "w") as result_file:

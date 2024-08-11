@@ -1,4 +1,5 @@
 [tool.black] # Black Formatter for .py files
+line-length = 100
 include = '\.pyi?$'
 exclude = '''
 /(

@@ -23,13 +23,11 @@ DEFAULT_COMPILER_ARGS = {
 
 if is_windows():
     # add stack option to G++ and Clang
-    WIN_STACK_SIZE = (
-        268435456  # Codeforces stack size (on Linux this is effectively infinite)
-    )
-    DEFAULT_COMPILER_ARGS[
-        "g++"
-    ] += f" -static -Wl, --stack={WIN_STACK_SIZE}"  # mind the gap
+    WIN_STACK_SIZE = 268435456  # on Linux this is effectively infinite
+
+    DEFAULT_COMPILER_ARGS["g++"] += f" -static -Wl, --stack={WIN_STACK_SIZE}"  # mind the gap
     DEFAULT_COMPILER_ARGS["clang++"] += f" -static -Wl, --stack={WIN_STACK_SIZE}"
+
     # add MSVC compiler
     SUPPORTED_COMPILERS.append("cl")
     DEFAULT_COMPILER_ARGS["cl"] = (
@@ -80,9 +78,7 @@ class Compiler:
                 if self.probe(compiler):
                     self.compiler = compiler
                     self.compiler_args = DEFAULT_COMPILER_ARGS[compiler]
-                    send_message(
-                        f"Autodetected compiler: {compiler}.", text_colors.YELLOW
-                    )
+                    send_message(f"Autodetected compiler: {compiler}.", text_colors.YELLOW)
                     return
             terminate_proc(
                 "Fatal error: No C++ compiler found. "
@@ -144,11 +140,7 @@ class Compiler:
                         source_path,
                         Popen(
                             COMPILATION_SYNTAX[
-                                (
-                                    self.compiler
-                                    if self.compiler in SUPPORTED_COMPILERS
-                                    else "g++"
-                                )
+                                (self.compiler if self.compiler in SUPPORTED_COMPILERS else "g++")
                             ].split()
                         ),
                     )
