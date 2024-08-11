@@ -14,7 +14,7 @@ if problem_name == "$workspace":
         "contestant.cpp",
     ]
 
-    checker = "token"
+    checker = "custom"
     """Result checker. Must be one of:
         - "token"   : Check if the outputs' token sequences match.
         - "line"    : Check if every line of the outputs match (whitespace ignored).
@@ -25,7 +25,7 @@ if problem_name == "$workspace":
         - "dummy"   : Always returns True.
     """
 
-    custom_checker = ""
+    custom_checker = "checker.cpp"
     """If `checker` is `custom`, this is the name of the C++ checker."""
 
 testgen_script = "testgen --lo 0 --hi 1000"
