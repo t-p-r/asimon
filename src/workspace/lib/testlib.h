@@ -65,7 +65,7 @@ uint8_t __getc() noexcept {
 /**
  * @brief Consumes all of @c stdin into a string.
  */
-inline void __getstdin_all(std::string& dest) {
+inline void __getstdin(std::string& dest) {
     for (char c = __getc(); c != EOF; c = __getc()) dest.push_back(c);
 }
 
@@ -82,7 +82,7 @@ inline void __getstdin_all(std::string& dest) {
  * an UUID. Dire things may happen otherwise because no checking beside length
  * is actually done.
  */
-inline void __getstdin_upto(std::string& dest, char uuid[]) {
+inline void __getstdin(std::string& dest, char uuid[]) {
     size_t n = strlen(uuid);
     if (n != UUID_LENGTH) {
         quitf(_fail,
@@ -135,9 +135,9 @@ void __init_instream(InStream& stream, TMode mode) {
     content.reserve(STR_RESERVE);
 
     if (mode == _output)
-        __getstdin_all(content);
+        __getstdin(content);
     else
-        __getstdin_upto(content, _uuid[mode]);
+        __getstdin(content, _uuid[mode]);
 
     stream.reader = new StringInputStreamReader(content);
 }
