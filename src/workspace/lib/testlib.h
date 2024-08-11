@@ -1,23 +1,28 @@
 /**
  * ASIMON: Compatibility layer for testlib.h.
  *
+ * This file redefines the original (vanilla) testlib's @c registerTestlibCmd
+ * function to correspond with ASIMON's external checker protocol. In particular,
+ * it initializes the three standard @c InStream objects in such a way that they
+ * are fed contents from @c stdin and not files.
+ *
  * THIS FILE DOES NOT, IN ANY WAY, IMPLEMENTS EVEN A FUNCTIONAL SUBSET OF
  * TESTLIB.H, NOR INDUCE ANY CHANGES ON THE USER'S SIDE, BUT MERELY ADD A
  * COMPATIBILITY LAYER SO THAT THE ORIGINAL VERSION OF TESTLIB.H CAN WORK WITH
  * ASIMON'S FILELESS I/O POLICY.
  *
- * It is imperative that the original testlib repo be included in the folder
+ *
+ * It is imperative that the original testlib repository be included in the folder
  * containing this file. Do this if you have not done so after installing
  * ASIMON:
- *
  *          $ git submodule update --init
- *
+
  * to initialize the submodules, including testlib.
  *
  * If you don't want to do so, head to this directory and directly clone testlib
  * from source:
- *
  *          $ git clone https://github.com/MikeMirzayanov/testlib/
+ *
  *
  * @file /src/workspace/lib/testlib.h
  */
@@ -25,21 +30,20 @@
 #ifndef TESTLIB_ASIMON
 #define TESTLIB_ASIMON
 
-/* Overrides vanilla registerTestlibCmd */
-#define registerTestlibCmd __registerTestlibCmd_deprecated
+/* Overrides vanilla testlib's registerTestlibCmd. */
+#define registerTestlibCmd __registerTestlibCmd_vanilla
 #include "testlib/testlib.h"
 #undef registerTestlibCmd
 
-#include <cassert>
+namespace __testlib_asimon {
 
-static const size_t UUID_LENGTH = 36;
-static const size_t _ASIMON_STR_RESERVE = 32 * 1024 * 1024;  // 32MB
-char uuid1[UUID_LENGTH];
-char uuid2[UUID_LENGTH];
+static const size_t UUID_LENGTH = 36;                // 32 chars + 4 `-`
+static const size_t STR_RESERVE = 32 * 1024 * 1024;  // 32MB
 
-std::string _asimon_input;
-std::string _asimon_answer;
-std::string _asimon_output;
+std::string _name[3];
+std::string _content[3];
+
+char _uuid[3][UUID_LENGTH];
 
 /**
  * @brief Get the next byte from @c stdin, or return @a EOF if stdin
@@ -47,7 +51,7 @@ std::string _asimon_output;
  *
  * @note Use @c fread() to perform efficient bulk reading.
  */
-uint8_t getc() noexcept {
+uint8_t __getc() noexcept {
     static const size_t BUFSIZE = 1 << 16;  // 64 KB
     static char buf[BUFSIZE];
     static size_t bufat = 0, bufend = 0;
@@ -61,8 +65,8 @@ uint8_t getc() noexcept {
 /**
  * @brief Consumes all of @c stdin into a string.
  */
-inline void __asimon_getstdin_all(std::string& dest) {
-    for (char c = getc(); c != EOF; c = getc()) dest.push_back(c);
+inline void __getstdin_all(std::string& dest) {
+    for (char c = __getc(); c != EOF; c = __getc()) dest.push_back(c);
 }
 
 /**
@@ -78,7 +82,7 @@ inline void __asimon_getstdin_all(std::string& dest) {
  * an UUID. Dire things may happen otherwise because no checking beside length
  * is actually done.
  */
-inline void __asimon_getstdin_upto(std::string& dest, char uuid[]) {
+inline void __getstdin_upto(std::string& dest, char uuid[]) {
     size_t n = strlen(uuid);
     if (n != UUID_LENGTH) {
         quitf(_fail,
@@ -90,7 +94,7 @@ inline void __asimon_getstdin_upto(std::string& dest, char uuid[]) {
     // Basic KMP here. kmp[i] is the largest len <= i such that
     // uuid[0:len) = uuid(i-len:i]
     // (of course there is a trivial case where len = i+1 but that doesn't
-    // matter)
+    // matter).
     int kmp[UUID_LENGTH];
     memset(kmp, 0, sizeof(kmp));
 
@@ -103,42 +107,49 @@ inline void __asimon_getstdin_upto(std::string& dest, char uuid[]) {
 
     int k = 0;
     while (k != n) {
-        char c = getc();
-        if (c == EOF) {
-            quitf(_fail,
-                  "Internal critical error: no matching UUID was found.");
-        }
+        char c = __getc();
+        if (c == EOF) quitf(_fail, "Internal critical error: no matching UUID was found.");
         dest.push_back(c);
-
         while (k && uuid[k] != c) k = kmp[k - 1];
         if (uuid[k] == c) k++;
     }
+
     while (n--) dest.pop_back();
 }
 
-void __asimon_init_instream(InStream& stream, TMode mode) {
+/**
+ * @brief Initialize a testlib @c InStream.
+ *
+ * @param stream The @c InStream in question.
+ * @param mode The @c TMode (aka type ID) of `stream`. Must be one of: `_input`, `_answer`, `_output`.
+ *
+ * @note Use vanilla testlib's @c StringInputStreamReader. Thanks, Mike.
+ */
+void __init_instream(InStream& stream, TMode mode) {
     stream.mode = mode;
-    stream.stdfile = true;
-    stream.strict = false;
+    stream.name = _name[mode];
+    stream.stdfile = true;  // all are from stdin
+    stream.strict = false;  // no validator here
 
-    if (mode == _input) {
-        stream.name = "input";
-        _asimon_input.reserve(_ASIMON_STR_RESERVE);
-        __asimon_getstdin_upto(_asimon_input, uuid1);
-        stream.reader = new StringInputStreamReader(_asimon_input);
-    } else if (mode == _answer) {
-        stream.name = "answer";
-        _asimon_answer.reserve(_ASIMON_STR_RESERVE);
-        __asimon_getstdin_upto(_asimon_answer, uuid2);
-        stream.reader = new StringInputStreamReader(_asimon_answer);
-    } else {  // mode == _output
-        stream.name = "output";
-        _asimon_output.reserve(_ASIMON_STR_RESERVE);
-        __asimon_getstdin_all(_asimon_output);
-        stream.reader = new StringInputStreamReader(_asimon_output);
-    }
+    std::string& content = _content[mode];
+    content.reserve(STR_RESERVE);
+
+    if (mode == _output)
+        __getstdin_all(content);
+    else
+        __getstdin_upto(content, _uuid[mode]);
+
+    stream.reader = new StringInputStreamReader(content);
 }
 
+}  // namespace __testlib_asimon
+
+/**
+ * @brief Testlib register for checker programs.
+ *
+ * @note It is highly recommended that this function is the first one executed
+ * in @c main().
+ */
 void registerTestlibCmd(int argc, char* argv[]) {
     __testlib_ensuresPreconditions();
     __testlib_set_testset_and_group(argc, argv);
@@ -150,38 +161,30 @@ void registerTestlibCmd(int argc, char* argv[]) {
     std::vector<std::string> args(1, argv[0]);
     checker.initialize();
 
+    using __testlib_asimon::__init_instream;
+    using __testlib_asimon::_name;
+    using __testlib_asimon::_uuid;
+    using __testlib_asimon::UUID_LENGTH;
+
     int uuid_args = 0;
     for (int i = 1; i < argc; i++) {
-        if (!strcmp("--testset", argv[i])) {
-            if (i + 1 < argc && strlen(argv[i + 1]) > 0)
-                checker.setTestset(argv[++i]);
-            else
-                quit(_fail, std::string("Expected testset after --testset "
-                                        "command line parameter"));
-        } else if (!strcmp("--group", argv[i])) {
-            if (i + 1 < argc)
-                checker.setGroup(argv[++i]);
-            else
-                quit(
-                    _fail,
-                    std::string(
-                        "Expected group after --group command line parameter"));
-        } else if (!strcmp("--asimon_uuid1", argv[i])) {
+        // Testsets and groups are handled on the Python side, no checking
+        // is necessary here. The only thing needed to be parsed are the
+        // UUIDs.
+        if (!strcmp("--asimon_uuid1", argv[i])) {
             uuid_args++;
             if (i + 1 < argc) {
-                strncpy(uuid1, argv[++i], UUID_LENGTH);
+                strncpy(_uuid[_input], argv[++i], UUID_LENGTH);
             } else
-                quit(_fail,
-                     std::string("Expected a version 4 UUID after "
-                                 "--_asimon_uuid1 command line parameter"));
+                quit(_fail, std::string("Expected a version 4 UUID after "
+                                        "--_uuid1 command line parameter"));
         } else if (!strcmp("--asimon_uuid2", argv[i])) {
             uuid_args++;
             if (i + 1 < argc) {
-                strncpy(uuid2, argv[++i], UUID_LENGTH);
+                strncpy(_uuid[_answer], argv[++i], UUID_LENGTH);
             } else
-                quit(_fail,
-                     std::string("Expected a version 4 UUID after "
-                                 "--_asimon_uuid2 command line parameter"));
+                quit(_fail, std::string("Expected a version 4 UUID after "
+                                        "--_uuid2 command line parameter"));
         } else
             args.push_back(argv[i]);
     }
@@ -195,10 +198,14 @@ void registerTestlibCmd(int argc, char* argv[]) {
     argc = int(args.size());
     if (argc > 1 && "--help" == args[1]) __testlib_help();
 
-    // MUST be in input -> answer -> output order.
-    __asimon_init_instream(inf, _input);
-    __asimon_init_instream(ans, _answer);
-    __asimon_init_instream(ouf, _output);
+    // MUST be in ASIMON's input -> answer -> output order.
+    _name[_input] = "input";
+    _name[_answer] = "answer";
+    _name[_output] = "output";
+
+    __init_instream(inf, _input);
+    __init_instream(ans, _answer);
+    __init_instream(ouf, _output);
 }
 
-#endif
+#endif /* TESTLIB_ASIMON */
