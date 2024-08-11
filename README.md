@@ -12,7 +12,7 @@ A *user-centric* platform written in Python and C++ to help you create and manag
 *Using your C++ source files*, ASIMON can:
 - create multi-subtask test suites from your scripts.
 - archive said tests in a format compatible to online judges (currently only DMOJ and its derivatives are supported).
-- stress-test ~~and judge~~ your solutions, ~~custom checker supported~~.
+- stress-test ~~and judge~~ your solutions, custom checker supported.
 - store all these resources in a foolproof format.
   
 ### Other goodies:
@@ -28,7 +28,7 @@ A Linux or Windows-running machine with the following resources installed:
 - Python package(s): `tabulate`. 
     - On Windows this can be installed using `pip install <package-name>`. On Arch-based Linux distros this can be done using `pacman -S python-<package-name>`. On any other platforms, good luck.
 - A C++ compiler. Strongly recommend:
-  - GNU GCC (basically everyone use this)
+  - GNU GCC (basically everyone uses this)
   - Clang (its error messages are *much* more readable than GCC)
 
 ## Installation
