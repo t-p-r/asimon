@@ -72,7 +72,7 @@ class TestExecutor:
     ):
         """Create a worker."""
         if checker_pol not in DISCOVERED_CHECKERS:
-            terminate_proc("Fatal error: Invalid checker name.")
+            terminate_proc("Fatal error: Invalid checker type.")
         elif checker_pol == "external":
             # only external checker requires an argument
             self.checker = DISCOVERED_CHECKERS[checker_pol](external_checker_path)

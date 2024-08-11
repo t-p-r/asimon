@@ -59,15 +59,15 @@ class Stresser:
             self._testgen_path = find_file_with_name(
                 self.testgen_name_noext, current_problem.testgen_dir
             )
-            if config.checker == "external":
+            if config.checker_type == "external":
                 self._external_checker_path = None  # Path, stub
         else:
-            self.checker_pol = config.checker
+            self.checker_pol = config.checker_type
 
             self._judge_path = workspace / config.main_correct_solution
             self._contestant_paths = [workspace / solution for solution in config.other_solutions]
             self._testgen_path = find_file_with_name(self.testgen_name_noext, workspace)
-            if config.checker == "external":
+            if config.checker_type == "external":
                 self._external_checker_path = workspace / config.external_checker
 
             self.compiler = Compiler(config.compilation_command, config.cpu_workers)

@@ -14,7 +14,7 @@ if problem_name == "$workspace":
         "contestant.cpp",
     ]
 
-    checker = "external"
+    checker_type = "external"
     """Result checker. Must be one of:
         - "token"   : Check if the outputs' token sequences match.
         - "line"    : Check if every line of the outputs match (whitespace ignored).
