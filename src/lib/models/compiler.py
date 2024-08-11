@@ -1,57 +1,63 @@
 """
-C++ compiler wrapper.
+C++ compiler wrapper with caching.
 """
 
-# TODO: cache compiled programs.
+from hashlib import sha512, file_digest
+from pathlib import Path
+from shutil import copyfile
+from subprocess import run
 
+
+from lib.config.paths import cache_dir, workspace
 from lib.utils.system import is_windows
 from lib.utils.formatting import send_message
 from lib.utils.formatting import text_colors
 from lib.utils.system import terminate_proc
 
-from lib.config.paths import cache_dir, workspace
-from subprocess import run, Popen
-from pathlib import Path
+from concurrent.futures import ProcessPoolExecutor, Future
+
 
 SUPPORTED_COMPILERS = ["g++", "clang++"]
 STDCPP_VERSION = "c++20"
 
 DEFAULT_COMPILER_ARGS = {
-    "g++": f"-pipe -DONLINE_JUDGE -O2 -std={STDCPP_VERSION} -I{workspace}",
-    "clang++": f"-pipe -DONLINE_JUDGE -O2 -std={STDCPP_VERSION} -I{workspace}",
+    "g++": f"-pipe -O2 -std={STDCPP_VERSION} -I{workspace}",
 }
 
 if is_windows():
     # add stack option to G++ and Clang
     WIN_STACK_SIZE = 268435456  # on Linux this is effectively infinite
-
     DEFAULT_COMPILER_ARGS["g++"] += f" -static -Wl, --stack={WIN_STACK_SIZE}"  # mind the gap
-    DEFAULT_COMPILER_ARGS["clang++"] += f" -static -Wl, --stack={WIN_STACK_SIZE}"
 
     # add MSVC compiler
     SUPPORTED_COMPILERS.append("cl")
     DEFAULT_COMPILER_ARGS["cl"] = (
-        f"/EHsc /DONLINE_JUDGE /W4 /O2 /std:{STDCPP_VERSION} /I{workspace} /F{WIN_STACK_SIZE}"
+        f"/EHsc /W4 /O2 /std:{STDCPP_VERSION} /I{workspace} /F{WIN_STACK_SIZE}"
     )
+
+DEFAULT_COMPILER_ARGS["clang++"] = DEFAULT_COMPILER_ARGS["g++"]  # thanks Clang team
 
 
 class Compiler:
     @staticmethod
-    def probe(compiler: str) -> bool:
-        """Invoke the compiler's version specifier to see if it exists."""
+    def probe(compiler: str) -> bytes | None:
+        """
+        Invoke the compiler's version specifier to see if it exists.
+        If it does, returns the output. This will be used for SHA256 hashing later on.
+        """
         try:
-            run([compiler, "--version"], check=True, capture_output=True)  # G++, Clang
-            return True
+            proc = run([compiler, "--version"], check=True, capture_output=True)  # G++, Clang
+            return proc.stdout
         except Exception:
             pass
 
         try:
-            run(compiler, check=True, capture_output=True)  # MSVC
-            return True
+            proc = run(compiler, check=True, capture_output=True)  # MSVC
+            return proc.stdout
         except Exception:
             pass
 
-        return False
+        return None
 
     def __init__(self, compilation_command: str | None = None, cpu_workers: int = 1):
         """
@@ -75,11 +81,13 @@ class Compiler:
 
         def autodetect_compiler():
             for compiler in SUPPORTED_COMPILERS:
-                if self.probe(compiler):
+                ver = self.probe(compiler)
+                if ver is not None:
                     self.compiler = compiler
                     self.compiler_args = DEFAULT_COMPILER_ARGS[compiler]
                     send_message(f"Autodetected compiler: {compiler}.", text_colors.YELLOW)
-                    return
+                    return ver
+
             terminate_proc(
                 "Fatal error: No C++ compiler found. "
                 + "Installation is the user's responsibility (see install.md for a start)."
@@ -92,33 +100,73 @@ class Compiler:
             self.compiler = tokens[0]
             self.compiler_args = " ".join(tokens[1:])
 
-        if not self.probe(self.compiler):
+        self.compiler_ver = self.probe(self.compiler)
+        if self.compiler_ver is None:
             send_message(
                 "The specified compiler is not found, falling back to autodetect mode...",
                 text_colors.YELLOW,
             )
-            autodetect_compiler()
+            self.compiler_ver = autodetect_compiler()
 
         if self.compiler not in SUPPORTED_COMPILERS:
-            send_message(
-                "Compiler not supported (though ASIMON will try to run it as if it is G++). "
-                + "You're on your own now. Good luck.",
-                text_colors.YELLOW,
-            )
+            terminate_proc("Fatal error: C++ compiler not supported.")
 
         if self.compiler_args == "$default" and self.compiler in SUPPORTED_COMPILERS:
             self.compiler_args = DEFAULT_COMPILER_ARGS[self.compiler]
 
-    def compile(self, source_output: list[tuple[Path, Path]]):
+    def compile_file(self, source_path: Path, output_path: Path, args: list[str]):
         """
         Call the compiler.
+
+        The caching process is done here.
+
+        First preprocess the file in `source_path`. Then create a SHA256 from:
+        - the content of the preprocessed source code
+        - `args`
+        - `self.compiler_ver` (the compiler version)
+
+        If these three things stay the same then the resulting binary file will also does.
+        The rest are just paperwork.
+        """
+
+        PREPROCESS_SYNTAX = {
+            "g++": f"g++ {self.compiler_args} {source_path} -o {output_path} -E",
+            "clang++": f"clang++ {self.compiler_args} {source_path} -o {output_path} -E",
+            "cl": f"cl {self.compiler_args} {source_path} /P /Fi {output_path}",
+        }
+        run(PREPROCESS_SYNTAX[self.compiler].split(), check=True)
+
+        hash_obj = sha512()
+        with open(output_path, "rb") as preprocessed_source:
+            hash_obj = file_digest(preprocessed_source, "sha512")
+
+        hash_obj.update(bytearray(self.compiler_args, "utf-8"))
+        hash_obj.update(self.compiler_ver)
+
+        cache_path = cache_dir / f"{hash_obj.hexdigest()}.bin"
+        if cache_path.exists():
+            send_message(
+                f"Cached binary file for {source_path.name} found, skipping compilation...",
+                text_colors.YELLOW,
+            )
+            copyfile(cache_path, output_path)
+        else:
+            # This is a repetition from the syntax above. All because of MSVC.
+            COMPILATION_SYNTAX = {
+                "g++": f"g++ {self.compiler_args} {source_path} -o {output_path}",
+                "clang++": f"clang++ {self.compiler_args} {source_path} -o {output_path}",
+                "cl": f"cl {self.compiler_args} {source_path} /Fe {output_path}",
+            }
+            run(COMPILATION_SYNTAX[self.compiler].split(), check=True)
+            copyfile(output_path, cache_path)
+
+    def __call__(self, source_output: list[tuple[Path, Path]]):
+        """
+        Call the compiler for all items in `source_output`.
 
         `source_output` must be a list where each item is `(source, output)`,
         corresponding to the locations of the C++ source file
         and its executable, respectively.
-
-        Note that this function will open a number of subprocesses equals to the
-        number of items in `source_output`. **You have been warned**.
         """
 
         send_message(
@@ -126,27 +174,19 @@ class Compiler:
             text_colors.GREEN,
         )
 
-        for i in range(0, len(source_output), self.cpu_workers):
-            batch = source_output[i : i + self.cpu_workers]
-            procs: list[tuple[Path, Popen]] = []
-            for source_path, output_path in batch:
-                COMPILATION_SYNTAX = {
-                    "g++": f"g++ {self.compiler_args} {source_path} -o {output_path}",
-                    "clang++": f"clang++ {self.compiler_args} {source_path} -o {output_path}",
-                    "cl": f"cl {self.compiler_args} {source_path} /Fe {output_path}",
-                }
+        with ProcessPoolExecutor(max_workers=self.cpu_workers) as worker_pool:
+            procs: list[tuple[Path, Future]] = []
+            for source_path, output_path in source_output:
                 procs.append(
                     (
                         source_path,
-                        Popen(
-                            COMPILATION_SYNTAX[
-                                (self.compiler if self.compiler in SUPPORTED_COMPILERS else "g++")
-                            ].split()
+                        worker_pool.submit(
+                            self.compile_file, source_path, output_path, self.compiler_args
                         ),
                     )
                 )
-            for source_path, popen_obj in procs:
-                if popen_obj.wait() != 0:  # à la returncode
+            for source_path, result_obj in procs:
+                if result_obj.exception() is not None:  # compiler fails
                     terminate_proc(
-                        f"Fatal error: C++ source file {source_path} cannot be compiled, or doesn't exist.",
+                        f"Fatal error: C++ source file {source_path.name} cannot be compiled, or doesn't exist.",
                     )
