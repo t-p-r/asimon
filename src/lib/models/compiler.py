@@ -7,16 +7,15 @@ from pathlib import Path
 from shutil import copy
 from subprocess import run
 
-
 from lib.config.paths import cache_dir, workspace
 from lib.utils.system import is_windows
-from lib.utils.formatting import send_message
-from lib.utils.formatting import text_colors
+from lib.utils.formatting import send_message, text_colors, script_split
 from lib.utils.system import terminate_proc
 
 from concurrent.futures import ProcessPoolExecutor, Future
 
 
+MAX_CACHE_FILES = 64  # TODO: implements this
 SUPPORTED_COMPILERS = ["g++", "clang++"]
 STDCPP_VERSION = "c++20"
 
@@ -74,8 +73,7 @@ class Compiler:
         - Any other string: ASIMON will interpret the first token as the compiler
         and the rest as arguments.
 
-        `cpu_workers` is the number of concurrent compilation process. If it is too large
-        the compilers will eat up all your CPU (though this is often the desired behaviour).
+        `cpu_workers` is the number of concurrent compilation process.
         """
         self.cpu_workers = max(4, cpu_workers)
 
@@ -96,9 +94,7 @@ class Compiler:
         if compilation_command == "$default" or compilation_command == "":
             autodetect_compiler()
         else:
-            tokens = compilation_command.split()
-            self.compiler = tokens[0]
-            self.compiler_args = " ".join(tokens[1:])
+            self.compiler, self.compiler_args = script_split(compilation_command)
 
         self.compiler_ver = self.probe(self.compiler)
         if self.compiler_ver is None:
@@ -129,15 +125,12 @@ class Compiler:
         The rest are just paperwork.
         """
 
+        prep_flag = "/P" if self.compiler == "cl" else "-E"
+        prep_output_flag = "/Fi" if self.compiler == "cl" else "-o"
+        bin_output_flag = "/Fe" if self.compiler == "cl" else "-o"
+
         run(
-            [
-                self.compiler,
-                self.compiler_args,
-                "/P" if self.compiler == "cl" else "-E",  # preprocessing-only flag
-                source_path,
-                "/Fi" if self.compiler == "cl" else "-o",  # output flag
-                output_path,
-            ],
+            f"{self.compiler} {self.compiler_args} {prep_flag} {source_path} {prep_output_flag} {output_path}".split(),
             check=True,
         )
 
@@ -158,13 +151,7 @@ class Compiler:
         else:
             # MSVC has /Fe instead of /Fi; see Microsoft docs
             run(
-                [
-                    self.compiler,
-                    self.compiler_args,
-                    source_path,
-                    "/Fe" if self.compiler == "cl" else "-o",  # output flag
-                    output_path,
-                ],
+                f"{self.compiler} {self.compiler_args} {source_path} {bin_output_flag} {output_path}".split(),
                 check=True,
             )
             copy(output_path, cache_path)
