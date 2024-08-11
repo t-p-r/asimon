@@ -4,7 +4,7 @@ C++ compiler wrapper with caching.
 
 from hashlib import sha512, file_digest
 from pathlib import Path
-from shutil import copyfile
+from shutil import copy
 from subprocess import run
 
 
@@ -129,12 +129,17 @@ class Compiler:
         The rest are just paperwork.
         """
 
-        PREPROCESS_SYNTAX = {
-            "g++": f"g++ {self.compiler_args} {source_path} -o {output_path} -E",
-            "clang++": f"clang++ {self.compiler_args} {source_path} -o {output_path} -E",
-            "cl": f"cl {self.compiler_args} {source_path} /P /Fi {output_path}",
-        }
-        run(PREPROCESS_SYNTAX[self.compiler].split(), check=True)
+        run(
+            [
+                self.compiler,
+                self.compiler_args,
+                "/P" if self.compiler == "cl" else "-E",  # preprocessing-only flag
+                source_path,
+                "/Fi" if self.compiler == "cl" else "-o",  # output flag
+                output_path,
+            ],
+            check=True,
+        )
 
         hash_obj = sha512()
         with open(output_path, "rb") as preprocessed_source:
@@ -143,22 +148,26 @@ class Compiler:
         hash_obj.update(bytearray(self.compiler_args, "utf-8"))
         hash_obj.update(self.compiler_ver)
 
-        cache_path = cache_dir / f"{hash_obj.hexdigest()}.bin"
+        cache_path = cache_dir / f"{hash_obj.hexdigest()}.exe"
         if cache_path.exists():
             send_message(
                 f"Cached binary file for {source_path.name} found, skipping compilation...",
                 text_colors.YELLOW,
             )
-            copyfile(cache_path, output_path)
+            copy(cache_path, output_path)
         else:
-            # This is a repetition from the syntax above. All because of MSVC.
-            COMPILATION_SYNTAX = {
-                "g++": f"g++ {self.compiler_args} {source_path} -o {output_path}",
-                "clang++": f"clang++ {self.compiler_args} {source_path} -o {output_path}",
-                "cl": f"cl {self.compiler_args} {source_path} /Fe {output_path}",
-            }
-            run(COMPILATION_SYNTAX[self.compiler].split(), check=True)
-            copyfile(output_path, cache_path)
+            # MSVC has /Fe instead of /Fi; see Microsoft docs
+            run(
+                [
+                    self.compiler,
+                    self.compiler_args,
+                    source_path,
+                    "/Fe" if self.compiler == "cl" else "-o",  # output flag
+                    output_path,
+                ],
+                check=True,
+            )
+            copy(output_path, cache_path)
 
     def __call__(self, source_output: list[tuple[Path, Path]]):
         """
