@@ -6,6 +6,7 @@ src/workspace/*.*
 src/config_*
 bin/
 log/
+cache/
 problem/
 .vscode/
 __pycache__/
