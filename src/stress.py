@@ -59,16 +59,16 @@ class Stresser:
             self._testgen_path = find_file_with_name(
                 self.testgen_name_noext, current_problem.testgen_dir
             )
-            if config.checker == "custom":
-                self._custom_checker_path = None  # Path, stub
+            if config.checker == "external":
+                self._external_checker_path = None  # Path, stub
         else:
             self.checker_pol = config.checker
 
             self._judge_path = workspace / config.main_correct_solution
             self._contestant_paths = [workspace / solution for solution in config.other_solutions]
             self._testgen_path = find_file_with_name(self.testgen_name_noext, workspace)
-            if config.checker == "custom":
-                self._custom_checker_path = workspace / config.custom_checker
+            if config.checker == "external":
+                self._external_checker_path = workspace / config.external_checker
 
             self.compiler = Compiler(config.compilation_command, config.cpu_workers)
 
@@ -80,8 +80,8 @@ class Stresser:
         _queue_compilation(self._judge_path)
         for solution in self._contestant_paths:
             _queue_compilation(solution)
-        if self.checker_pol == "custom":
-            _queue_compilation(self._custom_checker_path)
+        if self.checker_pol == "external":
+            _queue_compilation(self._external_checker_path)
 
         # add some more variables
         self.judge_name = self._judge_path.name
@@ -89,8 +89,8 @@ class Stresser:
         self.all_source_paths = self._contestant_paths + [self._judge_path]
         self.exec_times = {contestant.name: [] for contestant in self.all_source_paths}
 
-        if self.checker_pol == "custom":
-            self.custom_checker_name = self._custom_checker_path.name
+        if self.checker_pol == "external":
+            self.external_checker_name = self._external_checker_path.name
 
     def init_workers(self):
         for _ in range(config.cpu_workers):
@@ -100,8 +100,8 @@ class Stresser:
                     contestants=[bindir / contestant.name for contestant in self.all_source_paths],
                     time_limit=config.time_limit,
                     checker_pol=self.checker_pol,
-                    custom_checker_path=(
-                        bindir / self.custom_checker_name if self.checker_pol == "custom" else None
+                    external_checker_path=(
+                        bindir / self.external_checker_name if self.checker_pol == "external" else None
                     ),
                 )
             )

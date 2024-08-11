@@ -68,14 +68,14 @@ class TestExecutor:
         contestants: list[Path],
         time_limit=5,
         checker_pol="dummy",
-        custom_checker_path: Path | None = None,
+        external_checker_path: Path | None = None,
     ):
         """Create a worker."""
         if checker_pol not in DISCOVERED_CHECKERS:
             terminate_proc("Fatal error: Invalid checker name.")
-        elif checker_pol == "custom":
-            # only custom checker requires an argument
-            self.checker = DISCOVERED_CHECKERS[checker_pol](custom_checker_path)
+        elif checker_pol == "external":
+            # only external checker requires an argument
+            self.checker = DISCOVERED_CHECKERS[checker_pol](external_checker_path)
         else:
             # other checkers (even user-created ones) have no argument mandatorily
             self.checker = DISCOVERED_CHECKERS[checker_pol]()

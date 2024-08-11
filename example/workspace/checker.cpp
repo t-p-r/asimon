@@ -1,5 +1,5 @@
 /**
- * Custom checker using testlib.
+ * External checker using testlib.
  *
  * @file example/workspace/checker.cpp
  *

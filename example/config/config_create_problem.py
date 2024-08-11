@@ -2,7 +2,7 @@ problem_name = "aplusb"
 
 main_correct_solution = "judge.cpp"
 other_solutions = ["contestant.cpp"]
-custom_checker = ""
+external_checker = ""
 
 subtasks = [
     "testgen --lo -100 --hi 100",

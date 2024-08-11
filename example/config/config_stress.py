@@ -14,19 +14,19 @@ if problem_name == "$workspace":
         "contestant.cpp",
     ]
 
-    checker = "custom"
+    checker = "external"
     """Result checker. Must be one of:
         - "token"   : Check if the outputs' token sequences match.
         - "line"    : Check if every line of the outputs match (whitespace ignored).
         - "double4" : Like "token", but corresponding number tokens must be within 1E-4 of each other.
         - "double6" : Like double4, but the epsilon is 1E-6.
         - "double9" : Like double4, but the epsilon is 1E-9.
-        - "custom"  : Custom checker.
+        - "external"  : External checker.
         - "dummy"   : Always returns True.
     """
 
-    custom_checker = "checker.cpp"
-    """If `checker` is `custom`, this is the name of the C++ checker."""
+    external_checker = "checker.cpp"
+    """If `checker` is `external`, this is the name of the C++ checker."""
 
 testgen_script = "testgen --lo 0 --hi 1000"
 """

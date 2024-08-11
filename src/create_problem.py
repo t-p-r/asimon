@@ -144,12 +144,12 @@ class ProblemCreator:
             copied.add(other_solution)
 
         # checker
-        if config.custom_checker:
+        if config.external_checker:
             shutil.copy(
-                workspace / config.custom_checker,
+                workspace / config.external_checker,
                 self.current_problem.checker_dir,
             )
-            copied.add(config.custom_checker)
+            copied.add(config.external_checker)
 
         # other files in /workspace
         filenames = list(workspace.walk())[0][2]

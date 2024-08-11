@@ -8,13 +8,13 @@ from io import BytesIO
 from lib.utils.system import terminate_proc
 
 
-class CustomChecker(Checker):
+class ExternalChecker(Checker):
     """
     Checker using an external binary file.
     """
 
     def __str__():
-        return "custom"
+        return "external"
 
     def __init__(self, checker_path: Path, timeout=5) -> None:
         """
@@ -27,7 +27,7 @@ class CustomChecker(Checker):
         self.timeout = timeout
 
         if not access(self.path, X_OK):
-            terminate_proc(f"Fatal error: custom checker {self.path} is not an executable file.")
+            terminate_proc(f"Fatal error: external checker {self.path} is not an executable file.")
 
     def check(self, input: bytes, answer: bytes, output: bytes) -> CheckerResult:
         """Check result using external checker in `checker_path`.
