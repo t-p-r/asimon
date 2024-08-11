@@ -149,7 +149,8 @@ class Compiler:
             )
             copy(cache_path, output_path)
         else:
-            # MSVC has /Fe instead of /Fi; see Microsoft docs
+            # MSVC has /Fe instead of /Fi.
+            # See: https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category.
             run(
                 f"{self.compiler} {self.compiler_args} {source_path} {bin_output_flag} {output_path}".split(),
                 check=True,
