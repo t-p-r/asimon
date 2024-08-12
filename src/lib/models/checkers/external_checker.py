@@ -1,10 +1,7 @@
 from .base import *
 from pathlib import Path
-from uuid import uuid4
 from os import access, X_OK
-from subprocess import Popen, run, PIPE, CompletedProcess
-from io import BytesIO
-
+from subprocess import run, PIPE, CompletedProcess
 from lib.utils.system import terminate_proc
 
 
@@ -28,24 +25,20 @@ class ExternalChecker(Checker):
 
         if not access(self.path, X_OK):
             terminate_proc(
-                f"Internal critical error: external checker {self.path} is not an executable file."
+                f"Internal critical error: external checker {self.path} isn't executable."
             )
 
     def check(self, input: bytes, answer: bytes, output: bytes) -> CheckerResult:
         """Check result using external checker in `checker_path`.
-        Pass `input`, `output` and `answer` to checker's `stdin` in the format:
-        ```js
-            <input>uuid1<answer>uuid2<output>
-        ```
 
-        where `uuid1` and `uuid2` are two randomly generated Version 4 UUID. This means that
-        all the bytes before the first character of `uuid1` are considered `input`; the bytes between
-        `uuid1` and `uuid2` are `answer`, and the bytes from after the last character of `uuid2` to EOF
-        are `output`.
+        Sequentially pass `input`, `output` and `answer` to checker's `stdin`.
 
         The C++ checker, when executed, will be supplemented with the following arguments (in `argv[]`):
-        - `--_asimon_uuid1 uuid1`
-        - `--_asimon_uuid2 uuid2`
+        - `--_asimon_sz_input X`
+        - `--_asimon_sz_answer Y`
+        - `--_asimon_sz_output Z`
+
+        meaning that the first `X` bytes of `stdin` is `input`, the next `Y` bytes is `answer`, and the last `Z` bytes is `output`.
 
         Using these arguments, the checker or one of its included libraries must implement a function that decodes
         `stdin` back to the three aforementioned streams. An example can be seen in the ASIMON-testlib compatibility
@@ -53,26 +46,18 @@ class ExternalChecker(Checker):
 
         Any message from the C++ checker must be passed to `stderr`; this method will not check `stdout`'s content.
         """
-        uuid1 = str(uuid4())
-        uuid2 = str(uuid4())
 
-        input_buffer = b"".join(
-            [
-                input,
-                bytearray(uuid1, "utf-8"),
-                answer,
-                bytearray(uuid2, "utf-8"),
-                output,
-            ]
-        )
+        input_buffer = b"".join([input, answer, output])
 
         proc: CompletedProcess = run(
             [
                 self.path,
-                "--asimon_uuid1",
-                uuid1,
-                "--asimon_uuid2",
-                uuid2,
+                "--_asimon_sz_input",
+                str(len(input)),
+                "--_asimon_sz_answer",
+                str(len(answer)),
+                "--_asimon_sz_output",
+                str(len(output)),
             ],
             input=input_buffer,
             stdout=PIPE,

@@ -37,86 +37,16 @@
 
 namespace __testlib_asimon {
 
-static const size_t UUID_LENGTH = 36;                // 32 chars + 4 `-`
-static const size_t STR_RESERVE = 32 * 1024 * 1024;  // 32MB
-
 std::string _name[3];
 std::string _content[3];
-
-char _uuid[3][UUID_LENGTH];
-
-/**
- * @brief Get the next byte from @c stdin, or return @a EOF if stdin
- * is empty.
- *
- * @note Use @c fread() to perform efficient bulk reading.
- *
- * @note This is part of the CPDSA library.
- */
-uint8_t __getc() noexcept {
-    static const size_t BUFSIZE = 1 << 16;  // 64 KB
-    static char buf[BUFSIZE];
-    static size_t bufat = 0, bufend = 0;
-    if (bufat == bufend) {
-        bufend = fread(buf, sizeof(char), BUFSIZE, stdin);
-        bufat = 0;
-    }
-    return bufend ? buf[bufat++] : EOF;
-}
+int _sz[3];
 
 /**
- * @brief Consumes all of @c stdin into a string.
+ * @brief Consumes @c __n bytes from @c stdin into a string @c dest.
  */
-inline void __getstdin(std::string& dest) {
-    for (char c = __getc(); c != EOF; c = __getc()) dest.push_back(c);
-}
-
-/**
- * @brief Returns a string from the current @c stdin pointer, up to (but not
- * including) the first occurence of @c uuid.
- *
- * @param uuid The UUID pattern to match.
- *
- * @note After this function is done, the @c stdin pointer is now one character
- * after the occurence of @c uuid.
- *
- * @note This function @e assumes that the pattern being received is actually
- * an UUID. Dire things may happen otherwise because no checking beside length
- * is actually done.
- */
-inline void __getstdin(std::string& dest, char uuid[]) {
-    size_t n = strlen(uuid);
-    if (n != UUID_LENGTH) {
-        quitf(_fail,
-              "Internal critical error: expected an UUID with %d bytes; "
-              "found a string with %d characters.",
-              UUID_LENGTH, n);
-    }
-
-    // Basic KMP here. kmp[i] is the largest len <= i such that
-    // uuid[0:len) = uuid(i-len:i]
-    // (of course there is a trivial case where len = i+1 but that doesn't
-    // matter).
-    int kmp[UUID_LENGTH];
-    memset(kmp, 0, sizeof(kmp));
-
-    for (int i = 1; i < n; i++) {
-        int j = kmp[i - 1];
-        while (j && uuid[i] != uuid[j]) j = kmp[j - 1];
-        if (uuid[i] == uuid[j]) j++;
-        kmp[i] = j;
-    }
-
-    int k = 0;
-    while (k != n) {
-        char c = __getc();
-        if (c == EOF) quitf(_fail, "Internal critical error: no matching UUID was found.");
-        dest.push_back(c);
-        while (k && uuid[k] != c) k = kmp[k - 1];
-        if (uuid[k] == c) k++;
-    }
-
-    while (n--) dest.pop_back();
+inline void __getstdin(std::string& dest, std::size_t __n) {
+    dest.resize(__n);
+    fread(&dest[0], sizeof(char), __n, stdin);
 }
 
 /**
@@ -131,17 +61,10 @@ void __init_instream(InStream& stream, TMode mode) {
     stream.mode = mode;
     stream.name = _name[mode];
     stream.stdfile = true;  // all are from stdin
-    stream.strict = false;  // no validator here
+    stream.strict = false;  // and aren't validators
 
-    std::string& content = _content[mode];
-    content.reserve(STR_RESERVE);
-
-    if (mode == _output)
-        __getstdin(content);
-    else
-        __getstdin(content, _uuid[mode]);
-
-    stream.reader = new StringInputStreamReader(content);
+    __getstdin(_content[mode], _sz[mode]);
+    stream.reader = new StringInputStreamReader(_content[mode]);
 }
 
 }  // namespace __testlib_asimon
@@ -165,34 +88,20 @@ void registerTestlibCmd(int argc, char* argv[]) {
 
     using __testlib_asimon::__init_instream;
     using __testlib_asimon::_name;
-    using __testlib_asimon::_uuid;
-    using __testlib_asimon::UUID_LENGTH;
+    using __testlib_asimon::_sz;
 
-    int uuid_args = 0;
     for (int i = 1; i < argc; i++) {
         // Testsets and groups are handled on the Python side, no checking
         // is necessary here. The only thing needed to be parsed are the
-        // UUIDs.
-        if (!strcmp("--asimon_uuid1", argv[i])) {
-            uuid_args++;
-            if (i + 1 < argc) {
-                strncpy(_uuid[_input], argv[++i], UUID_LENGTH);
-            } else
-                quit(_fail, std::string("Internal critical error: Expected a version 4 UUID after --asimon_uuid1 "
-                                        "command line parameter"));
-        } else if (!strcmp("--asimon_uuid2", argv[i])) {
-            uuid_args++;
-            if (i + 1 < argc) {
-                strncpy(_uuid[_answer], argv[++i], UUID_LENGTH);
-            } else
-                quit(_fail, std::string("Internal critical error: Expected a version 4 UUID after --asimon_uuid2 "
-                                        "command line parameter"));
+        // sizes.
+        if (!strcmp("--_asimon_sz_input", argv[i])) {
+            _sz[_input] = atoi(argv[++i]);
+        } else if (!strcmp("--_asimon_sz_answer", argv[i])) {
+            _sz[_answer] = atoi(argv[++i]);
+        } else if (!strcmp("--_asimon_sz_output", argv[i])) {
+            _sz[_output] = atoi(argv[++i]);
         } else
             args.push_back(argv[i]);
-    }
-
-    if (uuid_args != 2) {
-        quitf(_fail, "Internal critical error: 2 UUID arguments expected, %d found.", uuid_args);
     }
 
     argc = int(args.size());
