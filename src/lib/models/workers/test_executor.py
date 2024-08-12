@@ -88,19 +88,35 @@ class TestExecutor:
         """
         Execute a test case.
         """
-
-        input = anal_process(
+        testgen_proc = anal_process(
             testgen_command, identity="test generator", timeout=self.time_limit
-        ).stdout
-        answer = anal_process(
+        )
+        input = testgen_proc.stdout
+
+        judge_proc = anal_process(
             self.judge,
             identity="main correct solution",
             input=input,
             timeout=self.time_limit,
-        ).stdout
+        )
+        answer = judge_proc.stdout
 
         worker_result = WorkerResult(input, answer, [])
         contestant_results = worker_result.contestant_results
+
+        # This is because an upstream policy that include the judge's statistics
+        # in the result report.
+        if self.judge in self.contestants:
+            contestant_results.append(
+                ContestantExecutionResult(
+                    self.judge,
+                    ContestantExecutionStatus.AC,
+                    judge_proc.exec_time,
+                    "This is the answer.",
+                    output=answer,
+                )
+            )
+            self.contestants.remove(self.judge)
 
         for contestant in self.contestants:
             try:
