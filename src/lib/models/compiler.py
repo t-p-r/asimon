@@ -126,6 +126,7 @@ class Compiler:
         The rest are just paperwork.
         """
 
+        # Preprocess source code (since included libs can change)
         prep_flag = "/P" if self.compiler == "cl" else "-E"
         prep_output_flag = "/Fi" if self.compiler == "cl" else "-o"
         run(
