@@ -111,11 +111,9 @@ class Compiler:
         if self.compiler_args == "$default" and self.compiler in SUPPORTED_COMPILERS:
             self.compiler_args = DEFAULT_COMPILER_ARGS[self.compiler]
 
-    def compile_file(self, source_path: Path, output_path: Path, args: list[str]):
+    def compile_file(self, source_path: Path, output_path: Path):
         """
-        Call the compiler.
-
-        The caching process is done here.
+        Call the compiler. The caching process is done here.
 
         First preprocess the file in `source_path`. Then create a SHA256 from:
         - the content of the preprocessed source code
@@ -176,12 +174,7 @@ class Compiler:
             procs: list[tuple[Path, Future]] = []
             for source_path, output_path in source_output:
                 procs.append(
-                    (
-                        source_path,
-                        worker_pool.submit(
-                            self.compile_file, source_path, output_path, self.compiler_args
-                        ),
-                    )
+                    (source_path, worker_pool.submit(self.compile_file, source_path, output_path))
                 )
             for source_path, result_obj in procs:
                 if result_obj.exception() is not None:  # compiler fails
