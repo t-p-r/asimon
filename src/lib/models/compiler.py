@@ -2,7 +2,7 @@
 C++ compiler wrapper with caching.
 """
 
-from hashlib import sha512, file_digest
+from hashlib import sha256, file_digest
 from pathlib import Path
 from shutil import copy
 from subprocess import run
@@ -134,9 +134,9 @@ class Compiler:
             check=True,
         )
 
-        hash_obj = sha512()
+        hash_obj = sha256()
         with open(output_path, "rb") as preprocessed_source:
-            hash_obj = file_digest(preprocessed_source, "sha512")
+            hash_obj = file_digest(preprocessed_source, "sha256")
 
         hash_obj.update(bytearray(self.compiler_args, "utf-8"))
         hash_obj.update(self.compiler_ver)
