@@ -37,8 +37,8 @@
 
 namespace __testlib_asimon {
 
-std::string _name[3];
-std::string _content[3];
+std::string _name[] = {"input", "output", "answer"};
+std::string _content[3];  // these will be wrapped around by InStreams later
 int _sz[3];
 
 /**
@@ -108,10 +108,6 @@ void registerTestlibCmd(int argc, char* argv[]) {
     if (argc > 1 && "--help" == args[1]) __testlib_help();
 
     // MUST be in ASIMON's input -> answer -> output order.
-    _name[_input] = "input";
-    _name[_answer] = "answer";
-    _name[_output] = "output";
-
     __init_instream(inf, _input);
     __init_instream(ans, _answer);
     __init_instream(ouf, _output);

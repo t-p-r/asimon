@@ -38,7 +38,7 @@ def send_message(content: str, color: text_colors, end="\n"):
     print(wrap_message(content, color), end=end)
 
 
-def script_split(script: str) -> tuple[str, list]:
+def script_split(script: str) -> tuple[str, list[str]]:
     """Split an execution script into the executable (first token) and its arguments (the other tokens).."""
     tokens = script.split()
     return (tokens[0], tokens[1:])

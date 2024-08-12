@@ -62,7 +62,7 @@ def anal_process(
 
     if proc.returncode != 0 and terminate_on_fault:
         terminate_proc(
-            f"Fatal error: {identity} exited with code {proc.returncode}.\nError: {proc.stderr.decode()}"
+            f"Fatal error: {identity} exited with code {proc.returncode}.\nError message: {proc.stderr.decode()}"
         )
 
     return ProcessResult(

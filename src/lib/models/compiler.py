@@ -75,7 +75,7 @@ class Compiler:
 
         `cpu_workers` is the number of concurrent compilation process.
         """
-        self.cpu_workers = max(4, cpu_workers)
+        self.cpu_workers = max(4, cpu_workers)  # what can go wrong?
 
         def autodetect_compiler():
             for compiler in SUPPORTED_COMPILERS:
@@ -83,7 +83,7 @@ class Compiler:
                 if ver is not None:
                     self.compiler = compiler
                     self.compiler_args = DEFAULT_COMPILER_ARGS[compiler]
-                    send_message(f"Autodetected compiler: {compiler}.", text_colors.YELLOW)
+                    send_message(f"Autodetected C++ compiler: {compiler}.", text_colors.YELLOW)
                     return ver
 
             terminate_proc(
@@ -95,7 +95,7 @@ class Compiler:
             autodetect_compiler()
         else:
             self.compiler = compilation_command.split()[0]  # first token
-            self.compiler_args = compilation_command[len(self.compiler) :]  # everything after that
+            self.compiler_args = " ".join(compilation_command.split()[1:])  # everything after that
 
         self.compiler_ver = self.probe(self.compiler)
         if self.compiler_ver is None:
@@ -117,8 +117,8 @@ class Compiler:
 
         First preprocess the file in `source_path`. Then create a SHA256 from:
         - the content of the preprocessed source code
-        - `args`
-        - `self.compiler_ver` (the compiler version)
+        - the compilation args
+        - the compiler version
 
         If these three things stay the same then the resulting binary file will also does.
         The rest are just paperwork.
@@ -142,7 +142,7 @@ class Compiler:
         cache_path = cache_dir / f"{hash_obj.hexdigest()}.exe"
         if cache_path.exists():
             send_message(
-                f"Cached binary file for {source_path.name} found, skipping compilation...",
+                f"Cached executable for {source_path.name} found, skipping compilation...",
                 text_colors.YELLOW,
             )
             copy(cache_path, output_path)
