@@ -94,7 +94,8 @@ class Compiler:
         if compilation_command == "$default" or compilation_command == "":
             autodetect_compiler()
         else:
-            self.compiler, self.compiler_args = script_split(compilation_command)
+            self.compiler = compilation_command.split()[0]  # first token
+            self.compiler_args = compilation_command[len(self.compiler) :]  # everything after that
 
         self.compiler_ver = self.probe(self.compiler)
         if self.compiler_ver is None:
@@ -127,8 +128,6 @@ class Compiler:
 
         prep_flag = "/P" if self.compiler == "cl" else "-E"
         prep_output_flag = "/Fi" if self.compiler == "cl" else "-o"
-        bin_output_flag = "/Fe" if self.compiler == "cl" else "-o"
-
         run(
             f"{self.compiler} {self.compiler_args} {prep_flag} {source_path} {prep_output_flag} {output_path}".split(),
             check=True,
@@ -151,6 +150,7 @@ class Compiler:
         else:
             # MSVC has /Fe instead of /Fi.
             # See: https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category.
+            bin_output_flag = "/Fe" if self.compiler == "cl" else "-o"
             run(
                 f"{self.compiler} {self.compiler_args} {source_path} {bin_output_flag} {output_path}".split(),
                 check=True,
