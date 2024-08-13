@@ -28,7 +28,7 @@ if problem_name == "$workspace":
     external_checker = "checker.cpp"
     """If `checker` is `external`, this is the name of the C++ file."""
 
-testgen_script = "testgen --lo 0 --hi 1000"
+testgen_script = "testgen_testlib --lo 0 --hi 1000"
 """
 Each script should have a form `generator-name [params]`.
 

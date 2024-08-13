@@ -5,7 +5,8 @@ other_solutions = ["contestant.cpp"]
 external_checker = "checker.cpp"
 
 subtasks = [
-    "testgen --lo -100 --hi 100",
+    "testgen 0 100",
+    (4, "testgen_testlib --lo 1e3 testgen_testlib --hi 1e4"),
     (8, f"testgen --lo 0 --hi {10**9}"),  # Python 3 string formatting
     [f"testgen --lo {i} --hi {j}" for i in range(10, 15) for j in range(i, 15)],  # template trick
 ]
