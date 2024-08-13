@@ -54,7 +54,7 @@ def write_prefix(ostream: TextIOWrapper, content: str, limit: int, end: str) -> 
         ostream.write(content)
     else:
         ostream.write(content[: (limit + 1)])
-        ostream.write(f" ...\n({len(content) - limit} character(s) remains)")
+        ostream.write(f" ...\n({len(content) - limit} character(s) remain)")
     ostream.write(end)
 
 
