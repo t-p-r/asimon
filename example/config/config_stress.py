@@ -17,9 +17,6 @@ if problem_name == "$workspace":
     checker_type = "external"
     """Result checker. Must be one of:
         - "token"       : Check if every tokens of the output matches the answer. Recommended for most use cases.
-        - "double4"     : Like "token", but every number the output has must be within 10^(-4) of the answer.
-        - "double6"     : Like double4, but the epsilon is 10^(-6).
-        - "double9"     : Like double4, but the epsilon is 10^(-9).
         - "byte"        : Check if the output is exactly the same (down to single bytes) as the answer.
         - "line"        : Check if every line of the output match. Lines with no content or just whitespaces are ignored.
         - "external"    : External checker using a C++ file from the `workspace` folder.
@@ -28,7 +25,8 @@ if problem_name == "$workspace":
     external_checker = "checker.cpp"
     """If `checker` is `external`, this is the name of the C++ file."""
 
-testgen_script = "testgen_testlib --lo 0 --hi 1000"
+# testgen_script = "testgen_testlib --lo 0 --hi 1000"
+testgen_script = "testgen 0 1000"
 """
 Each script should have a form `generator-name [params]`.
 

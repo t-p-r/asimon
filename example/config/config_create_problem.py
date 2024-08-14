@@ -1,26 +1,26 @@
 problem_name = "aplusb"
 
+# These files are search in the workspace folder:
 main_correct_solution = "judge.cpp"
 other_solutions = ["contestant.cpp"]
 external_checker = "checker.cpp"
 
 subtasks = [
     "testgen 0 100",
-    (4, "testgen_testlib --lo 1e3 testgen_testlib --hi 1e4"),
+    (4, "testgen_testlib --lo 1e3 testgen_testlib --hi 1e4"),  # testlib accepts scientific notation
     (8, f"testgen --lo 0 --hi {10**9}"),  # Python 3 string formatting
     [f"testgen --lo {i} --hi {j}" for i in range(10, 15) for j in range(i, 15)],  # template trick
 ]
 """
 Each item in this list contains information about one subtask. They can be
 - A single script (e.g. `testgen 1 2 3`). In this case this subtask has exactly one test case.
-- A list of scripts.
+- A list [] of scripts.
 - A pair `(test_count, test_script)`. In this case:
     - the subtask will have `test_count` tests;
     - each script will possibly be appended with `--seed X` (see `testlib_seed` below).
 
 Each script should have a form `generator-name [params]`.
-
-Do not use extensions, like ".exe" in the script.
+DO NOT use extensions, like ".exe" in the script.
 """
 
 testlib_seed = "from0"
