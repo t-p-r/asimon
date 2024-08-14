@@ -1,7 +1,7 @@
 /**
  * Test generator (example).
  *
- * @file example/workspace/testgen_testlib.cpp
+ * @file example/workspace/testgen.cpp
  *
  * The output of this file is then taken as input for @b judge.cpp and
  * @b contestant.cpp. Arguments MUST be "number1 number2" where
