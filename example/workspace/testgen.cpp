@@ -9,11 +9,16 @@
  * two randomly generated numbers (RNG) in the range [number1, number2]
  */
 
-#include "lib/testlib.h"
+#include <chrono>
+#include <iostream>
+#include <random>
 using namespace std;
+
+mt19937 rng(chrono::high_resolution_clock::now().time_since_epoch().count());
+int rand(int l, int r) { return uniform_int_distribution<int>(l, r)(rng); }
 
 int32_t main(int argc, char* argv[]) {
     cin.tie(0)->sync_with_stdio(0);
     int lo = atoi(argv[1]), hi = atoi(argv[2]);
-    cout << rnd.next(lo, hi) << ' ' << rnd.next(lo, hi);
+    cout << rand(lo, hi) << ' ' << rand(lo, hi);
 }
