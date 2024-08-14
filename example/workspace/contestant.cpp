@@ -16,7 +16,7 @@
 #include "lib/cpdsa/cpdsa.hpp"
 using namespace std;
 
-int32_t main() {
+int main() {
     cin.tie(0)->sync_with_stdio(0);
     int a, b;
     cpdsa::buffer_scan(a, b);

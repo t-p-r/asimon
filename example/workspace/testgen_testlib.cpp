@@ -12,7 +12,7 @@
 #include "lib/testlib.h"
 using namespace std;
 
-int32_t main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
     cin.tie(0)->sync_with_stdio(0);
     registerGen(argc, argv, 1);
     int lo = opt<int>("lo"), hi = opt<int>("hi");
