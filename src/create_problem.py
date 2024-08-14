@@ -27,7 +27,7 @@ from lib.utils.formatting import (
     wrap_message,
     text_colors,
 )
-from lib.utils.system import find_file_with_name, get_dir, terminate_proc
+from lib.utils.system import find_file_with_name, terminate_proc
 
 from lib.config.paths import *
 import config_create_problem as config
@@ -35,8 +35,10 @@ import config_create_problem as config
 
 class ProblemCreator:
     def __init__(self):
+        self.allowed_seed_pols = ["none", "from0", "random"]
+
         self.source_paths: list[Path] = [workspace / config.main_correct_solution]
-        self.generators: list[TestGenerator] = []
+        self.workers: list[TestGenerator] = []
         self.total_test_count = 0
         self.subtask_count = 0
         self.current_problem = Problem(problems_dir / config.problem_name)
@@ -45,7 +47,27 @@ class ProblemCreator:
         self.compiler = Compiler(config.compilation_command, config.cpu_workers)
 
         for _ in range(config.cpu_workers):
-            self.generators.append(TestGenerator(timeout=config.time_limit))
+            self.workers.append(TestGenerator(timeout=config.time_limit))
+
+    def validate_config(self):
+        """Address various ways a user can be stupid. Not all, obviously."""
+
+        if not config.problem_name:
+            terminate_proc("Fatal error: Problem name is not specified.")
+        if not config.main_correct_solution:
+            terminate_proc("Fatal error: Main correct solution is not specified.")
+        if not isinstance(config.other_solutions, list):
+            terminate_proc("Fatal error: other_solutions must be a list of strings.")
+        if not isinstance(config.external_checker, str):
+            terminate_proc("Fatal error: external_checker must be a string.")
+        if not isinstance(config.subtasks, list):
+            terminate_proc("Fatal error: subtasks must be a list.")
+
+        if config.testlib_seed not in self.allowed_seed_pols:
+            kill_msg = "Fatal error: testlib_seed must be one of: "
+            for item in self.allowed_seed_pols:
+                kill_msg += f'"{item}" '
+            terminate_proc(kill_msg)
 
     def format_subtasks(self):
         """Format subtasks into [list of commands]"""
@@ -85,7 +107,8 @@ class ProblemCreator:
         print("")
 
         for gen in listgen:
-            self.source_paths.append(find_file_with_name(gen, workspace))
+            files = find_file_with_name(gen, workspace)
+            self.source_paths.append(files)
 
     def append_testlib_seeds(self):
         """Append seed per `testlib_persistent`."""
@@ -127,42 +150,43 @@ class ProblemCreator:
         check_existence()
         self.current_problem.create()
 
+    def copy_resource(self):
         copied = set()
-        # testgens and main solution
+
+        def copy(src: Path, dest: Path):
+            shutil.copy(src, dest)
+            copied.add(src.name)
+
+        # MCS
+        copy(workspace / config.main_correct_solution, self.current_problem.solution_dir)
+
+        # test generators
         for source_path in self.source_paths:
-            destination = (
-                self.current_problem.solution_dir
-                if source_path.name == config.main_correct_solution
-                else self.current_problem.testgen_dir
-            )
-            shutil.copy(source_path, destination)
-            copied.add(source_path.name)
+            if source_path.name != config.main_correct_solution:
+                copy(source_path, self.current_problem.testgen_dir)
 
         # other solutions
         for other_solution in config.other_solutions:
-            shutil.copy(workspace / other_solution, self.current_problem.solution_other_dir)
-            copied.add(other_solution)
+            copy(workspace / other_solution, self.current_problem.solution_other_dir)
 
         # checker
         if config.external_checker:
-            shutil.copy(
+            copy(
                 workspace / config.external_checker,
                 self.current_problem.checker_dir,
             )
-            copied.add(config.external_checker)
 
-        # other files in /workspace
+        # miscellaneous
         filenames = list(workspace.walk())[0][2]
         for source_path in filenames:
             if source_path not in copied:
-                shutil.copy(workspace / source_path, self.current_problem.misc_dir)
+                copy(workspace / source_path, self.current_problem.misc_dir)
 
-        shutil.copy(
-            rootdir / "config_create_problem.py",
-            self.current_problem.problem_dir,
-        )
+        # config file
+        shutil.copy(rootdir / "config_create_problem.py", self.current_problem.resource_dir)
 
-        with open(self.current_problem.test_dir / "script.json", "w") as json_script:
+        # subtask info
+        with open(self.current_problem.problem_dir / "script.json", "w") as json_script:
             json_script.write(json.dumps(self.subtasks, indent=4))
 
     def get_testcase_dir(self, test_index: int, subtask: int) -> Path:
@@ -171,7 +195,7 @@ class ProblemCreator:
         testdir = re.sub("%C", str(self.cumulative + test_index + 1), testdir)
         testdir = re.sub("%S", str(subtask + 1), testdir)
         testdir = re.sub("%T", str(test_index + 1), testdir)
-        testcase_dir = self.current_problem.test_dir / testdir
+        testcase_dir = self.current_problem.problem_dir / testdir
         testcase_dir.mkdir()
         return testcase_dir
 
@@ -195,11 +219,11 @@ class ProblemCreator:
                 for test_index in range(batch_first, batch_last + 1):
                     testdir = self.get_testcase_dir(test_index, subtask)
                     testgen, testgen_args = script_split(self.subtasks[subtask][test_index])
-                    testgen = find_file_with_name(testgen, workspace)
+                    testgen = find_file_with_name(testgen, workspace)  # guaranteed to exist
 
                     procs.append(
                         worker_pool.submit(
-                            self.generators[(test_index - 1) % config.cpu_workers].generate,
+                            self.workers[(test_index - 1) % config.cpu_workers].generate,
                             testgen_command=[bindir / testgen.name] + testgen_args,
                             judge_command=bindir / config.main_correct_solution,
                             export_input_to=testdir / f"{config.problem_name}.inp",
@@ -227,33 +251,28 @@ class ProblemCreator:
             self.cumulative += len(self.subtasks[subtask])
 
     def do_compress(self):
-        if config.bundle_source:
-            source_dir = get_dir(self.current_problem.test_dir / "problem_source")
-            folders = list(self.current_problem.problem_dir.walk())[0][1]
-            # testgen, solution, checker, misc
-            for folder in folders:
-                if folder != self.current_problem.test_dir.name:  # prevents infinite recursion
-                    shutil.copytree(
-                        self.current_problem.problem_dir / folder,
-                        source_dir / folder,
-                    )
-            shutil.copy(rootdir / "config_create_problem.py", source_dir)
-
         send_message("\nNow compressing:", text_colors.YELLOW)
-        os.chdir(self.current_problem.test_dir)
+        os.chdir(self.current_problem.problem_dir)
         shutil.make_archive(base_name=config.problem_name, format="zip")
-        shutil.rmtree(source_dir)
 
     def organize_test_folder(self):
+        if config.bundle_source:
+            self.copy_resource()
+
         if config.make_zip:
             self.do_compress()
 
-        if not config.make_test_folders:
-            folders = list(self.current_problem.test_dir.walk())[0][1]
+        if not config.bundle_source:
+            self.copy_resource()  # late copy to avoid compression
+
+        if not config.make_test_folders:  # then remove them
+            folders = list(self.current_problem.problem_dir.walk())[0][1]
             for folder in folders:
-                shutil.rmtree(self.current_problem.test_dir / folder)
+                if folder != self.current_problem.resource_dir.name:
+                    shutil.rmtree(self.current_problem.problem_dir / folder)
 
     def __call__(self):
+        self.validate_config()
         self.format_subtasks()
         self.detect_generators()
         self.append_testlib_seeds()
