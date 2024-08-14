@@ -9,7 +9,7 @@ from subprocess import run
 
 from lib.config.paths import cache_dir, workspace
 from lib.utils.system import is_windows
-from lib.utils.formatting import send_message, text_colors, script_split
+from lib.utils.formatting import send_message, text_colors
 from lib.utils.system import terminate_proc
 
 from concurrent.futures import ProcessPoolExecutor, Future
