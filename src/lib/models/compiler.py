@@ -130,6 +130,7 @@ class Compiler:
         run(
             f"{self.compiler} {self.compiler_args} {prep_flag} {source_path} {prep_output_flag} {output_path}".split(),
             check=True,
+            shell=True,
         )
 
         hash_obj = sha256()
@@ -153,6 +154,7 @@ class Compiler:
             run(
                 f"{self.compiler} {self.compiler_args} {source_path} {bin_output_flag} {output_path}".split(),
                 check=True,
+                shell=True,
             )
             copy(output_path, cache_path)
 
