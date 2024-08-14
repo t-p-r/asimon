@@ -17,6 +17,11 @@ class CheckerResult:
 
 class Checker(ABC):
     @abstractmethod
+    def __str__():
+        """The alias of the checker. Used in the `checker` argument in config files."""
+        pass
+
+    @abstractmethod
     def check(self, input: bytes, answer: bytes, output: bytes) -> CheckerResult:
         """Evaluate the test result and return a `CheckerResult`.
         See concrete `checker` classes for the specific comments.
