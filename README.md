@@ -17,6 +17,7 @@ A *user-centric* platform written in Python and C++ to help you create and manag
   
 ### Other goodies:
 - Multiprocessor support (especially useful for problems with great time complexity e.g. $O(n^3)$ where $n=420$).
+- Compiled executable caching (basically if you change 1 of your 8 C++ source files then the other 7 won't be needlessly recompiled).
 - Custom checker support via:
   - [testlib](https://github.com/MikeMirzayanov/testlib/) (as one of your C++ source files);
   - [the Python checker plugin system]().
