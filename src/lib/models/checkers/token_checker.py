@@ -30,7 +30,8 @@ class TokenChecker(Checker):
                 % (len(answer_tokens), len(output_tokens)),
             )
 
-        for i in range(0, len(answer_tokens)):
+        ltokens = len(answer_tokens)
+        for i in range(ltokens):
             if answer_tokens[i] != output_tokens[i]:
                 return CheckerResult(
                     status=ContestantExecutionStatus.WA,
