@@ -17,10 +17,9 @@ from concurrent.futures import ProcessPoolExecutor, Future
 
 MAX_CACHE_FILES = 64  # TODO: implements this
 SUPPORTED_COMPILERS = ["g++", "clang++"]
-STDCPP_VERSION = "c++20"
 
 DEFAULT_COMPILER_ARGS = {
-    "g++": f"-pipe -O2 -std={STDCPP_VERSION} -I{workspace}",
+    "g++": f"-pipe -O2 -I{workspace}",
 }
 
 if is_windows():
@@ -30,9 +29,7 @@ if is_windows():
 
     # add MSVC compiler
     SUPPORTED_COMPILERS.append("cl")
-    DEFAULT_COMPILER_ARGS["cl"] = (
-        f"/EHsc /W4 /O2 /std:{STDCPP_VERSION} /I{workspace} /F{WIN_STACK_SIZE}"
-    )
+    DEFAULT_COMPILER_ARGS["cl"] = f"/EHsc /W4 /O2 /I{workspace} /F{WIN_STACK_SIZE}"
 
 DEFAULT_COMPILER_ARGS["clang++"] = DEFAULT_COMPILER_ARGS["g++"]  # thanks Clang team
 
