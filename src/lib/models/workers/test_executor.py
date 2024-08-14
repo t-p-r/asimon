@@ -67,18 +67,18 @@ class TestExecutor:
         judge: Path,
         contestants: list[Path],
         time_limit=5,
-        checker_pol="dummy",
+        checker_type="dummy",
         external_checker_path: Path | None = None,
     ):
         """Create a worker."""
-        if checker_pol not in DISCOVERED_CHECKERS:
+        if checker_type not in DISCOVERED_CHECKERS:
             terminate_proc("Fatal error: Invalid checker type.")
-        elif checker_pol == "external":
+        elif checker_type == "external":
             # only external checker requires an argument
-            self.checker = DISCOVERED_CHECKERS[checker_pol](external_checker_path)
+            self.checker = DISCOVERED_CHECKERS[checker_type](external_checker_path)
         else:
             # other checkers (even user-created ones) have no argument mandatorily
-            self.checker = DISCOVERED_CHECKERS[checker_pol]()
+            self.checker = DISCOVERED_CHECKERS[checker_type]()
 
         self.time_limit = time_limit
         self.judge = judge
@@ -110,9 +110,9 @@ class TestExecutor:
             contestant_results.append(
                 ContestantExecutionResult(
                     self.judge,
-                    ContestantExecutionStatus.AC,
+                    ContestantExecutionStatus.JUDGE,
                     judge_proc.exec_time,
-                    "This is the answer.",
+                    "This is the answer ordained by God.",
                     output=answer,
                 )
             )
