@@ -26,7 +26,7 @@ DEFAULT_COMPILER_ARGS = {
 if is_windows():
     # add stack option to G++ and Clang
     WIN_STACK_SIZE = 268435456  # on Linux this is effectively infinite
-    DEFAULT_COMPILER_ARGS["g++"] += f" -static -Wl, --stack={WIN_STACK_SIZE}"  # mind the gap
+    DEFAULT_COMPILER_ARGS["g++"] += f" -static -Wl,--stack={WIN_STACK_SIZE}"  # mind the gap
 
     # add MSVC compiler
     SUPPORTED_COMPILERS.append("cl")
