@@ -8,33 +8,37 @@ from lib.utils.system import terminate_proc
 
 class Problem:
     def __init__(self, problem_dir: Path):
-        self.problem_dir = problem_dir
-        self.test_dir = problem_dir / "test"
-        self.testgen_dir = problem_dir / "testgen"
-        self.checker_dir = problem_dir / "checker"
-        self.misc_dir = problem_dir / "misc"
-        self.solution_dir = problem_dir / "solution"
+        self.problem_dir        = problem_dir
+        self.resource_dir       = problem_dir       / "resources"
+
+        self.testgen_dir        = self.resource_dir / "testgen"
+        self.checker_dir        = self.resource_dir / "checker"
+        self.misc_dir           = self.resource_dir / "misc"
+        self.solution_dir       = self.resource_dir / "solution"
+
         self.solution_other_dir = self.solution_dir / "other_solutions"
 
     def create(self):
         """This will actually initialize the problem directories on disk."""
         if self.problem_dir.exists():
             terminate_proc("Fatal error: Problem already existed.")
+
         Path.mkdir(self.problem_dir, parents=True)
+        Path.mkdir(self.resource_dir)
+        
         for p in [
-            self.test_dir,
             self.testgen_dir,
             self.solution_dir,
             self.checker_dir,
             self.misc_dir,
         ]:
             Path.mkdir(p)
+
         Path.mkdir(self.solution_other_dir)
 
     def exists(self) -> bool:
         """
-        Returns whether the problem directory exists.
-        Doesn't check for internal corruption.
+        Returns whether the problem directory exists. Doesn't check for internal corruption.
         """
         return self.problem_dir.exists()
 
@@ -70,4 +74,4 @@ class Problem:
         return [self.solution_other_dir / file for file in files]
 
     def subtasks(self) -> list:
-        return json.load(self.test_dir / "script.json")
+        return json.load(self.problem_dir / "script.json")
