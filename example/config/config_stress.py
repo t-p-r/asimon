@@ -2,12 +2,12 @@
 config_stress.py - Configuration for stress.py.
 """
 
-problem_name = "$workspace"
+problem_name = ""
 """
 Name of the saved problem, or `$workspace` if you want to source your C++ files directly from the `workspace` folder.
 """
 
-if problem_name == "$workspace":
+if problem_name == "":
     main_correct_solution = "judge.cpp"
 
     other_solutions = [
