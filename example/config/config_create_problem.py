@@ -54,7 +54,7 @@ make_test_folders = False
 Whether to create folders containing test cases' data in the `test` folder.
 """
 
-make_zip = False
+make_zip = True
 """
 Whether to create a zip file containing those folders.
 """
