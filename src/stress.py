@@ -40,69 +40,79 @@ class Stresser:
         self.source_output: list[tuple[Path, Path]] = []
         self.workers: list[TestExecutor] = []
         self.batch_count = config.test_count // config.cpu_workers
-        self.general_status = []
-        self.exec_times = {}
+        self.general_status: list[tuple[str, str]] = []  # internal report form
+        self.exec_times: dict[str, list] = {}
+        self.compiler = Compiler(config.compilation_command, config.cpu_workers)
         self.testgen_name_noext, self.testgen_args = script_split(config.testgen_script)
 
-        if config.problem_name != "$workspace":
+        if config.problem_name:  # source from problem
             current_problem = Problem(problems_dir / config.problem_name)
             if not current_problem.exists():
                 terminate_proc(f"Fatal error: There is no problem with name {config.problem_name}.")
 
             # TODO: dynamic import for these:
-            self.checker_pol = "token"  # stub
+            self.checker_type = "token"  # stub
             self.compiler = Compiler("$default")
 
             # Internal (within __init__ only), temporary variables
-            self._judge_path = current_problem.main_correct_solution()
-            self._contestant_paths = current_problem.other_solutions()
-            self._testgen_path = find_file_with_name(
+            _judge_path = current_problem.main_correct_solution()
+            _contestant_paths = current_problem.other_solutions()
+            _testgen_path = find_file_with_name(
                 self.testgen_name_noext, current_problem.testgen_dir
             )
-            if config.checker_type == "external":
-                self._external_checker_path = None  # Path, stub
-        else:
-            self.checker_pol = config.checker_type
+            if self.checker_type == "external":
+                _external_checker_path = None  # Path, stub
+        else:  # source from workspace
 
-            self._judge_path = workspace / config.main_correct_solution
-            self._contestant_paths = [workspace / solution for solution in config.other_solutions]
-            self._testgen_path = find_file_with_name(self.testgen_name_noext, workspace)
-            if config.checker_type == "external":
-                self._external_checker_path = workspace / config.external_checker
+            def validate_config():
+                """Address various ways a user can be stupid. Not all, obviously."""
+                if not config.main_correct_solution:
+                    terminate_proc("Fatal error: Main correct solution is not specified.")
+                if not isinstance(config.other_solutions, list):
+                    terminate_proc("Fatal error: other_solutions must be a list of strings.")
+                if config.checker_type == "external" and not config.external_checker:
+                    terminate_proc("Fatal error: external checker is not specified.")
 
-            self.compiler = Compiler(config.compilation_command, config.cpu_workers)
+            validate_config()
+
+            _judge_path = workspace / config.main_correct_solution
+            _contestant_paths = [workspace / solution for solution in config.other_solutions]
+            _testgen_path = find_file_with_name(self.testgen_name_noext, workspace)
+
+            self.checker_type = config.checker_type
+            if self.checker_type == "external":
+                _external_checker_path = workspace / config.external_checker
 
         def _queue_compilation(p: Path):
             self.source_output.append((p, bindir / p.name))
-            # .../solution.cpp -> /bin/solution.cpp.exe
 
-        _queue_compilation(self._testgen_path)
-        _queue_compilation(self._judge_path)
-        for solution in self._contestant_paths:
+        _queue_compilation(_testgen_path)
+        _queue_compilation(_judge_path)
+        for solution in _contestant_paths:
             _queue_compilation(solution)
-        if self.checker_pol == "external":
-            _queue_compilation(self._external_checker_path)
+        if self.checker_type == "external":
+            _queue_compilation(_external_checker_path)
 
         # add some more variables
-        self.judge_name = self._judge_path.name
-        self.testgen_name = self._testgen_path.name
-        self.all_source_paths = self._contestant_paths + [self._judge_path]
-        self.exec_times = {contestant.name: [] for contestant in self.all_source_paths}
+        self.judge_name = _judge_path.name
+        self.testgen_name = _testgen_path.name
+        self.all_sol_paths = _contestant_paths + [_judge_path]
+        self.exec_times = {contestant.name: [] for contestant in self.all_sol_paths}
 
-        if self.checker_pol == "external":
-            self.external_checker_name = self._external_checker_path.name
+        if self.checker_type == "external":
+            self.external_checker_name = _external_checker_path.name
 
     def init_workers(self):
         for _ in range(config.cpu_workers):
             self.workers.append(
                 TestExecutor(
                     judge=bindir / self.judge_name,
-                    contestants=[bindir / contestant.name for contestant in self.all_source_paths],
+                    contestants=[bindir / contestant.name for contestant in self.all_sol_paths],
                     time_limit=config.time_limit,
-                    checker_pol=self.checker_pol,
+                    checker_type=self.checker_type,
                     external_checker_path=(
                         bindir / self.external_checker_name
-                        if self.checker_pol == "external"
+                        if self.checker_type == "external"
                         else None
                     ),
                 )
@@ -161,7 +171,8 @@ class Stresser:
             self.exec_times[contestant].append(contestant_result.exec_time)
 
             if (
-                contestant_result.status != ContestantExecutionStatus.AC
+                contestant_result.status
+                not in [ContestantExecutionStatus.AC, ContestantExecutionStatus.JUDGE]
                 and contestant_result.path in self.workers[0].contestants
             ):
                 for worker in self.workers:
@@ -251,8 +262,8 @@ class Stresser:
             f"Execution completed. Information about the result can be found at: {result_file_location}",
             text_colors.CYAN,
         )
-        send_message("Press any key to close...", color=text_colors.BOLD, end="")
-        input()
+        # send_message("Press any key to close...", color=text_colors.BOLD, end="")
+        # input()
 
     def __call__(self):
         delete_folder(logdir)
