@@ -142,6 +142,8 @@ class Compiler:
                 f"Cached executable for {source_path.name} found, skipping compilation...",
                 text_colors.YELLOW,
             )
+            # If the metadata is not properly carried over then Microsoft Security will engage thinking that
+            # output_path is a trojan.
             copy2(cache_path, output_path)
         else:
             # MSVC has /Fe instead of /Fi.
