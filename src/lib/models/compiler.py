@@ -4,7 +4,7 @@ C++ compiler wrapper with caching.
 
 from hashlib import sha256, file_digest
 from pathlib import Path
-from shutil import copy
+from shutil import copy2
 from subprocess import run
 
 from lib.config.paths import cache_dir, workspace
@@ -127,7 +127,6 @@ class Compiler:
         run(
             f"{self.compiler} {self.compiler_args} {prep_flag} {source_path} {prep_output_flag} {output_path}".split(),
             check=True,
-            shell=True,
         )
 
         hash_obj = sha256()
@@ -143,7 +142,7 @@ class Compiler:
                 f"Cached executable for {source_path.name} found, skipping compilation...",
                 text_colors.YELLOW,
             )
-            copy(cache_path, output_path)
+            copy2(cache_path, output_path)
         else:
             # MSVC has /Fe instead of /Fi.
             # See: https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category.
@@ -151,9 +150,8 @@ class Compiler:
             run(
                 f"{self.compiler} {self.compiler_args} {source_path} {bin_output_flag} {output_path}".split(),
                 check=True,
-                shell=True,
             )
-            copy(output_path, cache_path)
+            copy2(output_path, cache_path)
 
     def __call__(self, source_output: list[tuple[Path, Path]]):
         """
