@@ -19,7 +19,7 @@ MAX_CACHE_FILES = 64  # TODO: implements this
 SUPPORTED_COMPILERS = ["g++", "clang++"]
 
 DEFAULT_COMPILER_ARGS = {
-    "g++": f"-pipe -O2 -I{workspace}",
+    "g++": f"-pipe -Wall -O2 -I{workspace}",
 }
 
 if is_windows():
