@@ -64,9 +64,18 @@ class ExternalChecker(Checker):
             stderr=PIPE,
         )
 
-        status = ContestantExecutionStatus(proc.returncode)
+        try:
+            status = ContestantExecutionStatus(proc.returncode)
+        except ValueError:  # e.g if checker MLEd
+            terminate_proc(
+                f"Fatal error: external checker terminated with unknown code {proc.returncode}."
+            )
+
         if status == ContestantExecutionStatus.FAIL:
-            terminate_proc(proc.stderr.decode())
+            terminate_proc(
+                "Fatal error: external checker reported unexpected failure.\n"
+                + f"Error message: {proc.stderr.decode()}"
+            )
 
         return CheckerResult(
             status,
