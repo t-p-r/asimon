@@ -55,6 +55,11 @@ class Compiler:
 
         return None
 
+    @staticmethod
+    def init_msvc():
+        """TODO: find and run MSVC init batch file."""
+        pass
+
     def __init__(self, compilation_command: str | None = None, cpu_workers: int = 1):
         """
         Initialize the compiler.
