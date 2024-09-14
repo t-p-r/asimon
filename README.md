@@ -54,7 +54,7 @@ $ git submodule update --init.
 
 ## Usage
 
-See [the tutorial](/docs/tutorial.md).
+See [the documentation](https://github.com/t-p-r/asimon/wiki).
 
 
 ## Frequently asked questions
@@ -74,12 +74,6 @@ However, there are reasons you may want to use ASIMON:
 - Full control (and responsibility!) over what you do.
 - Multiprocessor support.
 - You are creating problems for anything other than Codeforces contests (if not, just use Polygon :)
-
-
-
-### **Q:** What would a created problem look like?
-
-**A:** See [this](https://github.com/t-p-r/asimon/wiki).
 
 
 ### **Q:** Why are there no support for problem statement and solution? 
