@@ -1,5 +1,5 @@
 from pathlib import Path
-from .anal_process import ProcessResult, anal_process
+from .anal_process import anal_process
 
 
 class TestGenerator:
@@ -9,7 +9,7 @@ class TestGenerator:
         self.timeout = timeout
         pass
 
-    def generate(
+    def __call__(
         self,
         testgen_command,
         judge_command: Path,

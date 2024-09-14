@@ -84,7 +84,7 @@ class TestExecutor:
         self.judge = judge
         self.contestants = contestants
 
-    def execute(self, testgen_command: str | list[str]) -> WorkerResult:
+    def __call__(self, testgen_command: str | list[str]) -> WorkerResult:
         """
         Execute a test case.
         """
