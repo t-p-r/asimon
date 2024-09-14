@@ -16,7 +16,7 @@
 
 ### **Q:** What would a created problem look like?
 
-**A:** See [this](/docs/problem.md).
+**A:** See [this](/wiki/problem.md).
 
 
 ### **Q:** Why are there no support for problem statement and solution? 
