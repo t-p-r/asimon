@@ -79,7 +79,7 @@ However, there are reasons you may want to use ASIMON:
 
 ### **Q:** What would a created problem look like?
 
-**A:** See [this](/wiki/contents.md).
+**A:** See [this](https://github.com/t-p-r/asimon/wiki).
 
 
 ### **Q:** Why are there no support for problem statement and solution? 
