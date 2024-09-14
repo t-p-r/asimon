@@ -1,5 +1,5 @@
 """
-C++ compiler wrapper with caching.
+C/C++ compiler wrapper with caching.
 """
 
 from hashlib import sha256, file_digest
@@ -34,7 +34,7 @@ if is_windows():
 DEFAULT_COMPILER_ARGS["clang++"] = DEFAULT_COMPILER_ARGS["g++"]  # thanks Clang team
 
 
-class Compiler:
+class CppCompiler:
     @staticmethod
     def probe(compiler: str) -> bytes | None:
         """
