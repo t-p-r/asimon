@@ -1,6 +1,6 @@
 """
 Test checkers for Worker class.
-Some plugin init functions are executed here.
+Plugin init functions are executed here.
 """
 
 from importlib import import_module
@@ -13,9 +13,9 @@ DISCOVERED_CHECKERS = {}
 """
 Contains pairs `("name", "class")` where `name` is the return value of `class.__str__()`.
 
-This enable a minimal checker plugin system: the user just need to derive a new class
+This enable a barebone checker plugin system: the user just need to derive a new class
 from the base Checker class, give it an alias (through the __str__ function) and then use
-this alias in the `checker` field in top-level config files.
+this alias in the `checker` field in the top-level config files.
 """
 
 

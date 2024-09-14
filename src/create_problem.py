@@ -8,7 +8,7 @@ import sys
 
 sys.dont_write_bytecode = True  # disables the creation of __pycache__ folders
 
-from concurrent.futures import ProcessPoolExecutor, Future, CancelledError
+from concurrent.futures import ProcessPoolExecutor, Future
 import os
 import shutil
 import random
@@ -17,7 +17,7 @@ import json
 
 from lib.exceptions import InvalidConfig
 
-from lib.models.compiler import Compiler
+from lib.models.cpp_compiler import CppCompiler
 from lib.models.workers.test_generator import TestGenerator
 from lib.models.problem import Problem
 
@@ -44,7 +44,7 @@ class ProblemCreator:
         self.current_problem = Problem(problems_dir / config.problem_name)
         self.subtasks = []
         self.cumulative = 0
-        self.compiler = Compiler(config.compilation_command, config.cpu_workers)
+        self.compiler = CppCompiler(config.compilation_command, config.cpu_workers)
 
         for _ in range(config.cpu_workers):
             self.workers.append(TestGenerator(timeout=config.time_limit))
@@ -223,7 +223,7 @@ class ProblemCreator:
 
                     procs.append(
                         worker_pool.submit(
-                            self.workers[(test_index - 1) % config.cpu_workers].generate,
+                            self.workers[(test_index - 1) % config.cpu_workers],
                             testgen_command=[bindir / testgen.name] + testgen_args,
                             judge_command=bindir / config.main_correct_solution,
                             export_input_to=testdir / f"{config.problem_name}.inp",
@@ -232,7 +232,7 @@ class ProblemCreator:
                     )
 
                 for proc in procs:
-                    # calling result() propagates the child process's terminate_proc() call, if any
+                    # calling result() propagates the child process's possible terminate_proc() call
                     proc.result()
 
                 batch += 1

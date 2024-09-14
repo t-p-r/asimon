@@ -33,6 +33,7 @@ class ContestantExecutionStatus(Enum):
         return self.PARTIALLY + point
 
     def __str__(self):
+        # no tangible overhead
         CES_to_string = {
             self.AC: "accepted",
             self.WA: "wrong answer",

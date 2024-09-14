@@ -47,7 +47,7 @@ class ExternalChecker(Checker):
         Any message from the C++ checker must be passed to `stderr`; this method will not check `stdout`'s content.
         """
 
-        input_buffer = b"".join([input, answer, output])
+        input_buffer = b"".join([input, answer, output])  # no tangible overhead ???
 
         proc: CompletedProcess = run(
             [

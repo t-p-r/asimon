@@ -56,7 +56,7 @@ def is_windows():
     try:
         import msvcrt
 
-        del msvcrt  # black format fuckery
+        del msvcrt
     except ModuleNotFoundError:
         return False
     else:

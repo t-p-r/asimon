@@ -20,7 +20,7 @@ class LineChecker(Checker):
         return str(n) + suffix
 
     def check(self, input: bytes, answer: bytes, output: bytes) -> CheckerResult:
-        answer_tokens = answer.splitlines()  # not much perf overhead somehow?
+        answer_tokens = answer.splitlines()
         output_tokens = output.splitlines()
 
         lanswer = len(answer_tokens)

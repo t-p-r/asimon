@@ -19,7 +19,7 @@ from lib.models.workers.test_executor import (
 )
 from lib.models.ces import ContestantExecutionStatus
 from lib.models.problem import Problem
-from lib.models.compiler import Compiler
+from lib.models.cpp_compiler import CppCompiler
 
 from lib.utils.formatting import send_message, script_split, write_prefix
 from lib.utils.system import find_file_with_name, get_dir, delete_folder, terminate_proc
@@ -42,7 +42,7 @@ class Stresser:
         self.batch_count = config.test_count // config.cpu_workers
         self.general_status: list[tuple[str, str]] = []  # internal report form
         self.exec_times: dict[str, list] = {}
-        self.compiler = Compiler(config.compilation_command, config.cpu_workers)
+        self.compiler = CppCompiler(config.compilation_command, config.cpu_workers)
         self.testgen_name_noext, self.testgen_args = script_split(config.testgen_script)
 
         if config.problem_name:  # source from problem
@@ -52,7 +52,7 @@ class Stresser:
 
             # TODO: dynamic import for these:
             self.checker_type = "token"  # stub
-            self.compiler = Compiler("$default")
+            self.compiler = CppCompiler("$default")
 
             # Internal (within __init__ only), temporary variables
             _judge_path = current_problem.main_correct_solution()
@@ -150,7 +150,7 @@ class Stresser:
                     test_seed = random.getrandbits(31)
                     procs.append(
                         worker_pool.submit(
-                            self.workers[i].execute,
+                            self.workers[i],
                             [bindir / self.testgen_name]
                             + self.testgen_args
                             + [f"--seed {test_seed}"],
