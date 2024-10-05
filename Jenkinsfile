@@ -17,6 +17,8 @@ pipeline {
             steps {
                 fileOperations([
                     folderCopyOperation(sourceFolderPath: 'example/workspace', targetLocation: 'src/')
+                ])
+                fileOperations([
                     fileCopyOperation(includes: 'example/config/*', targetLocation: 'src')
                 ])
             }
