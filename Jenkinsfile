@@ -12,5 +12,26 @@ pipeline {
                 fileExists 'example/workspace/testgen.cpp'
             }
         }
+
+        stage('Prepare files') {
+            steps {
+                fileOperations([
+                    folderCopyOperation(sourceFolderPath: 'example/workspace', targetLocation: 'src/')
+                    fileCopyOperation(includes: 'example/config/*', targetLocation: 'src')
+                ])
+            }
+        }
+
+        stage('Run stress.py (Windows)'){
+            steps {
+                bat encoding: 'utf-8', returnStdout: true, script: 'python3 src/stress.py'
+            }
+        }
+
+        stage('Run create_problem.py (Windows)'){
+            steps {
+                bat encoding: 'utf-8', returnStdout: true, script: 'python3 src/create_problem.py'
+            }
+        }
     }
 }
