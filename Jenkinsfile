@@ -28,13 +28,13 @@ pipeline {
 
         stage('Run stress.py (Windows)') {
             steps {
-                bat encoding: 'utf-8', returnStdout: true, script: "${env.PY} src/stress.py"
+                bat encoding: 'utf-8', returnStdout: true, script: "${env.python} src/stress.py"
             }
         }
 
         stage('Run create_problem.py (Windows)') {
             steps {
-                bat encoding: 'utf-8', returnStdout: true, script: "${env.PY} src/create_problem.py"
+                bat encoding: 'utf-8', returnStdout: true, script: "${env.python} src/create_problem.py"
             }
         }
     }
