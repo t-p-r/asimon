@@ -23,7 +23,7 @@ pipeline {
                 bat 'git submodule update --init'
                 bat 'xcopy example\\config\\* src'
                 bat 'xcopy example\\workspace src\\workspace'
-                bat encoding: 'utf-8', returnStdout: true, script: 'python src/stress.py'
+                bat 'python src/stress.py'
             }
         }
 
@@ -35,7 +35,7 @@ pipeline {
                 bat 'git submodule update --init'
                 bat 'xcopy example\\config\\* src'
                 bat 'xcopy example\\workspace src\\workspace'
-                bat encoding: 'utf-8', returnStdout: true, script: 'python src/create_problem.py'
+                bat 'python src/create_problem.py'
             }
         }
     }
