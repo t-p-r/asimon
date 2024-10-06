@@ -1,8 +1,9 @@
 pipeline {
-    agent any
+    agent none
 
     stages {
         stage('Validate') {
+            agent any
             steps {
                 fileExists 'example/config/config_stress.py'
                 fileExists 'example/config/config_create_problem.py'
@@ -15,6 +16,7 @@ pipeline {
         }
 
         stage('Prepare files') {
+            agent any
             steps {
                 bat script: 'set'
                 fileOperations([
@@ -27,12 +29,18 @@ pipeline {
         }
 
         stage('Run stress.py (Windows)') {
+            agent {
+                label 'windows'
+            }
             steps {
                 bat encoding: 'utf-8', returnStdout: true, script: "${env.python} src/stress.py"
             }
         }
 
         stage('Run create_problem.py (Windows)') {
+            agent {
+                label 'windows'
+            }
             steps {
                 bat encoding: 'utf-8', returnStdout: true, script: "${env.python} src/create_problem.py"
             }
