@@ -18,7 +18,6 @@ pipeline {
         stage('Prepare files') {
             agent any
             steps {
-                bat script: 'set'
                 fileOperations([
                     folderCopyOperation(sourceFolderPath: 'example/workspace', destinationFolderPath: 'src')
                 ])
