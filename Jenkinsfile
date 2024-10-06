@@ -15,7 +15,7 @@ pipeline {
             }
         }
 
-        stage('Run stress.py (Windows)') {
+        stage('Run tools (Windows)') {
             agent {
                 label 'windows'
             }
@@ -24,17 +24,6 @@ pipeline {
                 bat 'xcopy example\\config\\* src'
                 bat 'xcopy example\\workspace src\\workspace'
                 bat 'python src/stress.py'
-            }
-        }
-
-        stage('Run create_problem.py (Windows)') {
-            agent {
-                label 'windows'
-            }
-            steps {
-                bat 'git submodule update --init'
-                bat 'xcopy example\\config\\* src'
-                bat 'xcopy example\\workspace src\\workspace'
                 bat 'python src/create_problem.py'
             }
         }
