@@ -18,12 +18,8 @@ pipeline {
         stage('Prepare files') {
             agent any
             steps {
-                fileOperations([
-                    folderCopyOperation(sourceFolderPath: 'example/workspace', destinationFolderPath: 'src')
-                ])
-                fileOperations([
-                    fileCopyOperation(includes: 'example/config/*', targetLocation: 'src')
-                ])
+                bat encoding: 'utf-8', script = 'xcopy example\\config\\* src'
+                bat encoding: 'utf-8', script = 'xcopy example\\workspace src\\workspace'
             }
         }
 
