@@ -1,14 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        CC = 'g++'
-        PY = """${bat(
-                returnStdout: true,
-                script: 'where python3'
-            )}"""
-    }
-
     stages {
         stage('Validate') {
             steps {
@@ -24,7 +16,7 @@ pipeline {
 
         stage('Prepare files') {
             steps {
-                bat script: 'dir'
+                bat script: 'set'
                 fileOperations([
                     folderCopyOperation(sourceFolderPath: 'example/workspace', destinationFolderPath: 'src')
                 ])
