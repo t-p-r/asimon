@@ -14,12 +14,13 @@ pipeline {
                 fileExists 'example/workspace/testgen.cpp'
             }
         }
-        
+
         stage('Run stress.py (Windows)') {
             agent {
                 label 'windows'
             }
             steps {
+                bat 'git submodule update --init'
                 bat 'xcopy example\\config\\* src'
                 bat 'xcopy example\\workspace src\\workspace'
                 bat encoding: 'utf-8', returnStdout: true, script: 'python src/stress.py'
@@ -31,6 +32,7 @@ pipeline {
                 label 'windows'
             }
             steps {
+                bat 'git submodule update --init'
                 bat 'xcopy example\\config\\* src'
                 bat 'xcopy example\\workspace src\\workspace'
                 bat encoding: 'utf-8', returnStdout: true, script: 'python src/create_problem.py'
