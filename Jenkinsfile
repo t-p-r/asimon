@@ -18,8 +18,8 @@ pipeline {
         stage('Prepare files') {
             agent any
             steps {
-                bat returnStdout: true, script = 'xcopy example\\config\\* src'
-                bat returnStdout: true, script = 'xcopy example\\workspace src\\workspace'
+                bat 'xcopy example\\config\\* src'
+                bat 'xcopy example\\workspace src\\workspace'
             }
         }
 
