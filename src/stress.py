@@ -276,3 +276,4 @@ class Stresser:
 
 if __name__ == "__main__":
     Stresser()()
+    exit(1)
