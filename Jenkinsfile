@@ -1,6 +1,14 @@
 pipeline {
     agent any
-    
+
+    environment {
+        CC = 'g++'
+        PY = """${bat(
+                returnStdout: true,
+                script: 'where python3'
+            )}"""
+    }
+
     stages {
         stage('Validate') {
             steps {
@@ -26,15 +34,15 @@ pipeline {
             }
         }
 
-        stage('Run stress.py (Windows)'){
+        stage('Run stress.py (Windows)') {
             steps {
-                bat encoding: 'utf-8', returnStdout: true, script: 'python3 src/stress.py'
+                bat encoding: 'utf-8', returnStdout: true, script: "${env.PY} src/stress.py"
             }
         }
 
-        stage('Run create_problem.py (Windows)'){
+        stage('Run create_problem.py (Windows)') {
             steps {
-                bat encoding: 'utf-8', returnStdout: true, script: 'python3 src/create_problem.py'
+                bat encoding: 'utf-8', returnStdout: true, script: "${env.PY} src/create_problem.py"
             }
         }
     }
