@@ -18,8 +18,8 @@ pipeline {
         stage('Prepare files') {
             agent any
             steps {
-                bat encoding: 'utf-8', script = 'xcopy example\\config\\* src'
-                bat encoding: 'utf-8', script = 'xcopy example\\workspace src\\workspace'
+                bat returnStdout: true, script = 'xcopy example\\config\\* src'
+                bat returnStdout: true, script = 'xcopy example\\workspace src\\workspace'
             }
         }
 
