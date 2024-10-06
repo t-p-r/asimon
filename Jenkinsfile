@@ -32,7 +32,7 @@ pipeline {
                 label 'windows'
             }
             steps {
-                bat encoding: 'utf-8', returnStdout: true, script: "${env.python} src/stress.py"
+                bat encoding: 'utf-8', returnStdout: true, script: 'python src/stress.py'
             }
         }
 
@@ -41,7 +41,7 @@ pipeline {
                 label 'windows'
             }
             steps {
-                bat encoding: 'utf-8', returnStdout: true, script: "${env.python} src/create_problem.py"
+                bat encoding: 'utf-8', returnStdout: true, script: 'python src/create_problem.py'
             }
         }
     }
