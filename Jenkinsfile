@@ -14,20 +14,14 @@ pipeline {
                 fileExists 'example/workspace/testgen.cpp'
             }
         }
-
-        stage('Prepare files') {
-            agent any
-            steps {
-                bat 'xcopy example\\config\\* src'
-                bat 'xcopy example\\workspace src\\workspace'
-            }
-        }
-
+        
         stage('Run stress.py (Windows)') {
             agent {
                 label 'windows'
             }
             steps {
+                bat 'xcopy example\\config\\* src'
+                bat 'xcopy example\\workspace src\\workspace'
                 bat encoding: 'utf-8', returnStdout: true, script: 'python src/stress.py'
             }
         }
@@ -37,6 +31,8 @@ pipeline {
                 label 'windows'
             }
             steps {
+                bat 'xcopy example\\config\\* src'
+                bat 'xcopy example\\workspace src\\workspace'
                 bat encoding: 'utf-8', returnStdout: true, script: 'python src/create_problem.py'
             }
         }
