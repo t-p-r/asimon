@@ -1,5 +1,6 @@
 pipeline {
     agent any
+    
     stages {
         stage('Validate') {
             steps {
@@ -15,6 +16,7 @@ pipeline {
 
         stage('Prepare files') {
             steps {
+                bat script: 'dir'
                 fileOperations([
                     folderCopyOperation(sourceFolderPath: 'example/workspace', destinationFolderPath: 'src')
                 ])
