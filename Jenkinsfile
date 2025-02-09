@@ -27,5 +27,18 @@ pipeline {
                 bat 'python src/create_problem.py'
             }
         }
+
+        stage('Run tools (Linux)') {
+            agent {
+                label 'linux'
+            }
+            steps {
+                sh 'git submodule update --init'
+                sh 'copy -r example\\config\\* src'
+                sh 'copy -r example\\workspace src\\workspace'
+                sh 'python src/stress.py'
+                sh 'python src/create_problem.py'
+            }
+        }
     }
 }
