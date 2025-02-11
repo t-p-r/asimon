@@ -131,8 +131,9 @@ class TestExecutor:
                     ContestantExecutionResult(
                         contestant,
                         ContestantExecutionStatus.RTE,
-                        float(proc_error.cmd),
+                        0.0,
                         "The solution terminated with code %d" % proc_error.returncode,
+                        output=b''
                     )
                 )
                 continue

@@ -2,7 +2,7 @@
 Internal wrapper around subprocess's run() method.
 """
 
-from subprocess import run, PIPE, TimeoutExpired, CompletedProcess
+from subprocess import run, PIPE, TimeoutExpired, CompletedProcess, CalledProcessError
 from dataclasses import dataclass
 
 import time
@@ -52,18 +52,20 @@ def anal_process(
             stderr=stderr,
             timeout=timeout,
             **other_subprocess_args,
+            check=True
         )
         end = time.perf_counter()
+    except CalledProcessError as proc_error:
+        if terminate_on_fault:
+            terminate_proc(f"Fatal error: {identity} exited with code {proc.returncode}.\nError message: {proc.stderr.decode()}")
+        else:
+            raise proc_error
     except TimeoutExpired as timeout_error:
         if terminate_on_fault:
             terminate_proc(f"Fatal error: {identity} timed out after {timeout} seconds.")
         else:
             raise timeout_error
-
-    if proc.returncode != 0 and terminate_on_fault:
-        terminate_proc(
-            f"Fatal error: {identity} exited with code {proc.returncode}.\nError message: {proc.stderr.decode()}"
-        )
+        
 
     return ProcessResult(
         returncode=proc.returncode,
