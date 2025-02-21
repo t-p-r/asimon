@@ -5,17 +5,33 @@ pipeline {
         stage('Validate') {
             agent any
             steps {
-                fileExists 'example/config/config_stress.py'
-                fileExists 'example/config/config_create_problem.py'
-                fileExists 'example/workspace/checker.cpp'
-                fileExists 'example/workspace/contestant.cpp'
-                fileExists 'example/workspace/judge.cpp'
-                fileExists 'example/workspace/testgen_testlib.cpp'
-                fileExists 'example/workspace/testgen.cpp'
+                script {
+                    if (!fileExists('example/config/config_stress.py')) {
+                        error 'File example/config/config_stress.py does not exist'
+                    }
+                    if (!fileExists('example/config/config_create_problem.py')) {
+                        error 'File example/config/config_create_problem.py does not exist'
+                    }
+                    if (!fileExists('example/workspace/checker.cpp')) {
+                        error 'File example/workspace/checker.cpp does not exist'
+                    }
+                    if (!fileExists('example/workspace/contestant.cpp')) {
+                        error 'File example/workspace/contestant.cpp does not exist'
+                    }
+                    if (!fileExists('example/workspace/judge.cpp')) {
+                        error 'File example/workspace/judge.cpp does not exist'
+                    }
+                    if (!fileExists('example/workspace/testgen_testlib.cpp')) {
+                        error 'File example/workspace/testgen_testlib.cpp does not exist'
+                    }
+                    if (!fileExists('example/workspace/testgen.cpp')) {
+                        error 'File example/workspace/testgen.cpp does not exist'
+                    }
+                }
             }
         }
 
-        stage('Run tools (Windows)') {
+        stage('Run sample test (Windows)') {
             agent {
                 label 'windows'
             }
@@ -28,14 +44,14 @@ pipeline {
             }
         }
 
-        stage('Run tools (Linux)') {
+        stage('Run sample test (Linux)') {
             agent {
                 label 'linux'
             }
             steps {
                 sh 'git submodule update --init'
-                sh 'cp -r example\\config\\* src'
-                sh 'cp -r example\\workspace src\\workspace'
+                sh 'cp example/config/* src'
+                sh 'cp -r example/workspace src'
                 sh 'python src/stress.py'
                 sh 'python src/create_problem.py'
             }
