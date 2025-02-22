@@ -9,11 +9,7 @@ RUN apt-get install -y g++ git
 RUN pip install tabulate
 
 # copy files over
-COPY ./example ./example
-COPY ./src ./src
-COPY ./.gitmodules ./.gitmodules
-# this is gruesome but is fast enough for now
-COPY ./.git ./.git
+COPY . .
 
 # construct sample setup
 COPY ./example/config/* ./src
