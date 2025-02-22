@@ -1,11 +1,11 @@
 # Purely for testing purposes, if it runs without Python error than it is good to go
-FROM python:3.13
+FROM python:3.13-slim
 
 WORKDIR /app
 
 # Install pre-requisites
 RUN apt-get update
-RUN apt-get install -y g++
+RUN apt-get install -y g++ git
 RUN pip install tabulate
 
 # copy files over
