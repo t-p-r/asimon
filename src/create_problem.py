@@ -135,7 +135,11 @@ class ProblemCreator:
                 print("    1: Override the existing problem.")
                 print("    2: Rename the current problem.")
 
-                choice = input()
+                try:
+                    choice = input()
+                except EOFError: # e.g in github workflow
+                    choice = "1"
+                    
                 if choice == "1":
                     shutil.rmtree(self.current_problem.problem_dir)
                 elif choice == "2":
@@ -177,7 +181,7 @@ class ProblemCreator:
             )
 
         # miscellaneous
-        filenames = list(workspace.walk())[0][2]
+        filenames = list(os.walk(workspace))[0][2]
         for source_path in filenames:
             if source_path not in copied:
                 copy(workspace / source_path, self.current_problem.misc_dir)
@@ -266,7 +270,7 @@ class ProblemCreator:
             self.copy_resource()  # late copy to avoid compression
 
         if not config.make_test_folders:  # then remove them
-            folders = list(self.current_problem.problem_dir.walk())[0][1]
+            folders = list(os.walk(self.current_problem.problem_dir))[0][1]
             for folder in folders:
                 if folder != self.current_problem.resource_dir.name:
                     shutil.rmtree(self.current_problem.problem_dir / folder)
