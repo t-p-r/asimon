@@ -16,4 +16,5 @@ COPY ./example/config/* ./src
 COPY ./example/workspace ./src/workspace
 
 # sample invocation
-CMD ["python3", "src/stress.py"]
+RUN python3 ./src/stress.py
+RUN python3 ./src/create_problem.py
