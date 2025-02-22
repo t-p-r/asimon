@@ -1,10 +1,12 @@
 # Purely for testing purposes, if it runs without Python error than it is good to go
-FROM python:3.13-slim
+FROM gcc:14.2.0
 
 WORKDIR /app
 
-# Install pre-requisites
-RUN pip install tabulate
+# RUN pip install pyinstaller
+RUN apt-get update
+# RUN apt-get install python -y
+RUN apt-get install python3-tabulate -y
 
 # copy files over
 COPY . .
@@ -13,7 +15,5 @@ COPY . .
 COPY ./example/config/* ./src
 COPY ./example/workspace ./src/workspace
 
-FROM gcc:14.2.0
-
 # sample invocation
-CMD ["python", "src/stress.py"]
+CMD ["python3", "src/stress.py"]
