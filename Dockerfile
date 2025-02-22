@@ -15,7 +15,5 @@ COPY . .
 COPY ./example/config/* ./src
 COPY ./example/workspace ./src/workspace
 
-# get testlib and CPDSA going
-RUN git submodule update --init
-
+# sample invocation
 CMD ["python", "src/stress.py"]
