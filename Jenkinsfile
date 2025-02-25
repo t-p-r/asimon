@@ -31,29 +31,31 @@ pipeline {
             }
         }
 
-        stage('Run sample test (Windows)') {
-            agent {
-                label 'windows'
+        parallel {
+            stage('Run sample test (Windows)') {
+                agent {
+                    label 'windows'
+                }
+                steps {
+                    bat 'git submodule update --init'
+                    bat 'xcopy example\\config\\* src'
+                    bat 'xcopy example\\workspace src\\workspace'
+                    bat 'python src/stress.py'
+                    bat 'python src/create_problem.py'
+                }
             }
-            steps {
-                bat 'git submodule update --init'
-                bat 'xcopy example\\config\\* src'
-                bat 'xcopy example\\workspace src\\workspace'
-                bat 'python src/stress.py'
-                bat 'python src/create_problem.py'
-            }
-        }
 
-        stage('Run sample test (Linux)') {
-            agent {
-                label 'linux'
-            }
-            steps {
-                sh 'git submodule update --init'
-                sh 'cp example/config/* src'
-                sh 'cp -r example/workspace src'
-                sh 'python src/stress.py'
-                sh 'python src/create_problem.py'
+            stage('Run sample test (Linux)') {
+                agent {
+                    label 'linux'
+                }
+                steps {
+                    sh 'git submodule update --init'
+                    sh 'cp example/config/* src'
+                    sh 'cp -r example/workspace src'
+                    sh 'python src/stress.py'
+                    sh 'python src/create_problem.py'
+                }
             }
         }
     }
