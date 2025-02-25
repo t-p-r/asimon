@@ -29,13 +29,13 @@ pipeline {
             agent any
             steps {
                 script {
-                    if (unix()) {
+                    if (isUnix()) {
                         sh 'git submodule update --init'
                         sh 'cp example/config/* src'
                         sh 'cp -r example/workspace src'
                         sh 'python src/stress.py'
                         sh 'python src/create_problem.py'
-                } else {
+                    } else {
                         bat 'git submodule update --init'
                         bat 'xcopy example\\config\\* src'
                         bat 'xcopy example\\workspace src\\workspace'
