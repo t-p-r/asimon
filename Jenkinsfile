@@ -28,18 +28,20 @@ pipeline {
         stage('Run sample test (Windows)') {
             agent any
             steps {
-                if (unix()) {
-                    sh 'git submodule update --init'
-                    sh 'cp example/config/* src'
-                    sh 'cp -r example/workspace src'
-                    sh 'python src/stress.py'
-                    sh 'python src/create_problem.py'
+                script {
+                    if (unix()) {
+                        sh 'git submodule update --init'
+                        sh 'cp example/config/* src'
+                        sh 'cp -r example/workspace src'
+                        sh 'python src/stress.py'
+                        sh 'python src/create_problem.py'
                 } else {
-                    bat 'git submodule update --init'
-                    bat 'xcopy example\\config\\* src'
-                    bat 'xcopy example\\workspace src\\workspace'
-                    bat 'python src/stress.py'
-                    bat 'python src/create_problem.py'
+                        bat 'git submodule update --init'
+                        bat 'xcopy example\\config\\* src'
+                        bat 'xcopy example\\workspace src\\workspace'
+                        bat 'python src/stress.py'
+                        bat 'python src/create_problem.py'
+                    }
                 }
             }
         }
