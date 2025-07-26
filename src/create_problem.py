@@ -2,11 +2,6 @@
 src/create_problem.py - Generate problem (create tests from workspace files and bundle them into a folder).
 """
 
-# HIC SUNT DRACONES ---------------------------------------------------------------------------------------
-
-import sys
-
-sys.dont_write_bytecode = True  # disables the creation of __pycache__ folders
 
 from concurrent.futures import ProcessPoolExecutor, Future
 import os

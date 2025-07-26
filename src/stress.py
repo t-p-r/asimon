@@ -2,9 +2,6 @@
 src/stress.py - Stress testing a problem's implementations.
 """
 
-import sys
-
-sys.dont_write_bytecode = True  # disables the creation of __pycache__ folders
 
 import random
 from concurrent.futures import ProcessPoolExecutor, Future
