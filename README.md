@@ -5,7 +5,7 @@
 
 ## What is this?
 
-A *user-centric* platform written in Python and C++ to help you create and manage [competitive programming (CP) problems](/docs/cp_intro.md).
+A *user-centric* platform written in Python and C++ to help you create and manage [competitive programming (CP) problems](https://github.com/t-p-r/asimon/wiki/Introduction).
 
 ## Features
 
@@ -20,7 +20,7 @@ A *user-centric* platform written in Python and C++ to help you create and manag
 - Compiled executable caching (basically if you change 1 of your 8 C++ source files then the other 7 won't be needlessly recompiled).
 - Custom checker support via:
   - [testlib](https://github.com/MikeMirzayanov/testlib/) (as one of your C++ source files);
-  - [the Python checker plugin system]().
+  - [the Python checker plugin system](https://github.com/t-p-r/asimon/wiki/Writing-an-external-checker).
 
 ## Requirement
 
