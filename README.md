@@ -24,7 +24,7 @@ A *user-centric* platform written in Python and C++ to help you create and manag
 
 ## Requirement
 
-A Linux or Windows-running machine with the following resources installed:
+A Linux, Mac or Windows machine with the following resources installed:
 - Python 3.10+.
 - Python package(s): `tabulate`. 
     - On Windows this can be installed using `pip install <package-name>`. On Arch-based Linux distros this can be done using `pacman -S python-<package-name>`. On any other platforms, good luck.
